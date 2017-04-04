@@ -34,6 +34,7 @@ XXX
 - QUIC+TLS
 - QUIC+foo
 - MinimalT
+- CurveCP
 - tcpcrypt
 - IPsec (IKE+ESP/AH) [?]
 
