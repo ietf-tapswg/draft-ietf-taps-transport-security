@@ -38,6 +38,12 @@ XXX
 - tcpcrypt
 - IPsec (IKE+ESP/AH) [?]
 
+[TOMMY]
+
+# Terminology
+
+[TOMMY]
+
 # Current Transport Security Protocols
 
 This section contains descriptions of security protocols that currently used to protect data being sent over a network.
@@ -47,18 +53,31 @@ For each protocol, we describe the features it provides and its dependencies on 
 ## TLS
 
 TLS is..
+[CHRIS]
 
 ## DTLS
 
+[TOMMY]
+
 ## QUIC with TLS
+
+[TOMMY]
 
 ## MinimalT
 
+[CHRIS]
+
 ## CurveCP
+
+[CHRIS]
 
 ## tcpcrypt
 
+[CHRIS]
+
 ## IKEv2 with ESP
+
+[TOMMY]
 
 # Security Protocol Interfaces
 
@@ -67,18 +86,31 @@ This section covers the set of knobs exposed by each security protocol. These fa
 ## TLS
 
 TLS has...
+[CHRIS]
 
 ## DTLS
 
+[TOMMY]
+
 ## QUIC with TLS
+
+[TOMMY]
 
 ## MinimalT
 
+[CHRIS]
+
 ## CurveCP
+
+[CHRIS]
 
 ## tcpcrypt
 
+[CHRIS]
+
 ## IKEv2 with ESP
+
+[TOMMY]
 
 # Minimum Common Transport Security Set
 
@@ -86,6 +118,8 @@ TLS has...
 - authentication (identities, private keys, etc)
 - encryption
 - resumption
+
+[CHRIS]
 
 ## Optional Features
 
