@@ -261,10 +261,14 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 
 This section covers the set of knobs exposed by each security protocol. These fall into categories of Mandatory, Optimizing, and Automatable options.
 
-## TLS
+## TLS [CHRIS]
 
-TLS has...
-[CHRIS]
+- Identity information (certificates) and private keys (or interfaces to private keys)
+- Ciphersuite configuration
+- Signature algorithm selection
+- Interface to session ticket encryption keys
+- Session cache management
+- XXX
 
 ## DTLS
 
@@ -274,34 +278,32 @@ TLS has...
 
 [TOMMY]
 
-## MinimalT
+## MinimalT [CHRIS]
 
-[CHRIS]
+- XXX
 
-## CurveCP
+## CurveCP [CHRIS]
 
-[CHRIS]
+- XXX
 
-## tcpcrypt
+## tcpcrypt [CHRIS]
 
-[CHRIS]
+- XXX
 
 ## IKEv2 with ESP
 
 [TOMMY]
 
-# Minimum Common Transport Security Set
+# Minimum Common Transport Security Set [CHRIS]
 
 ## Mandatory Features
 - authentication (identities, private keys, etc)
 - encryption
 - resumption
 
-[CHRIS]
-
 ## Optional Features
 
-- address validation
+- source validation [puzzles, cookies]
 
 # IANA Considerations
 
