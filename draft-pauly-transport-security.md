@@ -20,6 +20,8 @@ author:
     city: XXX
     country: XXX
 
+normative:
+    RFC5246:
 
 --- abstract
 
@@ -64,8 +66,57 @@ For each protocol, we describe the features it provides and its dependencies on 
 
 ## TLS
 
-TLS is..
-[CHRIS]
+TLS (Transport Layer Security) {{RFC5246}} is a common protocol used to establish a secure session between two endpoints. Communication
+over this session "prevents eavesdropping, tampering, and message forgery." TLS consists
+of a handshake and record protocol. The handshake protocol is used to negotiate a shared secret and corresponding cryptographic algorithms. 
+The record protocol is used to transfer and, after handshake completion, encryption and authentication of all data. 
+
+### Protocol Description
+
+TLS is the composition of a handshake and record protocol. 
+The record protocol is designed to marshall an arbitrary, in-order stream of bytes from one endpoint to the other. 
+It handles segmenting, compressing (when enabled), and encrypting data into discrete records. When configured
+to use an AEAD algorithm, it also handles nonce generation and encoding for each record. The record protocol is 
+hidden from the client behind a byte stream-oriented API. 
+
+The handshake protocol serves to negotiate a version and cryptographic parameters. At a minimum, this includes 
+the key exchange algorithm and ciphersuite to use in the record protocol. The handshake supports mutual authentication
+for both the session initiator (client) and receiver (server). Commonly, only the server is authenticated. X.509
+certificates are used in this authentication process. Each party may require explicit certificate status requests
+from the peer to verify the legitimacy of their certificate.
+
+The handshake protocol is also extensible. It allows for a variety of extensions to be included by either the client
+or server. These extensions are used to specify client preferences, e.g., the application-layer protocol to be driven
+with the TLS connection, or signals to the server to aid operation, e.g., the server name. Various extensions also exist
+to tune the parameters of the record protocol, e.g., the maximum fragment length. 
+
+Alerts are used to convey errors and other atypical events to the endpoints. There are two classes of alerts: closure
+and error alerts. A closure alert is used to signal to the other peer that the sender wishes to terminate the connection.
+The sender typically follows a close alert with a TCP FIN segment to close the connection. Error alerts are used to
+indicate problems with the handshake or individual records. Most errors are fatal and are followed by connection
+termination. However, warning alerts may be handled at the discretion of each respective implementation. 
+
+Once a session is disconnected all keying material must be torn down, unless resumption information was previously
+negotiated. TLS supports stateful and stateless resumption. (Here, the state refers to the information requirements
+for the server. It is assumed that the client must always store some state information in order to resume a session.)
+
+### Protocol Features
+
+- Key exchange and ciphersuite algorithm negotiation.
+- Stateful and stateless session resumption.
+- Anonymous key exchange.
+- Certificate- and raw public-key-based authentication.
+- Mutual client and server authentication.
+- Byte stream confidentiality and integrity.
+- Extensibility via well-defined extensions.
+- 0-RTT data support (in TLS 1.3 only).
+- Application-layer protocol negotiation.
+- Transparent data segmentation.
+
+### Protocol Dependencies
+
+- TCP for in-order, reliable transport.
+- A PKI trust store for certificate validation.
 
 ## DTLS
 
@@ -75,17 +126,73 @@ TLS is..
 
 [TOMMY]
 
-## MinimalT
+## MinimalT [CHRIS]
 
-[CHRIS]
+MinimalT is a UDP-based transport security protocol desiged to offer confidentiality, mutual authentication, DoS prevention, and connection
+mobility. One major goal of the protocol is to leverage existing protocols to obtain server-side configuration information used to 
+more quickly bootstrap a connection. MinimalT uses a variant of TCP's congestion control algorithm.
 
-## CurveCP
+### Protocol Description
 
-[CHRIS]
+MinimalT is a secure transport protocol built on top of a widespread directory service. Clients and servers interact with local directory
+services to (a) resolve server information and (b) public ephemeral state information, respectively. Clients connect to a local
+resolver once at boot time. Through this resolver they recover the IP address(es) and public key(s) of each server to which
+they want to connect. 
 
-## tcpcrypt
+Connections are instances of user-authenticated, mobile sessions between two endpoints. Connections run within tunnels between hosts. A tunnel
+is a server-authenticated containers that multiplex multiple connections between the same hosts. All connections in a tunnel share the
+same transport state machine and encryption. Each tunnel has a dedicated control connection used to configure and manage the tunnel over time. 
+Moreover, since tunnels are independent of the network address information, they may be reused as both ends of the tunnel move about the network.
 
-[CHRIS]
+Before a client connects to a remote service, it must first esbtalish a tunnel to the host providing or offering the service. Tunnels are established
+in 1-RTT using an ephemeral key obtained from the directory service. Tunnel initiators provide their own ephemeral key and, optionally, a 
+DoS puzzle solution such that the recipient (server) can verify the authenticity of the request and derive a shared secret. Within a tunnel,
+new connections to services may be established. 
+
+### Protocol Features
+
+- Connection multiplexing between hosts across shared tunnels
+- Congestion control state is shared across connections between the same host pairs
+- 0-RTT forward secrecy for new connections.
+- DoS prevention by client-side puzzles.
+- Tunnel-based mobility.
+
+### Protocol Dependencies
+
+- A DNS-like resolution service to obtain location information (an IP address) and ephemeral keys. 
+- A PKI trust store for certificate validation.
+
+## CurveCP [CHRIS]
+
+XXX
+
+### Protocol Description
+
+TODO
+
+### Protocol Features
+
+- Data confidentiality and integrity
+- 
+
+### Protocol Dependencies
+
+TODO
+
+## tcpcrypt [CHRIS]
+
+tcpcrypt is an extension to the TCP protocol to enable opportunistic encryption. 
+
+### Protocol Description
+
+### Protocol Features
+
+- Forward-secure TCP packet encryption.
+- Hooks for external authentcation.
+
+### Protocol Dependencies
+
+- TCP.
 
 ## IKEv2 with ESP
 
@@ -127,9 +234,9 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 
 - Encryption and authentication of control handshake
 - Sets of crypto algorithms that can be negotiated
-- Session resumption
+- Long-lived sessions with resumption
 - Mobility across addresses and interfaces
-- Authentication based on Shared Secret, Certificates, Digital Signatures, or EAP methods
+- Authentication extensibility based on Shared Secret, Certificates, Digital Signatures, or EAP methods
 
 #### ESP
 
