@@ -48,7 +48,7 @@ The following terms are used throughout this document to describe the roles and 
 
 - Transport Feature: a specific end-to-end feature that the transport layer provides to an application.  Examples include confidentiality, reliable delivery, ordered delivery, message-versus-stream orientation, etc.
 
-- Transport Service: a set of Transport Features, without an association to any given framing protocol, which provides a 
+- Transport Service: a set of Transport Features, without an association to any given framing protocol, which provides a functionality to an application.
 
 - Transport Protocol: an implementation that provides one or more different transport services using a specific framing and header format on the wire.complete service to an application.
 
@@ -57,6 +57,8 @@ The following terms are used throughout this document to describe the roles and 
 - Security Feature: a specific feature that a network security layer provides to applications. Examples include authentication, encryption, key generation, session resumption, and privacy. A feature may be considered to be Mandatory or Optional to a TAPS implementation.
 
 - Security Protocol: a defined network protocol that implements one or more security features. Security protocols may be used alongside transport protocols, and in combination with one another when appropriate.
+
+- Session: an ephemeral security association between applications party to a session.
 
 # Current Transport Security Protocols
 
@@ -126,6 +128,8 @@ for the server. It is assumed that the client must always store some state infor
 
 [TOMMY]
 
+TODO(cawood): emphasize that transport fields are hidden
+
 ## MinimalT [CHRIS]
 
 MinimalT is a UDP-based transport security protocol desiged to offer confidentiality, mutual authentication, DoS prevention, and connection
@@ -168,7 +172,7 @@ XXX
 
 ### Protocol Description
 
-TODO
+TODO(cawood)
 
 ### Protocol Features
 
@@ -177,18 +181,37 @@ TODO
 
 ### Protocol Dependencies
 
-TODO
+TODO(cawood)
 
 ## tcpcrypt [CHRIS]
 
-tcpcrypt is an extension to the TCP protocol to enable opportunistic encryption. 
+tcpcrypt is a lightweight extension to the TCP protocol to enable opportunistic encryption. 
 
 ### Protocol Description
+
+tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection. 
+It is a type of TCP Encryption Protocol (TEP). The use of a TEP is negotiated using TCP headers
+during the initial TCP handshake. Negotiating a TEP also involves agreeing upon a KEX algorithm. 
+If and when a TEP is negotiated, the tcpcrypt key exchange occurs within the data segments of 
+the the first packet exchange sent after the handshake is established. The initiator of a connection
+sends a list of support AEAD algoritms, a random nonce, and an ephemeral public key share. The
+responder chooses an AEAD algorithm and replies with its own nonce and ephemeral key share. 
+The traffic encryption keys are derived from the KEX. 
+
+Each tcpcrypt session is associated with a unique session ID. This can be cached and used to later
+resume a session. Willingness to resume a session is signalled within the TEP negotiation option
+during the TCP handshake. Session identifiers are rotated each time they are resumed. Sessions may
+also be re-keyed if the natural AEAD limit is reached. 
+
+tcpcrypt only encrypts the data portion of a TCP packet. It does not encrypt any header information,
+such as the TCP sequence number. 
 
 ### Protocol Features
 
 - Forward-secure TCP packet encryption.
 - Hooks for external authentcation.
+- Session caching and address-agnostic resumption.
+- Session re-keying
 
 ### Protocol Dependencies
 
@@ -267,8 +290,7 @@ This section covers the set of knobs exposed by each security protocol. These fa
 - Ciphersuite configuration
 - Signature algorithm selection
 - Interface to session ticket encryption keys
-- Session cache management
-- XXX
+- Session cache management (flushing)
 
 ## DTLS
 
@@ -280,7 +302,9 @@ This section covers the set of knobs exposed by each security protocol. These fa
 
 ## MinimalT [CHRIS]
 
-- XXX
+- Tunnel and connection creation RPCs
+- Publish ephemeral key shares
+- Put and get an identity certificate
 
 ## CurveCP [CHRIS]
 
@@ -288,7 +312,8 @@ This section covers the set of knobs exposed by each security protocol. These fa
 
 ## tcpcrypt [CHRIS]
 
-- XXX
+- KEX and AEAD algorithm options
+- Session cache management (flushing, selective disabling)
 
 ## IKEv2 with ESP
 
@@ -297,13 +322,14 @@ This section covers the set of knobs exposed by each security protocol. These fa
 # Minimum Common Transport Security Set [CHRIS]
 
 ## Mandatory Features
-- authentication (identities, private keys, etc)
-- encryption
-- resumption
+
+- Segment encryption and authentication
+- Session caching and management 
 
 ## Optional Features
 
-- source validation [puzzles, cookies]
+- Peer authentication
+- Source validation [puzzles, cookies]
 
 # IANA Considerations
 
