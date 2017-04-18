@@ -36,6 +36,7 @@ normative:
 	RFC5723:
 	RFC6347:
 	RFC7296:
+	RFC8095:
     CurveCP:
         title: CurveCP -- Usable security for the Internet
         url: http://curvecp.org
@@ -45,22 +46,15 @@ normative:
 
 --- abstract
 
-XXX
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsualting Security Protocol (IKEv2 + ESP).
 
 --- middle
 
 # Introduction
 
-- TLS
-- DTLS
-- QUIC+TLS
-- QUIC+foo
-- MinimalT
-- CurveCP
-- tcpcrypt
-- IPsec (IKE+ESP/AH) [?]
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsualting Security Protocol (IKEv2 + ESP).
 
-[TOMMY]
+For each protocol, this document provides a brief description along with security features provided by the protocol and dependencies the protocol has on its transport. It then covers the list of interfaces each protocol requires in order to be used, followed by a categorized set of mandatory and optional interfaces that can be used to interact with these protocols in a common interface.
 
 # Terminology
 
@@ -142,7 +136,7 @@ for the server. It is assumed that the client must always store some state infor
 
 ## DTLS
 
-DTLS {{RFC6347}} is based on TLS, but differs in that it is designed to run over UDP instead of TCP. Since UDP does not guarantee ordering or reliability, DTLS modifies the protocol to make sure it can still provide the same security guarantees as TLS. DTLS was designed to be as close to TLS as possible, so this document will assume that all properties from TLS are carried over except where specified.
+DTLS (Datagram Transport Layer Security) {{RFC6347}} is based on TLS, but differs in that it is designed to run over UDP instead of TCP. Since UDP does not guarantee ordering or reliability, DTLS modifies the protocol to make sure it can still provide the same security guarantees as TLS. DTLS was designed to be as close to TLS as possible, so this document will assume that all properties from TLS are carried over except where specified.
 
 ### Protocol Description
 
@@ -169,7 +163,30 @@ Since datagrams may be replayed, DTLS provides anti-replay detection based on a 
 
 ## QUIC with TLS
 
-[TOMMY]
+QUIC (Quick UDP Internet Connections) is a new transport protocol that runs over UDP, and was originally designed with a tight integration with its security protocol and application protocol mappings. The QUIC transport layer itself provides support for data confidentiality and integrity. This requires keys to be derived in a handshake. A mapping for TLS 1.3 over QUIC {{quic-tls}} has been specified to provide this handshake, which in turn runs over the QUIC transport. 
+
+### Protocol Description
+
+Since QUIC integrates TLS with its transport, it relies on specific integration points between its security and transport sides. Specifically, these points are:
+- Starting the handshake to generate keys and provide authentication (and providing the transport for the handshake)
+- Client address validation
+- Key ready events from TLS to notify the QUIC transport
+- Exporting secrets from TLS to the QUIC transport
+
+The QUIC transport layer support multiple streams over a single connection. The first stream is reserved specifically for a TLS connection. The TLS handshake, along with further records, are sent over this stream. This TLS connection follows the TLS standards and inherits the security properties of TLS. The handshake generates keys, which are then exported to the rest of the QUIC connection, and are used to protect the rest of the streams.
+
+The initial QUIC messages are sent without encryption in order to start the TLS handshake. Once the handshake has generated keys, the subsequent messages are encrypted. The TLS 1.3 handshake for QUIC is used in either a single-RTT mode or a fast-open zero-RTT mode. When zero-RTT handshakes are possible, the encryption first transitions to use the zero-RTT keys before using single-RTT handshake keys after the next TLS flight.
+
+### Protocol Features
+
+- Handshake properties of TLS
+- Multiple encrypted streams over a single connection without head-of-line blocking
+
+### Protocol Dependencies
+
+- QUIC transport relies on UDP
+- QUIC transport relies on TLS 1.3 for authentication and initial key derivation
+- TLS within QUIC relies on a reliable stream abstraction for its handshake
 
 TODO(cawood): emphasize that transport fields are hidden
 
@@ -378,7 +395,9 @@ This section covers the set of knobs exposed by each security protocol. These fa
 
 ## QUIC with TLS
 
-[TOMMY]
+- Interface knobs are shared with TLS
+- Client address validation
+- Export of keys and secrets from TLS layer to be used in QUIC layer
 
 ## MinimalT
 
