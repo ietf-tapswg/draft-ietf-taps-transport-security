@@ -12,16 +12,31 @@ stand_alone: yes
 pi: [toc, sortrefs, symrefs]
 
 author:
-    ins: XXX
-    name: XXX
-    org: XXX
-    email: XXX
-    street: XXX
-    city: XXX
-    country: XXX
+  -
+    ins: T. Pauly
+    name: Tommy Pauly
+    org: Apple Inc.
+    street: 1 Infinite Loop
+    city: Cupertino, California 95014
+    country: United States of America
+    email: tpauly@apple.com
+  -
+    ins: C. A. Wood
+    name: Christopher A. Wood
+    org: Apple Inc.
+    street: 1 Infinite Loop
+    city: Cupertino, California 95014
+    country: United States of America
+    email: cawood@apple.com
 
 normative:
     RFC5246:
+    CurveCP:
+        title: CurveCP -- Usable security for the Internet
+        url: http://curvecp.org
+        authors:
+            -
+                ins: D. J. Bernstein
 
 --- abstract
 
@@ -168,20 +183,56 @@ new connections to services may be established.
 
 ## CurveCP [CHRIS]
 
-XXX
+CurveCP {{CurveCP}} is a UDP-based transport security protocol from Daniel J. Bernstein. Unlike other transport security protocols,
+it is based entirely upon highly efficient public key primitives. This removes many pitfalls associated with nonce reuse and key synchronization.
 
 ### Protocol Description
 
-TODO(cawood)
+CurveCP is a UDP-based transport security protocol. It is based on three principal features: exclusive use of public key authenticated
+encryption of packets, server-chosen cookies to prohibit memory and computation DoS at the server, and connection mobility with a 
+client-chosen ephemeral identifier. 
+
+There are two rounds in CurveCP. In the first round, the client sends its first initialization packet to the server, carrying its (possibly fresh) 
+ephemeral public key C', with zero-padding encrypted under the server's long-term public key. The server replies with a cookie and its own ephemeral 
+key S' and a cookie that is to be used by the client. Upon receipt, the client then generates its second initialiation packet carrying: the 
+ephemeral key C', cookie, and an encryption of C', the server's domian name, and, optionally, some message data. The server verifies the cookie
+and the encrypted payload and, if valid, proceeds to send message data in return. At this point, the connection is established and the two
+parties can communicate. 
+
+The use of only public-key encryption and authentication, or "boxing", is done to simplify problems that come with symmetric key management
+and synchronization. For example, it allows the sender of a messaage to be in complete control of each message's nonce. It does not require
+either end to share secret keying material. And it allows ephemeral public keys to be associated with connections (or sessions). 
+
+The client and server do not perform a standard key exchange. Instead, in the intiial exchange of packets, the each party provides its
+own ephemeral key to the other end. The client can choose a new ephemeral key for every new connection. However, the server must rotate
+these keys on a slower basis. Otherwise, it would be trivial for an attacker to force the server to create and store ephemeral keys
+with a fake client initialization packet.
+
+Unlike TCP, the server employs cookies to enable source validation. After receiving the client's initial packet, encrypted under the server's
+long-term public key, the server generates and returns a stateless cookie that must be echoed back in the client's following message.
+This cookie is encrypted under the client's ephemeral public key.
+This stateless technique prevents attackers from hijacking client initialization packets to obtain cookie values to flood clients. (A client
+would detect the duplicate cookies and reject the flooded packets.) Similarly, replaying the client's second packet, carrying the cookie,
+will be detected by the server. 
+
+CurveCP supports a weak form of client authentication. Clients are permitted to send their long-term public keys in the second initialization
+packet. A server can verify this public key and, if untrusted, drop the connection and subseuqent data. 
+
+Unlike some other protocols, CurveCP data packets only leave the ephemeral public key, i.e., the connection ID, and the per-message nonce
+in the clear. Everything else is encrypted. 
 
 ### Protocol Features
 
-- Data confidentiality and integrity
-- 
+- Forward-secure data encryption and authentication
+- Pure public-key encryption
+- 1-RTT session bootstrapping 
+- Connection mobility based on a client-chosen ephemeral identifier
+- Connection establishment message padding to prevent traffic amplification
+- Sender-chosen explicit nonces, e.g., based on a sequence number
 
 ### Protocol Dependencies
 
-TODO(cawood)
+- An unreliable transport protocol such as UDP.
 
 ## tcpcrypt [CHRIS]
 
@@ -198,8 +249,9 @@ sends a list of support AEAD algoritms, a random nonce, and an ephemeral public 
 responder chooses an AEAD algorithm and replies with its own nonce and ephemeral key share. 
 The traffic encryption keys are derived from the KEX. 
 
-Each tcpcrypt session is associated with a unique session ID. This can be cached and used to later
-resume a session. Willingness to resume a session is signalled within the TEP negotiation option
+Each tcpcrypt session is associated with a unique session ID; the value of which is derived from the current
+shared secret used for the session. This can be cached and used to later resume a session. 
+Willingness to resume a session is signalled within the TEP negotiation option
 during the TCP handshake. Session identifiers are rotated each time they are resumed. Sessions may
 also be re-keyed if the natural AEAD limit is reached. 
 
@@ -308,7 +360,9 @@ This section covers the set of knobs exposed by each security protocol. These fa
 
 ## CurveCP [CHRIS]
 
-- XXX
+- Server DoS cookies
+- Authenticated and encrypted packets (via public-key "box"ing)
+- No cleatext data, other than public keys, are sent between peers
 
 ## tcpcrypt [CHRIS]
 
@@ -323,13 +377,17 @@ This section covers the set of knobs exposed by each security protocol. These fa
 
 ## Mandatory Features
 
-- Segment encryption and authentication
-- Session caching and management 
+- Forward-secure segment encryption and authentication
+- Private key injection or interface
+- Source validation via, e.g., puzzles and cookies
 
 ## Optional Features
 
+- Connection mobility
+- Session caching and management
 - Peer authentication
-- Source validation [puzzles, cookies]
+- Application-layer feature negotiation
+- Configuration extensions
 
 # IANA Considerations
 
