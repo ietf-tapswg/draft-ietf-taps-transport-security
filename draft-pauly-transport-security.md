@@ -30,7 +30,12 @@ author:
     email: cawood@apple.com
 
 normative:
+	RFC4303:
+	RFC4555:
     RFC5246:
+	RFC5723:
+	RFC6347:
+	RFC7296:
     CurveCP:
         title: CurveCP -- Usable security for the Internet
         url: http://curvecp.org
@@ -137,7 +142,30 @@ for the server. It is assumed that the client must always store some state infor
 
 ## DTLS
 
-[TOMMY]
+DTLS {{RFC6347}} is based on TLS, but differs in that it is designed to run over UDP instead of TCP. Since UDP does not guarantee ordering or reliability, DTLS modifies the protocol to make sure it can still provide the same security guarantees as TLS. DTLS was designed to be as close to TLS as possible, so this document will assume that all properties from TLS are carried over except where specified.
+
+### Protocol Description
+
+The DTLS handshake in particular is modified from TLS to account for packet loss and reordering. Each message is assigned a sequence number to be used to reorder on the receiving end. If one peer has sent a handshake message and has not yet received its expected response, it will retransmit the handshake message after a configurable timeout.
+
+To account for long records that cannot fit within a single UDP datagram, DTLS supports fragmentation of records across datagrams, keeping track of fragment offsets and lengths in each datagram. The receiving peer will re-assemble records before decrypting.
+
+DTLS relies on UDP's port numbers to allow peers with multiple DTLS sessions between them to demultiplex 'streams' of encrypted packets that share a single TLS session.
+
+Since datagrams may be replayed, DTLS provides anti-replay detection based on a window of acceptable sequence numbers.
+
+### Protocol Features
+
+- Anti-replay protection between datagrams
+- Basic reliability for handshake messages
+- See also the features from TLS
+
+### Protocol Dependencies
+
+- Since DTLS runs over an unreliable, unordered datagram transport, it does not require any reliability features
+- DTLS contains its own length, so although it runs over a datagram transport, it does not rely on the transport protocol supporting framing 
+- UDP for port numbers used for demultiplexing
+- Path MTU discovery
 
 ## QUIC with TLS
 
@@ -145,7 +173,7 @@ for the server. It is assumed that the client must always store some state infor
 
 TODO(cawood): emphasize that transport fields are hidden
 
-## MinimalT [CHRIS]
+## MinimalT
 
 MinimalT is a UDP-based transport security protocol desiged to offer confidentiality, mutual authentication, DoS prevention, and connection
 mobility. One major goal of the protocol is to leverage existing protocols to obtain server-side configuration information used to 
@@ -181,7 +209,7 @@ new connections to services may be established.
 - A DNS-like resolution service to obtain location information (an IP address) and ephemeral keys. 
 - A PKI trust store for certificate validation.
 
-## CurveCP [CHRIS]
+## CurveCP
 
 CurveCP {{CurveCP}} is a UDP-based transport security protocol from Daniel J. Bernstein. Unlike other transport security protocols,
 it is based entirely upon highly efficient public key primitives. This removes many pitfalls associated with nonce reuse and key synchronization.
@@ -234,7 +262,7 @@ in the clear. Everything else is encrypted.
 
 - An unreliable transport protocol such as UDP.
 
-## tcpcrypt [CHRIS]
+## tcpcrypt
 
 tcpcrypt is a lightweight extension to the TCP protocol to enable opportunistic encryption. 
 
@@ -271,7 +299,7 @@ such as the TCP sequence number.
 
 ## IKEv2 with ESP
 
-IKEv2 [RFC 7296] and ESP [RFC 4303] together form the modern IPsec protocol suite that encrypts and authenticates IP packets, either as for creating tunnels (tunnel-mode) or for direct transport connections (transport-mode). This suite of protocols separates out the key generation protocol (IKEv2) from the transport encryption protocol (ESP). Each protocol can be used independently, but this document considers them together, since that is the most common pattern.
+IKEv2 {{RFC7296}} and ESP {{RFC4303}} together form the modern IPsec protocol suite that encrypts and authenticates IP packets, either as for creating tunnels (tunnel-mode) or for direct transport connections (transport-mode). This suite of protocols separates out the key generation protocol (IKEv2) from the transport encryption protocol (ESP). Each protocol can be used independently, but this document considers them together, since that is the most common pattern.
 
 ### Protocol descriptions
 
@@ -285,9 +313,9 @@ The authentication phase of IKEv2 may use Shared Secrets, Certificates, Digital 
 
 Any SA used by IKEv2 can be rekeyed upon expiration, which is usually based either on time or number of bytes encrypted. 
 
-There is an extension to IKEv2 that allows session resumption [RFC 5723].
+There is an extension to IKEv2 that allows session resumption {{RFC5723}}.
 
-MOBIKE is a Mobility and Multihoming extension to IKEv2 that allows a set of Security Associations to migrate over different addresses and interfaces [RFC 4555].
+MOBIKE is a Mobility and Multihoming extension to IKEv2 that allows a set of Security Associations to migrate over different addresses and interfaces {{RFC4555}}.
 
 When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP [tcp-encaps].
 
@@ -297,7 +325,7 @@ ESP is a protocol that encrypts and authenticates IP and IPv6 packets. The keys 
 
 ESP packets include the SPI, a sequence number, an optional Initialization Vector (IV), payload data, padding, a length and next header field, and an Integrity Check Value.
 
-From [RFC 4303], "ESP is used to provide confidentiality, data origin authentication, connectionless integrity, an anti-replay service (a form of partial sequence integrity), and limited traffic flow confidentiality."
+From {{RFC4303}}, "ESP is used to provide confidentiality, data origin authentication, connectionless integrity, an anti-replay service (a form of partial sequence integrity), and limited traffic flow confidentiality."
 
 Since ESP operates on IP packets, it is not directly tied to the transport protocols it encrypts. This means it requires little or no change from transports in order to provide security.
 
@@ -336,7 +364,7 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 
 This section covers the set of knobs exposed by each security protocol. These fall into categories of Mandatory, Optimizing, and Automatable options.
 
-## TLS [CHRIS]
+## TLS
 
 - Identity information (certificates) and private keys (or interfaces to private keys)
 - Ciphersuite configuration
@@ -346,34 +374,37 @@ This section covers the set of knobs exposed by each security protocol. These fa
 
 ## DTLS
 
-[TOMMY]
+- Interface knobs are shared with TLS
 
 ## QUIC with TLS
 
 [TOMMY]
 
-## MinimalT [CHRIS]
+## MinimalT
 
 - Tunnel and connection creation RPCs
 - Publish ephemeral key shares
 - Put and get an identity certificate
 
-## CurveCP [CHRIS]
+## CurveCP
 
 - Server DoS cookies
 - Authenticated and encrypted packets (via public-key "box"ing)
 - No cleatext data, other than public keys, are sent between peers
 
-## tcpcrypt [CHRIS]
+## tcpcrypt
 
 - KEX and AEAD algorithm options
 - Session cache management (flushing, selective disabling)
 
 ## IKEv2 with ESP
 
-[TOMMY]
+- Identity information (certificates or digital signatures) and private keys or shared secrets
+- Control and data algorithm selection for encryption and integrity
+- Authentication delegation (EAP types)
+- Path changes for mobility
 
-# Minimum Common Transport Security Set [CHRIS]
+# Minimum Common Transport Security Set
 
 ## Mandatory Features
 
