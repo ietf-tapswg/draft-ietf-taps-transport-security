@@ -30,13 +30,23 @@ author:
     email: cawood@apple.com
 
 normative:
-	RFC4303:
-	RFC4555:
+    RFC4303:
+    RFC4555:
     RFC5246:
-	RFC5723:
-	RFC6347:
-	RFC7296:
-	RFC8095:
+    RFC5723:
+    RFC6347:
+    RFC7296:
+    RFC8095:
+    quic-tls:
+        title: Using Transport Layer Security (TLS) to Secure QUIC
+        url: https://tools.ietf.org/html/draft-ietf-quic-tls
+        authors:
+            -
+                ins: M. Thomson
+                org: Mozilla
+            -
+                ins: S. Turner
+                org: sn3rd
     CurveCP:
         title: CurveCP -- Usable security for the Internet
         url: http://curvecp.org
