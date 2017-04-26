@@ -435,19 +435,44 @@ This section covers the set of knobs exposed by each security protocol. These fa
 
 # Minimum Common Transport Security Set
 
+There exists a common set of features shared across the modern transport protocols surveyed in this document.
+In this section, we identify this minimum set of features. We partition them into a set of mandatory and 
+optional features based on their relative importance and presence in other protocols. 
+
 ## Mandatory Features
 
-- Forward-secure segment encryption and authentication
-- Private key injection or interface
-- Source validation via, e.g., puzzles and cookies
+- Forward-secure segment encryption and authentication: Transit data must be protected with a modern
+authenticated encryption algorithm.
+
+- Private key injection or interface: Authentication based on public key signatures is commonplace for 
+many transport security protocols. Thus, the interface must allow clients to specify a private key or
+an interface to one stored elsewhere. 
+
+- Endpoint authentication: The endpoint (receiver) of a new connection must be authenticated before any
+data is sent to said party. 
+
+- Source validation: Source validation must be provided to mitigate receiver-targeted DoS attacks. This can
+be done with puzzlies or cookies. 
 
 ## Optional Features
 
-- Connection mobility
-- Session caching and management
-- Peer authentication
-- Application-layer feature negotiation
-- Configuration extensions
+- Connection mobility: Sessions should not be bound to a network connection (or 5 tuple). This allows cryptographic
+key material and other state information to be reused in the event of a connection change. Examples of this include
+a NAT rebinding that occurs without a client's knowledge.
+
+- Session caching and management: Sessions should be cacheable to enable reuse and amortize the cost of performing
+session establishment handshakes. Clients should be able to specify the lifetime of these sessions and control the
+cache of stored sessions through an easy-to-use API. 
+
+- Mutual authentication: Transport security protocols should allow both endpoints to authenticate one another if needed.
+
+- Application-layer feature negotiation: The type of application using a transport security protocol often requires
+features configured at the connection establishment layer. Moreover, application-layer features may often be used to
+offload the session to another server which can better handle the request. (The TLS SNI is one example of such a feature.)
+As such, transport security protocols should provide a generic mechanism to allow for such application-specific features
+and options to be configured or otherwise negotiated.
+
+- Configuration extensions: The protocol negotiation should extensible with addition of new configuration options. 
 
 # IANA Considerations
 
