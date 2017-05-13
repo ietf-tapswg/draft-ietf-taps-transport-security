@@ -433,11 +433,11 @@ This section covers the set of knobs exposed by each security protocol. These fa
 - Authentication delegation (EAP types)
 - Path changes for mobility
 
-# Minimum Common Transport Security Set
+# Common Transport Security Features
 
 There exists a common set of features shared across the modern transport protocols surveyed in this document.
-In this section, we identify this minimum set of features. We partition them into a set of mandatory and 
-optional features based on their relative importance and presence in other protocols. 
+The mandatory features should be provided by any transport security protocols, while the optional features
+are extensions that a subset of the protocols provide.
 
 ## Mandatory Features
 
@@ -445,8 +445,7 @@ optional features based on their relative importance and presence in other proto
 authenticated encryption algorithm.
 
 - Private key injection or interface: Authentication based on public key signatures is commonplace for 
-many transport security protocols. Thus, the interface must allow clients to specify a private key or
-an interface to one stored elsewhere. 
+many transport security protocols.
 
 - Endpoint authentication: The endpoint (receiver) of a new connection must be authenticated before any
 data is sent to said party. 
@@ -461,8 +460,7 @@ key material and other state information to be reused in the event of a connecti
 a NAT rebinding that occurs without a client's knowledge.
 
 - Session caching and management: Sessions should be cacheable to enable reuse and amortize the cost of performing
-session establishment handshakes. Clients should be able to specify the lifetime of these sessions and control the
-cache of stored sessions through an easy-to-use API. 
+session establishment handshakes.
 
 - Mutual authentication: Transport security protocols should allow both endpoints to authenticate one another if needed.
 
@@ -473,6 +471,38 @@ As such, transport security protocols should provide a generic mechanism to allo
 and options to be configured or otherwise negotiated.
 
 - Configuration extensions: The protocol negotiation should extensible with addition of new configuration options. 
+
+# Minimum Common Transport Security Interface
+
+The minimum interface for transport security protocols defines the set of calls that an application interface must
+expose in order to generically use the common protocol features described in this document. The mandatory interfaces
+are required to functionally use the protocols, while the optional interfaces allow the application to constrain the
+protocol or retrieve extra information.
+
+## Mandatory Interfaces
+
+- Start negotiation: The interface must provide an interface to start the protocol handshake for key negotiation, and
+have a way to be notified when the handshake is complete.
+
+- Set expected remote identity: The interface must allow the application to constrain the identities that it will accept
+a connection to, such as the hostname it expects to be signed by a certificate.
+
+- Specify local identity: The local identity, generally a private key, can either be set up-front, or retrieved on-demand as a callback.
+
+- Validate credentials: The interface should provide a way for the application to participate in the endpoint authentication,
+which can either be specified as parameters to define how the peer's authentication can be validated, or when the protocol
+provides the authentication information for the application to inspect directly.
+
+## Optional Interfaces
+
+- Caching domain and lifetime: The application should be able to specify the instances of the protocol that can share
+cached keys, and the lifetime of the cached resources.
+
+- Specify negotiable application protocols, and receive negotiated application protocols
+
+- Specify acceptable crytographic algorithm suites to negotiate
+
+- Retrieve provided peer identity information
 
 # IANA Considerations
 
