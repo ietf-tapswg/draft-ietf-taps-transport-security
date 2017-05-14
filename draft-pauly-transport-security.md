@@ -484,19 +484,31 @@ protocol or retrieve extra information.
 - Start negotiation: The interface must provide an interface to start the protocol handshake for key negotiation, and
 have a way to be notified when the handshake is complete.
 
-- Set expected remote identity: The interface must allow the application to constrain the identities that it will accept
-a connection to, such as the hostname it expects to be signed by a certificate.
+- State changes: The interface should provide a way for the application to be notified of important state changes during 
+the protocol execution and session lifetime, e.g., when the handshake begins, ends, or when a key update occurs.
 
-- Specify local identity: The local identity, generally a private key, can either be set up-front, or retrieved on-demand as a callback.
+- Identity constraints: The interface must allow the application to constrain the identities that it will accept
+a connection to, such as the hostname it expects to be provided in certificate SAN.
 
-- Validate credentials: The interface should provide a way for the application to participate in the endpoint authentication,
+- Local identities: The interface must allow the local identity to be set via a raw private key or interface to one
+to perform cryptographic operations such as signing and decryption.
+
+- Validation: The interface should provide a way for the application to participate in the endpoint authentication and validation,
 which can either be specified as parameters to define how the peer's authentication can be validated, or when the protocol
 provides the authentication information for the application to inspect directly.
+
+- Key lifetime and rotation: The interface should provide a way for the application to set the key lifetime bounds in terms 
+of *time* or *bytes encrypted* and, additionally, provide a way to forcefully update cryptographic session keys at will. 
+The protocol should default to reasonable lifetimes barring any application input.
+
+- Key export: The interface should either provide a way to export keying material with well-defined cryptographic properties,
+e.g., "forward-secure" or "perfectly forward secure", or should provide an interface for keying material to perform cryptographic 
+operations. ((CAW: maybe the latter is a bit much.))
 
 ## Optional Interfaces
 
 - Caching domain and lifetime: The application should be able to specify the instances of the protocol that can share
-cached keys, and the lifetime of the cached resources.
+cached keys, as well as the lifetime of cached resources.
 
 - Specify negotiable application protocols, and receive negotiated application protocols
 
@@ -510,7 +522,7 @@ This document has on request to IANA.
 
 # Security Considerations
 
-XXX
+N/A
 
 # Acknowledgments
 
