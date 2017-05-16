@@ -64,7 +64,7 @@ This document provides a survey of commonly used or notable network security pro
 
 This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsualting Security Protocol (IKEv2 + ESP).
 
-For each protocol, this document provides a brief description along with security features provided by the protocol and dependencies the protocol has on its transport. It then covers the list of interfaces each protocol requires in order to be used, followed by a categorized set of mandatory and optional interfaces that can be used to interact with these protocols in a common interface.
+For each protocol, this document provides a brief description along with security features provided by the protocol and dependencies the protocol has on its underlying transport. From these descriptions, we then list the necessary interfaces each protocol requires to be used by an application. This is followed by a minimal collection of transport security features shared by these protocols. Lastly, a categorized set of mandatory and optional protocol-agnostic transport security interfaces is described. 
 
 # Terminology
 
@@ -74,7 +74,7 @@ The following terms are used throughout this document to describe the roles and 
 
 - Transport Service: a set of Transport Features, without an association to any given framing protocol, which provides a functionality to an application.
 
-- Transport Protocol: an implementation that provides one or more different transport services using a specific framing and header format on the wire.complete service to an application.
+- Transport Protocol: an implementation that provides one or more different transport services using a specific framing and header format on the wire. A Transport Protocol services an application.
 
 - Application: an entity that uses the transport layer for end-to-end delivery of data across the network (this may also be an upper layer protocol or tunnel encapsulation).
 
@@ -82,7 +82,13 @@ The following terms are used throughout this document to describe the roles and 
 
 - Security Protocol: a defined network protocol that implements one or more security features. Security protocols may be used alongside transport protocols, and in combination with one another when appropriate.
 
-- Session: an ephemeral security association between applications party to a session.
+- Session: an ephemeral security association between applications.
+
+- Peer: an endpoint application party to a session.
+
+- Client: the peer responsible for initiating a session.
+
+- Server: the peer responsible for responding to a session initiation.
 
 # Current Transport Security Protocols
 
@@ -94,8 +100,10 @@ For each protocol, we describe the features it provides and its dependencies on 
 
 TLS (Transport Layer Security) {{RFC5246}} is a common protocol used to establish a secure session between two endpoints. Communication
 over this session "prevents eavesdropping, tampering, and message forgery." TLS consists
-of a handshake and record protocol. The handshake protocol is used to negotiate a shared secret and corresponding cryptographic algorithms. 
-The record protocol is used to transfer and, after handshake completion, encryption and authentication of all data. 
+of a handshake and record protocol. The handshake protocol is used to authenticate peers, 
+negotiate protocol options, such as cryptographic algorithms, and derive session-specific
+keying material. The record protocol is used to marshall (possibly encrypted) data from one 
+peer to the other. This data may contain handshake messages or raw application data. 
 
 ### Protocol Description
 
@@ -105,16 +113,16 @@ It handles segmenting, compressing (when enabled), and encrypting data into disc
 to use an AEAD algorithm, it also handles nonce generation and encoding for each record. The record protocol is 
 hidden from the client behind a byte stream-oriented API. 
 
-The handshake protocol serves to negotiate a version and cryptographic parameters. At a minimum, this includes 
-the key exchange algorithm and ciphersuite to use in the record protocol. The handshake supports mutual authentication
-for both the session initiator (client) and receiver (server). Commonly, only the server is authenticated. X.509
-certificates are used in this authentication process. Each party may require explicit certificate status requests
-from the peer to verify the legitimacy of their certificate.
+The handshake protocol serves several purposes, including: peer authentication, protocol option (key exchange 
+algorithm and ciphersuite) negotiation, and key derivation. Peer authentication may be mutual. However, commonly,
+only the server is authenticated. X.509 certificates are commonly used in this authentication step, though
+other mechanisms, such as raw public keys ((CITE)), exist. The client is not authenticated unless explicitly
+requested by the server with a CertificateRequest handshake message. 
 
 The handshake protocol is also extensible. It allows for a variety of extensions to be included by either the client
 or server. These extensions are used to specify client preferences, e.g., the application-layer protocol to be driven
-with the TLS connection, or signals to the server to aid operation, e.g., the server name. Various extensions also exist
-to tune the parameters of the record protocol, e.g., the maximum fragment length. 
+with the TLS connection ((CITE)), or signals to the server to aid operation, e.g., the server name ((CITE)). Various extensions also exist
+to tune the parameters of the record protocol, e.g., the maximum fragment length ((CITE)). 
 
 Alerts are used to convey errors and other atypical events to the endpoints. There are two classes of alerts: closure
 and error alerts. A closure alert is used to signal to the other peer that the sender wishes to terminate the connection.
@@ -142,21 +150,21 @@ for the server. It is assumed that the client must always store some state infor
 ### Protocol Dependencies
 
 - TCP for in-order, reliable transport.
-- A PKI trust store for certificate validation.
+- (Optionally) A PKI trust store for certificate validation.
 
 ## DTLS
 
-DTLS (Datagram Transport Layer Security) {{RFC6347}} is based on TLS, but differs in that it is designed to run over UDP instead of TCP. Since UDP does not guarantee ordering or reliability, DTLS modifies the protocol to make sure it can still provide the same security guarantees as TLS. DTLS was designed to be as close to TLS as possible, so this document will assume that all properties from TLS are carried over except where specified.
+DTLS (Datagram Transport Layer Security) {{RFC6347}} is based on TLS, but differs in that it is designed to run over UDP instead of TCP. Since UDP does not guarantee datagram ordering or reliability, DTLS modifies the protocol to make sure it can still provide the same security guarantees as TLS. DTLS was designed to be as close to TLS as possible, so this document will assume that all properties from TLS are carried over except where specified.
 
 ### Protocol Description
 
-The DTLS handshake in particular is modified from TLS to account for packet loss and reordering. Each message is assigned a sequence number to be used to reorder on the receiving end. If one peer has sent a handshake message and has not yet received its expected response, it will retransmit the handshake message after a configurable timeout.
+The DTLS handshake in particular is modified from TLS to account for packet loss and reordering. Each message is assigned a sequence number to be used to reorder on the receiving end. If one peer has sent a handshake message and has not yet received its expected response, it will retransmit the handshake message after a configurable timeout. 
 
-To account for long records that cannot fit within a single UDP datagram, DTLS supports fragmentation of records across datagrams, keeping track of fragment offsets and lengths in each datagram. The receiving peer will re-assemble records before decrypting.
+To account for long records that cannot fit within a single UDP datagram, DTLS supports fragmentation of records across datagrams, keeping track of fragment offsets and lengths in each datagram. The receiving peer must re-assemble records before decrypting.
 
 DTLS relies on UDP's port numbers to allow peers with multiple DTLS sessions between them to demultiplex 'streams' of encrypted packets that share a single TLS session.
 
-Since datagrams may be replayed, DTLS provides anti-replay detection based on a window of acceptable sequence numbers.
+Since datagrams may be replayed, DTLS provides anti-replay detection based on a window of acceptable sequence numbers ((CITE: ESP)).
 
 ### Protocol Features
 
@@ -173,11 +181,12 @@ Since datagrams may be replayed, DTLS provides anti-replay detection based on a 
 
 ## QUIC with TLS
 
-QUIC (Quick UDP Internet Connections) is a new transport protocol that runs over UDP, and was originally designed with a tight integration with its security protocol and application protocol mappings. The QUIC transport layer itself provides support for data confidentiality and integrity. This requires keys to be derived in a handshake. A mapping for TLS 1.3 over QUIC {{quic-tls}} has been specified to provide this handshake, which in turn runs over the QUIC transport. 
+QUIC (Quick UDP Internet Connections) is a new transport protocol that runs over UDP, and was originally designed with a tight integration with its security protocol and application protocol mappings. The QUIC transport layer itself provides support for data confidentiality and integrity. This requires keys to be derived in a handshake. A mapping for TLS 1.3 over QUIC {{quic-tls}} has been specified to provide this handshake, which in turn runs within the QUIC transport. 
 
 ### Protocol Description
 
 Since QUIC integrates TLS with its transport, it relies on specific integration points between its security and transport sides. Specifically, these points are:
+
 - Starting the handshake to generate keys and provide authentication (and providing the transport for the handshake)
 - Client address validation
 - Key ready events from TLS to notify the QUIC transport
@@ -191,14 +200,13 @@ The initial QUIC messages are sent without encryption in order to start the TLS 
 
 - Handshake properties of TLS
 - Multiple encrypted streams over a single connection without head-of-line blocking
+- Packet payload encryption and complete packet authentication (with the exception of the Public Reset packet, which is not authenticated).
 
 ### Protocol Dependencies
 
 - QUIC transport relies on UDP
 - QUIC transport relies on TLS 1.3 for authentication and initial key derivation
 - TLS within QUIC relies on a reliable stream abstraction for its handshake
-
-TODO(cawood): emphasize that transport fields are hidden
 
 ## MinimalT
 
@@ -214,7 +222,7 @@ resolver once at boot time. Through this resolver they recover the IP address(es
 they want to connect. 
 
 Connections are instances of user-authenticated, mobile sessions between two endpoints. Connections run within tunnels between hosts. A tunnel
-is a server-authenticated containers that multiplex multiple connections between the same hosts. All connections in a tunnel share the
+is a server-authenticated container that multiplexes multiple connections between the same hosts. All connections in a tunnel share the
 same transport state machine and encryption. Each tunnel has a dedicated control connection used to configure and manage the tunnel over time. 
 Moreover, since tunnels are independent of the network address information, they may be reused as both ends of the tunnel move about the network.
 
@@ -243,7 +251,7 @@ it is based entirely upon highly efficient public key primitives. This removes m
 
 ### Protocol Description
 
-CurveCP is a UDP-based transport security protocol. It is based on three principal features: exclusive use of public key authenticated
+CurveCP is a UDP-based transport security protocol. It is built on three principal features: exclusive use of public key authenticated
 encryption of packets, server-chosen cookies to prohibit memory and computation DoS at the server, and connection mobility with a 
 client-chosen ephemeral identifier. 
 
@@ -251,7 +259,7 @@ There are two rounds in CurveCP. In the first round, the client sends its first 
 ephemeral public key C', with zero-padding encrypted under the server's long-term public key. The server replies with a cookie and its own ephemeral 
 key S' and a cookie that is to be used by the client. Upon receipt, the client then generates its second initialiation packet carrying: the 
 ephemeral key C', cookie, and an encryption of C', the server's domian name, and, optionally, some message data. The server verifies the cookie
-and the encrypted payload and, if valid, proceeds to send message data in return. At this point, the connection is established and the two
+and the encrypted payload and, if valid, proceeds to send data in return. At this point, the connection is established and the two
 parties can communicate. 
 
 The use of only public-key encryption and authentication, or "boxing", is done to simplify problems that come with symmetric key management
@@ -297,12 +305,12 @@ tcpcrypt is a lightweight extension to the TCP protocol to enable opportunistic 
 
 tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection. 
 It is a type of TCP Encryption Protocol (TEP). The use of a TEP is negotiated using TCP headers
-during the initial TCP handshake. Negotiating a TEP also involves agreeing upon a KEX algorithm. 
+during the initial TCP handshake. Negotiating a TEP also involves agreeing upon a key exchange algorithm. 
 If and when a TEP is negotiated, the tcpcrypt key exchange occurs within the data segments of 
-the the first packet exchange sent after the handshake is established. The initiator of a connection
+the first packets exchanged after the handshake completes. The initiator of a connection
 sends a list of support AEAD algoritms, a random nonce, and an ephemeral public key share. The
 responder chooses an AEAD algorithm and replies with its own nonce and ephemeral key share. 
-The traffic encryption keys are derived from the KEX. 
+The traffic encryption keys are derived from the key exchange. 
 
 Each tcpcrypt session is associated with a unique session ID; the value of which is derived from the current
 shared secret used for the session. This can be cached and used to later resume a session. 
@@ -316,13 +324,13 @@ such as the TCP sequence number.
 ### Protocol Features
 
 - Forward-secure TCP packet encryption.
-- Hooks for external authentcation.
+- Hooks for external authentication.
 - Session caching and address-agnostic resumption.
 - Session re-keying
 
 ### Protocol Dependencies
 
-- TCP.
+- TCP (with option support).
 
 ## IKEv2 with ESP
 
@@ -362,9 +370,9 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 
 #### IKEv2
 
-- Encryption and authentication of control handshake
-- Sets of crypto algorithms that can be negotiated
-- Long-lived sessions with resumption
+- Encryption and authentication of handshake packets
+- Cryptographic algorithm negotiation
+- Session resumption
 - Mobility across addresses and interfaces
 - Authentication extensibility based on Shared Secret, Certificates, Digital Signatures, or EAP methods
 
@@ -397,7 +405,7 @@ This section covers the set of knobs exposed by each security protocol. These fa
 - Ciphersuite configuration
 - Signature algorithm selection
 - Interface to session ticket encryption keys
-- Session cache management (flushing)
+- Session cache management (e.g., flushing and disabling)
 
 ## DTLS
 
@@ -423,8 +431,8 @@ This section covers the set of knobs exposed by each security protocol. These fa
 
 ## tcpcrypt
 
-- KEX and AEAD algorithm options
-- Session cache management (flushing, selective disabling)
+- Key exchange and AEAD algorithm options
+- Session cache management 
 
 ## IKEv2 with ESP
 
