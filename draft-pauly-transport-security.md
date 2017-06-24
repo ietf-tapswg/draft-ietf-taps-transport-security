@@ -87,12 +87,9 @@ The following terms are used throughout this document to describe the roles and 
 
 - Session: an ephemeral security association between applications.
 
-<!-- TODO(caw): review -->
-- Connection: a transient instance of a session.
+- Connection: the shared state of two or more endpoints that persists across messages that are transmitted between these endpoints. A connection is a transient participant of a session, and a session generally lasts between connection instances.
 
-<!-- TODO(caw): review -->
-- Connection Mobility: the property wherein a connection can be moved in the event
-that endpoint address or application socket information change.
+- Connection Mobility: a property of a connection that allows it to be multihomed or resilient across network interface or address changes.
 
 - Peer: an endpoint application party to a session.
 
