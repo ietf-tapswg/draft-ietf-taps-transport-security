@@ -80,9 +80,9 @@ This document provides a survey of commonly used or notable network security pro
 
 # Introduction
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP). (This survey is not limited to protocols developed within the scope or context of the IETF.)
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP). This survey is not limited to protocols developed within the scope or context of the IETF.
 
-For each protocol, this document provides a brief description along with security features provided by the protocol and dependencies the protocol has on its underlying transport. From these descriptions, we then list the necessary interfaces each protocol requires to be used by an application. This is followed by a minimal collection of transport security features shared by these protocols.
+For each protocol, this document provides a brief description, the security features it provides, and the dependencies it has on the underlying transport. This is followed by defining the set of transport security features shared by these protocols. Finally, we distill the application and transport interfaces provided by the transport security protocols.
 
 # Terminology
 
@@ -96,11 +96,13 @@ The following terms are used throughout this document to describe the roles and 
 
 - Application: an entity that uses a transport protocol for end-to-end delivery of data across the network (this may also be an upper layer protocol or tunnel encapsulation).
 
-- Security Feature: a specific feature that a network security layer provides to applications. Examples include authentication, encryption, key generation, session resumption, and privacy. A feature may be considered to be Mandatory or Optional to a TAPS implementation.
+- Security Feature: a specific feature that a network security layer provides to applications. Examples include authentication, encryption, key generation, session resumption, and privacy. A feature may be considered to be Mandatory or Optional to an application's implementation.
 
 - Security Protocol: a defined network protocol that implements one or more security features. Security protocols may be used alongside transport protocols, and in combination with one another when appropriate.
 
-<!-- TODO(caw): we should define a handshake and record protocol w.r.t. a security protocol -->
+- Handshake Protocol: a security protocol that performs a handshake to validate peers and establish a shared cryptographic key.
+
+- Record Protocol: a security protocol that allows data to be encrypted in records or datagrams based on a shared cryptographic key.
 
 - Session: an ephemeral security association between applications.
 
@@ -114,7 +116,7 @@ The following terms are used throughout this document to describe the roles and 
 
 - Server: the peer responsible for responding to a session initiation.
 
-# Transport Security Protocols
+# Transport Security Protocol Descriptions
 
 This section contains descriptions of security protocols that currently used to protect data being sent over a network.
 
@@ -276,12 +278,11 @@ new connections to services may be established.
 
 ### Protocol Features
 
-<!-- TODO(caw): the ***'d items are sort of transport features. It's hard to separate them... Thoughts? -->
-- *** Connection multiplexing between hosts across shared tunnels
-- *** Congestion control state is shared across connections between the same host pairs
 - 0-RTT forward secrecy for new connections.
 - DoS prevention by client-side puzzles.
 - Tunnel-based mobility.
+- [Transport Feature] Connection multiplexing between hosts across shared tunnels.
+- [Transport Feature] Congestion control state is shared across connections between the same host pairs.
 
 ### Protocol Dependencies
 
@@ -438,59 +439,6 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 
 - Since ESP is below transport protocols, it does not have any dependencies on the transports themselves, other than on UDP or TCP for NAT traversal.
 
-# Security Protocol Interfaces
-
-This section covers the set of knobs exposed by each security protocol. These fall into categories of Mandatory, Optimizing, and Automatable options.
-
-## TLS
-
-- Coupled handshake and record protocol
-- Identity information (certificates) and private keys (or interfaces to private keys)
-- Ciphersuite configuration
-- Signature algorithm selection
-- Interface to session ticket encryption keys
-- Session cache management (e.g., flushing and disabling)
-
-## DTLS
-
-- Coupled handshake and record protocol
-- Interface knobs are shared with TLS
-
-## QUIC with TLS
-
-- Decoupled handshake and record protocol
-- Interface knobs are shared with TLS
-- Client address validation
-- Export of keys and secrets from TLS layer to be used in QUIC layer
-
-## MinimalT
-
-- Coupled handshake and record protocol
-- Tunnel and connection creation RPCs
-- Publish ephemeral key shares
-- Put and get an identity certificate
-
-## CurveCP
-
-- Coupled handshake and per-packet encryption protocol
-- Server DoS cookies
-- Authenticated and encrypted packets (via public-key "box"ing)
-- No cleartext data, other than public keys, are sent between peers
-
-## tcpcrypt
-
-- Decoupled handshake and record protocol
-- Key exchange and AEAD algorithm options
-- Session cache management
-
-## IKEv2 with ESP
-
-- Decoupled handshake and datagram encryption protocol
-- Identity information (certificates or digital signatures) and private keys or shared secrets
-- Control and data algorithm selection for encryption and integrity
-- Authentication delegation (EAP types)
-- Path changes for mobility
-
 # Common Transport Security Features
 
 There exists a common set of features shared across the transport protocols surveyed in this document.
@@ -541,6 +489,105 @@ session establishment handshakes.
 - Connection mobility: Sessions should not be bound to a network connection (or 5 tuple). This allows cryptographic
 key material and other state information to be reused in the event of a connection change. Examples of this include
 a NAT rebinding that occurs without a client's knowledge.
+
+# Transport Security Protocol Interfaces
+
+This section describes the interface surface exposed by the security protocols described above, with each interface. Note that not all protocols support each interface.
+
+## Configuration Interfaces
+
+Configuration interfaces are used to configure the security protocols before a handshake begins or the keys are negotiated.
+
+### Identity and Private Keys
+
+The application can provide its identities (certificates) and private keys, or mechanisms to access these, to the security protocol to use during handshakes.
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2
+
+### Supported Algorithms (Key Exchange, Signatures and Ciphersuites)
+
+The application can choose the algorithms that are supported for key exchange, signatures, and ciphersuites.
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2 --> TODO: Check MinimalT
+
+### Session Cache
+
+The application provides the ability to save and retrieve session state (tickets, keying material, server parameters) that may be used to resume the security session.
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT
+
+### Authentication Delegate
+
+The application provides access to a seperate module that will provide authentication, using EAP for example.
+Protocols: IKEv2 --> TODO: Check others
+
+## Handshake Interfaces
+
+Handshake interfaces are the points of interation between a handshake protocol and the application, record protocol, and transport once the handshake is active.
+
+### Send Handshake Messages
+
+The handshake protocol needs to be able to send messages over a transport to the remote peer to establish trust and negotiate keys.
+Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
+
+### Receive Handshake Messages
+
+The handshake protocol needs to be able to receive messages from the remote peer over a transport to establish trust and negotiate keys.
+Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
+
+### Identity Validation
+
+During a handshake, the security protocol will conduct identity validation of the peer. This can call into the application to offload validation.
+Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
+
+### Source Address Validation
+
+The handshake protocol may delegate validation of the remote peer that has sent data to the transport protocol or application. This involves sending a cookie exchange to avoid DoS attacks.
+Protocols: QUIC + TLS
+
+### Key Update
+
+The handshake protocol may be instructed to update its keying material, either by the application directly or by the record protocol sending a key expiration event.
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
+
+### Pre-Shared Key Export
+
+The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication. These may be explicitly exportable to the application, traditionally limited to direct  export to the record protocol, or inherently non-exportable because the keys must be used directly in conjuction with the record protocol.
+- Explict export: TLS (for QUIC), tcpcrypt, IKEv2
+- Direct export: TLS, DTLS, MinimalT
+- Non-exportable: CurveCP
+
+## Record Interfaces
+
+Record interfaces are the points of interation between a record protocol and the application, handshake protocol, and transport once in use.
+
+### Pre-Shared Key Import
+
+Either the handshake protocol or the application directly can supply pre-shared keys for the record protocol use for encryption/decryption and authentication. If the application can supply keys directly, this is considered explicit import; if the handshake protocol traditionally provides the keys directly, it is considered direct import; if the keys can only be shared by the handshake, they are considered non-importable.
+- Explict import: QUIC, tcpcrypt, ESP --> TODO: Verify tcpcrypt
+- Direct import: TLS, DTLS, MinimalT
+- Non-importable: CurveCP
+
+### Encrypt application data
+
+The application can send data to the record protocol to encrypt it into a format that can be sent on the underlying transport. The encryption step may require that the application data is treated as a stream or as datagrams, and that the transport to send the encrypted records present a stream or datagram interface.
+- Stream-to-Stream Protocols: TLS, tcpcrypt
+- Datagram-to-Datagram Protocols: DTLS, ESP
+- Stream-to-Datagram Protocols: QUIC [Editor's Note: This depends on the interface QUIC exposes to applications.]
+
+### Decrypt application data
+
+The application can receive data from its transport to be decrypted using record protocol. The decryption step may require that the incoming transport data is presented as a stream or as datagrams, and that the resulting application data is a stream or datagrams.
+- Stream-to-Stream Protocols: TLS, tcpcrypt
+- Datagram-to-Datagram Protocols: DTLS, ESP
+- Datagram-to-Stream Protocols: QUIC [Editor's Note: This depends on the interface QUIC exposes to applications.]
+
+### Key Expiration
+
+The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signalling between the record layer and the handshake layer.
+Protocols: ESP --> TODO: Check TLS/DTLS
+
+### Transport mobility
+
+The record protocol can be signalled that it is being migrated to another transport or interface due to connection mobility, which may reset address and state validation.
+Protocols: QUIC, MinimalT, CurveCP, ESP
 
 # IANA Considerations
 
