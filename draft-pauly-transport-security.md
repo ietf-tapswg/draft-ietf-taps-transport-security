@@ -45,6 +45,7 @@ normative:
     I-D.ietf-quic-transport:
     I-D.ietf-quic-tls:
     I-D.ietf-tls-tls13:
+    I-D.ietf-ipsecme-tcp-encaps:
     CurveCP:
         title: CurveCP -- Usable security for the Internet
         url: http://curvecp.org
@@ -407,7 +408,7 @@ From {{RFC4303}}, "ESP is used to provide confidentiality, data origin authentic
 
 Since ESP operates on IP packets, it is not directly tied to the transport protocols it encrypts. This means it requires little or no change from transports in order to provide security.
 
-ESP packets are sent directly over IP, except when a NAT is present, in which case they are sent on UDP port 4500, or via TCP encapsulation.
+ESP packets are sent directly over IP, except when a NAT is present, in which case they are sent on UDP port 4500, or via TCP encapsulation {{I-D.ietf-ipsecme-tcp-encaps}}.
 
 ### Protocol features
 
@@ -551,6 +552,6 @@ N/A
 
 # Acknowledgments
 
-The authors would like to thank Mirja Kühlewind, Brian Trammel, Yannick Sierra,
-Frederic Jacobs, and Bob Bradely for their input and feedback on earlier versions
+The authors would like to thank Mirja Kühlewind, Brian Trammell, Yannick Sierra,
+Frederic Jacobs, and Bob Bradley for their input and feedback on earlier versions
 of this draft.
