@@ -82,7 +82,7 @@ This document provides a survey of commonly used or notable network security pro
 
 This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP). (This survey is not limited to protocols developed within the scope or context of the IETF.)
 
-For each protocol, this document provides a brief description along with security features provided by the protocol and dependencies the protocol has on its underlying transport. From these descriptions, we then list the necessary interfaces each protocol requires to be used by an application. This is followed by a minimal collection of transport security features shared by these protocols. Lastly, a categorized set of mandatory and optional protocol-agnostic transport security interfaces is described.
+For each protocol, this document provides a brief description along with security features provided by the protocol and dependencies the protocol has on its underlying transport. From these descriptions, we then list the necessary interfaces each protocol requires to be used by an application. This is followed by a minimal collection of transport security features shared by these protocols.
 
 # Terminology
 
@@ -124,9 +124,9 @@ For each protocol, we describe the features it provides and its dependencies on 
 
 TLS (Transport Layer Security) {{RFC5246}} is a common protocol used to establish a secure session between two endpoints. Communication
 over this session "prevents eavesdropping, tampering, and message forgery." TLS consists
-of a handshake and record protocol. The handshake protocol is used to authenticate peers,
+of a tightly coupled handshake and record protocol. The handshake protocol is used to authenticate peers,
 negotiate protocol options, such as cryptographic algorithms, and derive session-specific
-keying material. The record protocol is used to marshall (possibly encrypted) data from one
+keying material. The record protocol is used to marshal (possibly encrypted) data from one
 peer to the other. This data may contain handshake messages or raw application data.
 
 ### Protocol Description
@@ -177,7 +177,11 @@ for the server. It is assumed that the client must always store some state infor
 
 ## DTLS
 
-DTLS (Datagram Transport Layer Security) {{RFC6347}} is based on TLS, but differs in that it is designed to run over UDP instead of TCP. Since UDP does not guarantee datagram ordering or reliability, DTLS modifies the protocol to make sure it can still provide the same security guarantees as TLS. DTLS was designed to be as close to TLS as possible, so this document will assume that all properties from TLS are carried over except where specified.
+DTLS (Datagram Transport Layer Security) {{RFC6347}} is based on TLS, but differs in that
+it is designed to run over UDP instead of TCP. Since UDP does not guarantee datagram
+ordering or reliability, DTLS modifies the protocol to make sure it can still provide
+the same security guarantees as TLS. DTLS was designed to be as close to TLS as possible,
+so this document will assume that all properties from TLS are carried over except where specified.
 
 ### Protocol Description
 
@@ -206,20 +210,33 @@ Since datagrams may be replayed, DTLS provides anti-replay detection based on a 
 
 ## QUIC with TLS
 
-QUIC (Quick UDP Internet Connections) is a new transport protocol that runs over UDP, and was originally designed with a tight integration with its security protocol and application protocol mappings. The QUIC transport layer itself provides support for data confidentiality and integrity. This requires keys to be derived in a handshake. A mapping for QUIC over TLS 1.3 {{I-D.ietf-quic-tls}} has been specified to provide this handshake.
+QUIC (Quick UDP Internet Connections) is a new transport protocol that runs over UDP, and was
+originally designed with a tight integration with its security protocol and application protocol
+mappings. The QUIC transport layer itself provides support for data confidentiality and integrity.
+This requires keys to be derived with a separate handshake protocol. A mapping for QUIC over
+TLS 1.3 {{I-D.ietf-quic-tls}} has been specified to provide this handshake.
 
 ### Protocol Description
 
-Since QUIC integrates TLS with its transport, it relies on specific integration points between its security and transport sides. Specifically, these points are:
+Since QUIC integrates TLS with its transport, it relies on specific integration points
+between its security and transport sides. Specifically, these points are:
 
 - Starting the handshake to generate keys and provide authentication (and providing the transport for the handshake).
 - Client address validation.
 - Key ready events from TLS to notify the QUIC transport.
 - Exporting secrets from TLS to the QUIC transport.
 
-The QUIC transport layer support multiple streams over a single connection. The first stream is reserved specifically for a TLS connection. The TLS handshake, along with further records, are sent over this stream. This TLS connection follows the TLS standards and inherits the security properties of TLS. The handshake generates keys, which are then exported to the rest of the QUIC connection, and are used to protect the rest of the streams.
+The QUIC transport layer support multiple streams over a single connection. The first
+stream is reserved specifically for a TLS connection. The TLS handshake, along with
+further records, are sent over this stream. This TLS connection follows the TLS standards
+and inherits the security properties of TLS. The handshake generates keys, which are
+then exported to the rest of the QUIC connection, and are used to protect the rest of the streams.
 
-The initial QUIC messages are sent without encryption in order to start the TLS handshake. Once the handshake has generated keys, the subsequent messages are encrypted. The TLS 1.3 handshake for QUIC is used in either a single-RTT mode or a fast-open zero-RTT mode. When zero-RTT handshakes are possible, the encryption first transitions to use the zero-RTT keys before using single-RTT handshake keys after the next TLS flight.
+The initial QUIC messages are sent without encryption in order to start the TLS handshake.
+Once the handshake has generated keys, the subsequent messages are encrypted. The TLS 1.3
+handshake for QUIC is used in either a single-RTT mode or a fast-open zero-RTT mode. When
+zero-RTT handshakes are possible, the encryption first transitions to use the zero-RTT keys
+before using single-RTT handshake keys after the next TLS flight.
 
 ### Protocol Features
 
@@ -250,6 +267,7 @@ Connections are instances of user-authenticated, mobile sessions between two end
 is a server-authenticated container that multiplexes multiple connections between the same hosts. All connections in a tunnel share the
 same transport state machine and encryption. Each tunnel has a dedicated control connection used to configure and manage the tunnel over time.
 Moreover, since tunnels are independent of the network address information, they may be reused as both ends of the tunnel move about the network.
+This does however imply that the connection establishment and packet encryption mechansisms are coupled.
 
 Before a client connects to a remote service, it must first establish a tunnel to the host providing or offering the service. Tunnels are established
 in 1-RTT using an ephemeral key obtained from the directory service. Tunnel initiators provide their own ephemeral key and, optionally, a
@@ -272,8 +290,9 @@ new connections to services may be established.
 
 ## CurveCP
 
-CurveCP {{CurveCP}} is a UDP-based transport security protocol from Daniel J. Bernstein. Unlike other transport security protocols,
-it is based entirely upon highly efficient public key primitives. This removes many pitfalls associated with nonce reuse and key synchronization.
+CurveCP {{CurveCP}} is a UDP-based transport security protocol from Daniel J. Bernstein.
+Unlike other transport security protocols, it is based entirely upon highly efficient public
+key algorithms. This removes many pitfalls associated with nonce reuse and key synchronization.
 
 ### Protocol Description
 
@@ -305,7 +324,7 @@ would detect the duplicate cookies and reject the flooded packets.) Similarly, r
 will be detected by the server.
 
 CurveCP supports a weak form of client authentication. Clients are permitted to send their long-term public keys in the second initialization
-packet. A server can verify this public key and, if untrusted, drop the connection and subseqent data.
+packet. A server can verify this public key and, if untrusted, drop the connection and subsequent data.
 
 Unlike some other protocols, CurveCP data packets only leave the ephemeral public key, i.e., the connection ID, and the per-message nonce
 in the clear. Everything else is encrypted.
@@ -425,6 +444,7 @@ This section covers the set of knobs exposed by each security protocol. These fa
 
 ## TLS
 
+- Coupled handshake and record protocol
 - Identity information (certificates) and private keys (or interfaces to private keys)
 - Ciphersuite configuration
 - Signature algorithm selection
@@ -433,33 +453,39 @@ This section covers the set of knobs exposed by each security protocol. These fa
 
 ## DTLS
 
+- Coupled handshake and record protocol
 - Interface knobs are shared with TLS
 
 ## QUIC with TLS
 
+- Decoupled handshake and record protocol
 - Interface knobs are shared with TLS
 - Client address validation
 - Export of keys and secrets from TLS layer to be used in QUIC layer
 
 ## MinimalT
 
+- Coupled handshake and record protocol
 - Tunnel and connection creation RPCs
 - Publish ephemeral key shares
 - Put and get an identity certificate
 
 ## CurveCP
 
+- Coupled handshake and per-packet encryption protocol
 - Server DoS cookies
 - Authenticated and encrypted packets (via public-key "box"ing)
 - No cleartext data, other than public keys, are sent between peers
 
 ## tcpcrypt
 
+- Decoupled handshake and record protocol
 - Key exchange and AEAD algorithm options
 - Session cache management
 
 ## IKEv2 with ESP
 
+- Decoupled handshake and datagram encryption protocol
 - Identity information (certificates or digital signatures) and private keys or shared secrets
 - Control and data algorithm selection for encryption and integrity
 - Authentication delegation (EAP types)
@@ -516,49 +542,6 @@ session establishment handshakes.
 key material and other state information to be reused in the event of a connection change. Examples of this include
 a NAT rebinding that occurs without a client's knowledge.
 
-# Minimum Common Transport Security Interface
-
-The minimum interface for transport security protocols defines the set of calls that an application interface must
-expose in order to generically use the common protocol features described in this document. The mandatory interfaces
-are required to functionally use the protocols, while the optional interfaces allow the application to constrain the
-protocol or retrieve extra information.
-
-## Mandatory Interfaces
-
-- Start negotiation: The interface MUST provide an interface to start the protocol handshake for key negotiation, and
-have a way to be notified when the handshake is complete.
-
-- State changes: The interface MUST provide a way for the application to be notified of important state changes during
-the protocol execution and session lifetime, e.g., when the handshake begins, ends, or when a key update occurs.
-
-- Identity constraints: The interface MUST allow the application to constrain the identities that it will accept
-a connection to, such as the hostname it expects to be provided in certificate SAN.
-
-- Local identities: The interface MUST allow the local identity to be set via a raw private key or interface to one
-to perform cryptographic operations such as signing and decryption.
-
-- Validation: The interface MUST provide a way for the application to participate in the endpoint authentication and validation,
-which can either be specified as parameters to define how the peer's authentication can be validated, or when the protocol
-provides the authentication information for the application to inspect directly.
-
-- Key lifetime and rotation: The interface MUST provide a way for the application to set the key lifetime bounds in terms
-of *time* or *bytes encrypted* and, additionally, provide a way to forcefully update cryptographic session keys at will.
-The protocol should default to reasonable lifetimes barring any application input.
-
-- Key export: The interface MUST either provide a way to export keying material with well-defined cryptographic properties,
-e.g., "forward-secure" or "perfectly forward secure", or should provide an interface to keying material for cryptographic operations.
-
-## Optional Interfaces
-
-- Caching domain and lifetime: The application SHOULD be able to specify the instances of the protocol that can share
-cached keys, as well as the lifetime of cached resources.
-
-- The protocol SHOULD allow applications to negotiate application protocols and related information.
-
-- The protocol SHOULD allow applications to specify negotiable cryptographic algorithm suites.
-
-- The protocol SHOULD expose the peer's identity information.
-
 # IANA Considerations
 
 This document has on request to IANA.
@@ -569,5 +552,6 @@ N/A
 
 # Acknowledgments
 
-The authors would like to thank several anonymous reviewers for their input
-and feedback on earlier versions of this draft.
+The authors would like to thank Mirja Kühlewind, Brian Trammel, Yannick Sierra,
+Frederic Jacobs, and Bob Bradely for their input and feedback on earlier versions
+of this draft.
