@@ -39,33 +39,48 @@ normative:
     RFC7250:
     RFC7296:
     RFC7301:
+    RFC7443:
     RFC8095:
-    quic-tls:
-        title: Using Transport Layer Security (TLS) to Secure QUIC
-        url: https://tools.ietf.org/html/draft-ietf-quic-tls
-        authors:
-            -
-                ins: M. Thomson
-                org: Mozilla
-            -
-                ins: S. Turner
-                org: sn3rd
+    I-D.ietf-tcpinc-tcpcrypt:
+    I-D.ietf-tcpinc-tcpeno:
+    I-D.ietf-quic-transport:
+    I-D.ietf-quic-tls:
+    I-D.ietf-tls-tls13:
     CurveCP:
         title: CurveCP -- Usable security for the Internet
         url: http://curvecp.org
         authors:
             -
                 ins: D. J. Bernstein
+    MinimalT:
+      title: MinimaLT -- Minimal-latency Networking Through Better Security
+      url: http://dl.acm.org/citation.cfm?id=2516737
+      authors:
+        -
+          ins: W. Michael Petullo
+          org: United States Military Academy, West Point, NY, USA
+        -
+          ins: Xu Zhang
+          org: University of Illinois at Chicago, Chicago, IL, USA
+        -
+          ins: Jon A. Solworth
+          org: University of Illinois at Chicago, Chicago, IL, USA
+        -
+          ins: Daniel J. Bernstein
+          org: University of Illinois at Chicago, Chicago, IL, USA
+        -
+          ins: Tanja Lange
+          org: TU Eindhoven, Eindhoven, Netherlands
 
 --- abstract
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP).
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP). This survey is not limited to protocols developed within the scope or context of the IETF.
 
 --- middle
 
 # Introduction
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP).
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP). (This survey is not limited to protocols developed within the scope or context of the IETF.)
 
 For each protocol, this document provides a brief description along with security features provided by the protocol and dependencies the protocol has on its underlying transport. From these descriptions, we then list the necessary interfaces each protocol requires to be used by an application. This is followed by a minimal collection of transport security features shared by these protocols. Lastly, a categorized set of mandatory and optional protocol-agnostic transport security interfaces is described.
 
@@ -84,6 +99,8 @@ The following terms are used throughout this document to describe the roles and 
 - Security Feature: a specific feature that a network security layer provides to applications. Examples include authentication, encryption, key generation, session resumption, and privacy. A feature may be considered to be Mandatory or Optional to a TAPS implementation.
 
 - Security Protocol: a defined network protocol that implements one or more security features. Security protocols may be used alongside transport protocols, and in combination with one another when appropriate.
+
+<!-- TODO(caw): we should define a handshake and record protocol w.r.t. a security protocol -->
 
 - Session: an ephemeral security association between applications.
 
@@ -114,8 +131,8 @@ peer to the other. This data may contain handshake messages or raw application d
 
 ### Protocol Description
 
-TLS is the composition of a handshake and record protocol.
-The record protocol is designed to marshall an arbitrary, in-order stream of bytes from one endpoint to the other.
+TLS is the composition of a handshake and record protocol {{I-D.ietf-tls-tls13}}.
+The record protocol is designed to marshal an arbitrary, in-order stream of bytes from one endpoint to the other.
 It handles segmenting, compressing (when enabled), and encrypting data into discrete records. When configured
 to use an AEAD algorithm, it also handles nonce generation and encoding for each record. The record protocol is
 hidden from the client behind a byte stream-oriented API.
@@ -145,7 +162,6 @@ for the server. It is assumed that the client must always store some state infor
 
 - Key exchange and ciphersuite algorithm negotiation.
 - Stateful and stateless session resumption.
-- Anonymous key exchange.
 - Certificate- and raw public-key-based authentication.
 - Mutual client and server authentication.
 - Byte stream confidentiality and integrity.
@@ -165,7 +181,9 @@ DTLS (Datagram Transport Layer Security) {{RFC6347}} is based on TLS, but differ
 
 ### Protocol Description
 
-The DTLS handshake in particular is modified from TLS to account for packet loss and reordering. Each message is assigned a sequence number to be used to reorder on the receiving end. If one peer has sent a handshake message and has not yet received its expected response, it will retransmit the handshake message after a configurable timeout.
+DTLS is modified from TLS to account for packet loss and reordering that occur when operating over a datagram-based transport, i.e., UDP. Each message is assigned an explicit sequence number to be used to reorder on the receiving end. This removes the inter-record dependency and allows each record to be decrypt in isolation of the rest. However, DTLS does not deviate from TLS in that in still provides in-order delivery of data to the application.
+
+With respect to packet loss, if one peer has sent a handshake message and has not yet received its expected response, it will retransmit the handshake message after a configurable timeout.
 
 To account for long records that cannot fit within a single UDP datagram, DTLS supports fragmentation of records across datagrams, keeping track of fragment offsets and lengths in each datagram. The receiving peer must re-assemble records before decrypting.
 
@@ -175,29 +193,29 @@ Since datagrams may be replayed, DTLS provides anti-replay detection based on a 
 
 ### Protocol Features
 
-- Anti-replay protection between datagrams
-- Basic reliability for handshake messages
-- See also the features from TLS
+- Anti-replay protection between datagrams.
+- Basic reliability for handshake messages.
+- See also the features from TLS.
 
 ### Protocol Dependencies
 
-- Since DTLS runs over an unreliable, unordered datagram transport, it does not require any reliability features
-- DTLS contains its own length, so although it runs over a datagram transport, it does not rely on the transport protocol supporting framing
-- UDP for port numbers used for demultiplexing
-- Path MTU discovery
+- Since DTLS runs over an unreliable, unordered datagram transport, it does not require any reliability features.
+- DTLS contains its own length, so although it runs over a datagram transport, it does not rely on the transport protocol supporting framing.
+- UDP for port numbers used for demultiplexing.
+- Path MTU discovery.
 
 ## QUIC with TLS
 
-QUIC (Quick UDP Internet Connections) is a new transport protocol that runs over UDP, and was originally designed with a tight integration with its security protocol and application protocol mappings. The QUIC transport layer itself provides support for data confidentiality and integrity. This requires keys to be derived in a handshake. A mapping for TLS 1.3 over QUIC {{quic-tls}} has been specified to provide this handshake, which in turn runs within the QUIC transport.
+QUIC (Quick UDP Internet Connections) is a new transport protocol that runs over UDP, and was originally designed with a tight integration with its security protocol and application protocol mappings. The QUIC transport layer itself provides support for data confidentiality and integrity. This requires keys to be derived in a handshake. A mapping for QUIC over TLS 1.3 {{I-D.ietf-quic-tls}} has been specified to provide this handshake.
 
 ### Protocol Description
 
 Since QUIC integrates TLS with its transport, it relies on specific integration points between its security and transport sides. Specifically, these points are:
 
-- Starting the handshake to generate keys and provide authentication (and providing the transport for the handshake)
-- Client address validation
-- Key ready events from TLS to notify the QUIC transport
-- Exporting secrets from TLS to the QUIC transport
+- Starting the handshake to generate keys and provide authentication (and providing the transport for the handshake).
+- Client address validation.
+- Key ready events from TLS to notify the QUIC transport.
+- Exporting secrets from TLS to the QUIC transport.
 
 The QUIC transport layer support multiple streams over a single connection. The first stream is reserved specifically for a TLS connection. The TLS handshake, along with further records, are sent over this stream. This TLS connection follows the TLS standards and inherits the security properties of TLS. The handshake generates keys, which are then exported to the rest of the QUIC connection, and are used to protect the rest of the streams.
 
@@ -205,20 +223,20 @@ The initial QUIC messages are sent without encryption in order to start the TLS 
 
 ### Protocol Features
 
-- Handshake properties of TLS
-- Multiple encrypted streams over a single connection without head-of-line blocking
+- Handshake properties of TLS.
+- Multiple encrypted streams over a single connection without head-of-line blocking.
 - Packet payload encryption and complete packet authentication (with the exception of the Public Reset packet, which is not authenticated).
 
 ### Protocol Dependencies
 
-- QUIC transport relies on UDP
-- QUIC transport relies on TLS 1.3 for authentication and initial key derivation
-- TLS within QUIC relies on a reliable stream abstraction for its handshake
+- QUIC transport relies on UDP.
+- QUIC transport relies on TLS 1.3 for authentication and initial key derivation.
+- TLS within QUIC relies on a reliable stream abstraction for its handshake.
 
 ## MinimalT
 
 MinimalT is a UDP-based transport security protocol designed to offer confidentiality, mutual authentication, DoS prevention, and connection
-mobility. One major goal of the protocol is to leverage existing protocols to obtain server-side configuration information used to
+mobility {{MinimalT}}. One major goal of the protocol is to leverage existing protocols to obtain server-side configuration information used to
 more quickly bootstrap a connection. MinimalT uses a variant of TCP's congestion control algorithm.
 
 ### Protocol Description
@@ -240,8 +258,9 @@ new connections to services may be established.
 
 ### Protocol Features
 
-- Connection multiplexing between hosts across shared tunnels
-- Congestion control state is shared across connections between the same host pairs
+<!-- TODO(caw): the ***'d items are sort of transport features. It's hard to separate them... Thoughts? -->
+- *** Connection multiplexing between hosts across shared tunnels
+- *** Congestion control state is shared across connections between the same host pairs
 - 0-RTT forward secrecy for new connections.
 - DoS prevention by client-side puzzles.
 - Tunnel-based mobility.
@@ -294,7 +313,7 @@ in the clear. Everything else is encrypted.
 ### Protocol Features
 
 - Forward-secure data encryption and authentication
-- Pure public-key encryption
+- Per-packet public-key encryption
 - 1-RTT session bootstrapping
 - Connection mobility based on a client-chosen ephemeral identifier
 - Connection establishment message padding to prevent traffic amplification
@@ -310,7 +329,7 @@ tcpcrypt is a lightweight extension to the TCP protocol to enable opportunistic 
 
 ### Protocol Description
 
-tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection.
+tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection {{I-D.ietf-tcpinc-tcpcrypt}}.
 It is a type of TCP Encryption Protocol (TEP). The use of a TEP is negotiated using TCP headers
 during the initial TCP handshake. Negotiating a TEP also involves agreeing upon a key exchange algorithm.
 If and when a TEP is negotiated, the tcpcrypt key exchange occurs within the data segments of
@@ -321,8 +340,8 @@ The traffic encryption keys are derived from the key exchange.
 
 Each tcpcrypt session is associated with a unique session ID; the value of which is derived from the current
 shared secret used for the session. This can be cached and used to later resume a session.
-Willingness to resume a session is signaled within the TEP negotiation option
-during the TCP handshake. Session identifiers are rotated each time they are resumed. Sessions may
+Willingness to resume a session is signaled within the TCP-ENO negotiation option
+during the TCP handshake {{I-D.ietf-tcpinc-tcpeno}}. Session identifiers are rotated each time they are resumed. Sessions may
 also be re-keyed if the natural AEAD limit is reached.
 
 tcpcrypt only encrypts the data portion of a TCP packet. It does not encrypt any header information,
@@ -449,10 +468,13 @@ This section covers the set of knobs exposed by each security protocol. These fa
 # Common Transport Security Features
 
 There exists a common set of features shared across the transport protocols surveyed in this document.
-The mandatory features should be provided by any transport security protocols, while the optional features
-are extensions that a subset of the protocols provide.
+The mandatory features should be provided by any transport security protocol, while the optional features
+are extensions that a subset of the protocols provide. For clarity, we also distinguish between handshake
+and record features.
 
 ## Mandatory Features
+
+### Handshake
 
 - Forward-secure segment encryption and authentication: Transit data must be protected with an
 authenticated encryption algorithm.
@@ -466,24 +488,33 @@ data is sent to said party.
 - Source validation: Source validation must be provided to mitigate server-targeted DoS attacks. This can
 be done with puzzles or cookies.
 
+### Record
+
+- Pre-shared key support: A record protocol must be able to use a pre-shared key established
+out-of-band to encrypt individual messages, packets, or datagrams.
+
 ## Optional Features
 
-- Connection mobility: Sessions should not be bound to a network connection (or 5 tuple). This allows cryptographic
-key material and other state information to be reused in the event of a connection change. Examples of this include
-a NAT rebinding that occurs without a client's knowledge.
-
-- Session caching and management: Sessions should be cacheable to enable reuse and amortize the cost of performing
-session establishment handshakes.
+### Handshake
 
 - Mutual authentication: Transport security protocols should allow both endpoints to authenticate one another if needed.
 
 - Application-layer feature negotiation: The type of application using a transport security protocol often requires
-features configured at the connection establishment layer. Moreover, application-layer features may often be used to
+features configured at the connection establishment layer, e.g., ALPN {{RFC7443}}. Moreover, application-layer features may often be used to
 offload the session to another server which can better handle the request. (The TLS SNI is one example of such a feature.)
 As such, transport security protocols should provide a generic mechanism to allow for such application-specific features
 and options to be configured or otherwise negotiated.
 
 - Configuration extensions: The protocol negotiation should be extensible with addition of new configuration options.
+
+- Session caching and management: Sessions should be cacheable to enable reuse and amortize the cost of performing
+session establishment handshakes.
+
+### Record
+
+- Connection mobility: Sessions should not be bound to a network connection (or 5 tuple). This allows cryptographic
+key material and other state information to be reused in the event of a connection change. Examples of this include
+a NAT rebinding that occurs without a client's knowledge.
 
 # Minimum Common Transport Security Interface
 
@@ -515,7 +546,7 @@ of *time* or *bytes encrypted* and, additionally, provide a way to forcefully up
 The protocol should default to reasonable lifetimes barring any application input.
 
 - Key export: The interface MUST either provide a way to export keying material with well-defined cryptographic properties,
-e.g., "forward-secure" or "perfectly forward secure", or should provide an interface for keying material to perform cryptographic operations. ((CAW: maybe the latter is a bit much.))
+e.g., "forward-secure" or "perfectly forward secure", or should provide an interface to keying material for cryptographic operations.
 
 ## Optional Interfaces
 
