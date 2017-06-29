@@ -1,0 +1,22 @@
+- I’ve been thinking if it makes sense to have the split between handshake and record
+protocol even more visible by having two subsections, especially for TLS but maybe/hopefully
+you can also try to make this for other protocols.
+
+- Further, in case of quic, you have the TLS handshake and the crypto itself which is part of
+quic. So there are actually two interfaces (or maybe even three depending on how you count).
+Not sure how to handle that.
+
+----
+
+- I’ve been thinking if it makes sense to have the split between handshake and record protocol even more visible by having two subsections, especially for TLS but maybe/hopefully you can also try to make this for other protocols.
+- In DTLS, I guess also the crypto itself works differently as you must be able to decrypt every datagram separately, right? Would be great to provide more information on that part.
+- In the quic part you suddenly rather talk about requirements from quic to tis, than the other way around. I understand that quic is more closely integrated but maybe it could also be good to separate these out.
+- Also I like the image in the quic-tls draft a lot, maybe you can add a simplified version here. The main point about this image is that the crypto protocol is not on top of the transport but on the side. You mention these two option in the intro but I guess one could add even more text to further explain these two different approaches. Or we could do this in the crypto-sep draft...
+- There is no reference given for MinimalT.
+- For MinimalT you list transport as well as security features; I would also keep them separate.
+- For the transport services document, we restricted ourselves to only look at RFCs; you may want to mention in the intro that you didn’t do this for this document.
+-  Note sure if you are aware that tcpcrypt is standardized in the tcpinc working group because no reference is given? You may want to call it tcpinc instead and talk about tcpcrypt and tcp-eno a bit…
+- For the common feature section (sec 5) I’m also wondering (with having crypto-sep in mind) if one could further split up features of the handshake and the records protocol parts.
+- Looking at the point of app-layer negotiation, i’m wondering if it would make sense to also describe ALNP in this doc. We had a bit a similar case for ICMP which is not a transport protocol but provides some similar features.
+- The stuff on interfaces, is actually pretty much what I had in mind for the crypto-sep. I guess we could move that over there, however, on the other hand this fits also well in this document; let’s discuss that later!
+- Further, in case of quic, you have the TLS handshake and the crypto itself which is part of quic. So there are actually two interfaces (or maybe even three depending on how you count). Not sure how to handle that.
