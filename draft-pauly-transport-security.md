@@ -269,7 +269,7 @@ Connections are instances of user-authenticated, mobile sessions between two end
 is a server-authenticated container that multiplexes multiple connections between the same hosts. All connections in a tunnel share the
 same transport state machine and encryption. Each tunnel has a dedicated control connection used to configure and manage the tunnel over time.
 Moreover, since tunnels are independent of the network address information, they may be reused as both ends of the tunnel move about the network.
-This does however imply that the connection establishment and packet encryption mechansisms are coupled.
+This does however imply that the connection establishment and packet encryption mechanisms are coupled.
 
 Before a client connects to a remote service, it must first establish a tunnel to the host providing or offering the service. Tunnels are established
 in 1-RTT using an ephemeral key obtained from the directory service. Tunnel initiators provide their own ephemeral key and, optionally, a
@@ -281,8 +281,8 @@ new connections to services may be established.
 - 0-RTT forward secrecy for new connections.
 - DoS prevention by client-side puzzles.
 - Tunnel-based mobility.
-- [Transport Feature] Connection multiplexing between hosts across shared tunnels.
-- [Transport Feature] Congestion control state is shared across connections between the same host pairs.
+- (Transport Feature) Connection multiplexing between hosts across shared tunnels.
+- (Transport Feature) Congestion control state is shared across connections between the same host pairs.
 
 ### Protocol Dependencies
 
@@ -332,12 +332,12 @@ in the clear. Everything else is encrypted.
 
 ### Protocol Features
 
-- Forward-secure data encryption and authentication
-- Per-packet public-key encryption
-- 1-RTT session bootstrapping
-- Connection mobility based on a client-chosen ephemeral identifier
-- Connection establishment message padding to prevent traffic amplification
-- Sender-chosen explicit nonces, e.g., based on a sequence number
+- Forward-secure data encryption and authentication.
+- Per-packet public-key encryption.
+- 1-RTT session bootstrapping.
+- Connection mobility based on a client-chosen ephemeral identifier.
+- Connection establishment message padding to prevent traffic amplification.
+- Sender-chosen explicit nonces, e.g., based on a sequence number.
 
 ### Protocol Dependencies
 
@@ -371,7 +371,7 @@ such as the TCP sequence number.
 
 - Forward-secure TCP packet encryption.
 - Session caching and address-agnostic resumption.
-- Session re-keying
+- Session re-keying.
 
 ### Protocol Dependencies
 
@@ -397,7 +397,7 @@ There is an extension to IKEv2 that allows session resumption {{RFC5723}}.
 
 MOBIKE is a Mobility and Multihoming extension to IKEv2 that allows a set of Security Associations to migrate over different addresses and interfaces {{RFC4555}}.
 
-When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP [tcp-encaps].
+When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP {{I-D.ietf-ipsecme-tcp-encaps}}.
 
 #### ESP
 
@@ -415,18 +415,18 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 
 #### IKEv2
 
-- Encryption and authentication of handshake packets
-- Cryptographic algorithm negotiation
-- Session resumption
-- Mobility across addresses and interfaces
-- Peer authentication extensibility based on Shared Secret, Certificates, Digital Signatures, or EAP methods
+- Encryption and authentication of handshake packets.
+- Cryptographic algorithm negotiation.
+- Session resumption.
+- Mobility across addresses and interfaces.
+- Peer authentication extensibility based on Shared Secret, Certificates, Digital Signatures, or EAP methods.
 
 #### ESP
 
-- Data confidentiality and authentication
-- Connectionless integrity
-- Anti-replay protection
-- Limited flow confidentiality
+- Data confidentiality and authentication.
+- Connectionless integrity.
+- Anti-replay protection.
+- Limited flow confidentiality.
 
 ### Protocol dependencies
 
@@ -492,59 +492,72 @@ a NAT rebinding that occurs without a client's knowledge.
 
 # Transport Security Protocol Interfaces
 
-This section describes the interface surface exposed by the security protocols described above, with each interface. Note that not all protocols support each interface.
+This section describes the interface surface exposed by the security protocols described
+above, with each interface. Note that not all protocols support each interface.
 
 ## Configuration Interfaces
 
-Configuration interfaces are used to configure the security protocols before a handshake begins or the keys are negotiated.
+Configuration interfaces are used to configure the security protocols before a
+handshake begins or the keys are negotiated.
 
 ### Identity and Private Keys
 
-The application can provide its identities (certificates) and private keys, or mechanisms to access these, to the security protocol to use during handshakes.
+The application can provide its identities (certificates) and private keys, or
+mechanisms to access these, to the security protocol to use during handshakes.
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2
 
 ### Supported Algorithms (Key Exchange, Signatures and Ciphersuites)
 
-The application can choose the algorithms that are supported for key exchange, signatures, and ciphersuites.
-Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2 --> TODO: Check MinimalT
+The application can choose the algorithms that are supported for key exchange,
+signatures, and ciphersuites.
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
 
 ### Session Cache
 
-The application provides the ability to save and retrieve session state (tickets, keying material, server parameters) that may be used to resume the security session.
+The application provides the ability to save and retrieve session state (tickets,
+  keying material, server parameters) that may be used to resume the security session.
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT
 
 ### Authentication Delegate
 
-The application provides access to a seperate module that will provide authentication, using EAP for example.
-Protocols: IKEv2 --> TODO: Check others
+The application provides access to a separate module that will provide authentication,
+using EAP for example.
+Protocols: IKEv2
 
 ## Handshake Interfaces
 
-Handshake interfaces are the points of interation between a handshake protocol and the application, record protocol, and transport once the handshake is active.
+Handshake interfaces are the points of interaction between a handshake protocol and
+the application, record protocol, and transport once the handshake is active.
 
 ### Send Handshake Messages
 
-The handshake protocol needs to be able to send messages over a transport to the remote peer to establish trust and negotiate keys.
+The handshake protocol needs to be able to send messages over a transport to the
+remote peer to establish trust and negotiate keys.
 Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
 
 ### Receive Handshake Messages
 
-The handshake protocol needs to be able to receive messages from the remote peer over a transport to establish trust and negotiate keys.
+The handshake protocol needs to be able to receive messages from the remote peer
+over a transport to establish trust and negotiate keys.
 Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
 
 ### Identity Validation
 
-During a handshake, the security protocol will conduct identity validation of the peer. This can call into the application to offload validation.
+During a handshake, the security protocol will conduct identity validation of
+the peer. This can call into the application to offload validation.
 Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
 
 ### Source Address Validation
 
-The handshake protocol may delegate validation of the remote peer that has sent data to the transport protocol or application. This involves sending a cookie exchange to avoid DoS attacks.
+The handshake protocol may delegate validation of the remote peer that has sent
+data to the transport protocol or application. This involves sending a cookie
+exchange to avoid DoS attacks.
 Protocols: QUIC + TLS
 
 ### Key Update
 
-The handshake protocol may be instructed to update its keying material, either by the application directly or by the record protocol sending a key expiration event.
+The handshake protocol may be instructed to update its keying material, either
+by the application directly or by the record protocol sending a key expiration event.
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
 
 ### Pre-Shared Key Export
@@ -556,13 +569,13 @@ The handshake protocol will generate one or more keys to be used for record encr
 
 ## Record Interfaces
 
-Record interfaces are the points of interation between a record protocol and the application, handshake protocol, and transport once in use.
+Record interfaces are the points of interaction between a record protocol and the application, handshake protocol, and transport once in use.
 
 ### Pre-Shared Key Import
 
 Either the handshake protocol or the application directly can supply pre-shared keys for the record protocol use for encryption/decryption and authentication. If the application can supply keys directly, this is considered explicit import; if the handshake protocol traditionally provides the keys directly, it is considered direct import; if the keys can only be shared by the handshake, they are considered non-importable.
-- Explict import: QUIC, tcpcrypt, ESP --> TODO: Verify tcpcrypt
-- Direct import: TLS, DTLS, MinimalT
+- Explict import: QUIC, ESP
+- Direct import: TLS, DTLS, MinimalT, tcpcrypt
 - Non-importable: CurveCP
 
 ### Encrypt application data
@@ -570,23 +583,23 @@ Either the handshake protocol or the application directly can supply pre-shared 
 The application can send data to the record protocol to encrypt it into a format that can be sent on the underlying transport. The encryption step may require that the application data is treated as a stream or as datagrams, and that the transport to send the encrypted records present a stream or datagram interface.
 - Stream-to-Stream Protocols: TLS, tcpcrypt
 - Datagram-to-Datagram Protocols: DTLS, ESP
-- Stream-to-Datagram Protocols: QUIC [Editor's Note: This depends on the interface QUIC exposes to applications.]
+- Stream-to-Datagram Protocols: QUIC ((Editor's Note: This depends on the interface QUIC exposes to applications.))
 
 ### Decrypt application data
 
 The application can receive data from its transport to be decrypted using record protocol. The decryption step may require that the incoming transport data is presented as a stream or as datagrams, and that the resulting application data is a stream or datagrams.
 - Stream-to-Stream Protocols: TLS, tcpcrypt
 - Datagram-to-Datagram Protocols: DTLS, ESP
-- Datagram-to-Stream Protocols: QUIC [Editor's Note: This depends on the interface QUIC exposes to applications.]
+- Datagram-to-Stream Protocols: QUIC ((Editor's Note: This depends on the interface QUIC exposes to applications.))
 
 ### Key Expiration
 
-The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signalling between the record layer and the handshake layer.
-Protocols: ESP --> TODO: Check TLS/DTLS
+The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling between the record layer and the handshake layer.
+Protocols: ESP ((Editor's note: We may consider TLS/DTLS to also have this interface))
 
 ### Transport mobility
 
-The record protocol can be signalled that it is being migrated to another transport or interface due to connection mobility, which may reset address and state validation.
+The record protocol can be signaled that it is being migrated to another transport or interface due to connection mobility, which may reset address and state validation.
 Protocols: QUIC, MinimalT, CurveCP, ESP
 
 # IANA Considerations
