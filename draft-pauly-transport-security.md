@@ -114,7 +114,7 @@ The following terms are used throughout this document to describe the roles and 
 
 - Server: the peer responsible for responding to a session initiation.
 
-# Current Transport Security Protocols
+# Transport Security Protocols
 
 This section contains descriptions of security protocols that currently used to protect data being sent over a network.
 
