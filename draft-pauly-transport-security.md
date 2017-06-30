@@ -500,122 +500,91 @@ above, with each interface. Note that not all protocols support each interface.
 Configuration interfaces are used to configure the security protocols before a
 handshake begins or the keys are negotiated.
 
-### Identity and Private Keys
-
+- Identity and Private Keys  
 The application can provide its identities (certificates) and private keys, or
-mechanisms to access these, to the security protocol to use during handshakes.
+mechanisms to access these, to the security protocol to use during handshakes.  
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2
 
-- Protocols: TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2
-
-### Supported Algorithms (Key Exchange, Signatures and Ciphersuites)
-
+- Supported Algorithms (Key Exchange, Signatures and Ciphersuites)  
 The application can choose the algorithms that are supported for key exchange,
-signatures, and ciphersuites.
+signatures, and ciphersuites.  
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
 
-- Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
-
-### Session Cache
-
+- Session Cache  
 The application provides the ability to save and retrieve session state (tickets,
-keying material, server parameters) that may be used to resume the security session.
+keying material, server parameters) that may be used to resume the security session.  
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT
 
-- Protocols: TLS, DTLS, QUIC + TLS, MinimalT
-
-### Authentication Delegate
-
+- Authentication Delegate  
 The application provides access to a separate module that will provide authentication,
-using EAP for example.
-
-- Protocols: IKEv2
+using EAP for example.  
+Protocols: IKEv2
 
 ## Handshake Interfaces
 
 Handshake interfaces are the points of interaction between a handshake protocol and
 the application, record protocol, and transport once the handshake is active.
 
-### Send Handshake Messages
+- Send Handshake Messages  
+The handshake protocol needs to be able to send messages over a transport to the remote peer to establish trust and negotiate keys.  
+Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
 
-The handshake protocol needs to be able to send messages over a transport to the
-remote peer to establish trust and negotiate keys.
-
-- Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
-
-### Receive Handshake Messages
-
+- Receive Handshake Messages  
 The handshake protocol needs to be able to receive messages from the remote peer
-over a transport to establish trust and negotiate keys.
+over a transport to establish trust and negotiate keys.  
+Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
 
-- Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
+- Identity Validation  
+During a handshake, the security protocol will conduct identity validation of the peer. 
+This can call into the application to offload validation.  
+Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
 
-### Identity Validation
-
-During a handshake, the security protocol will conduct identity validation of
-the peer. This can call into the application to offload validation.
-
-- Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
-
-### Source Address Validation
-
+- Source Address Validation  
 The handshake protocol may delegate validation of the remote peer that has sent
 data to the transport protocol or application. This involves sending a cookie
-exchange to avoid DoS attacks.
+exchange to avoid DoS attacks.  
+Protocols: QUIC + TLS
 
-- Protocols: QUIC + TLS
-
-### Key Update
-
+- Key Update  
 The handshake protocol may be instructed to update its keying material, either
-by the application directly or by the record protocol sending a key expiration event.
+by the application directly or by the record protocol sending a key expiration event.  
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
 
-- Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
-
-### Pre-Shared Key Export
-
-The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication. These may be explicitly exportable to the application, traditionally limited to direct  export to the record protocol, or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.
-
-- Explict export: TLS (for QUIC), tcpcrypt, IKEv2
-- Direct export: TLS, DTLS, MinimalT
-- Non-exportable: CurveCP
+- Pre-Shared Key Export  
+The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication. These may be explicitly exportable to the application, traditionally limited to direct  export to the record protocol, or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.  
+    - Explict export: TLS (for QUIC), tcpcrypt, IKEv2
+    - Direct export: TLS, DTLS, MinimalT
+    - Non-exportable: CurveCP
 
 ## Record Interfaces
 
 Record interfaces are the points of interaction between a record protocol and the application, handshake protocol, and transport once in use.
 
-### Pre-Shared Key Import
-
+- Pre-Shared Key Import  
 Either the handshake protocol or the application directly can supply pre-shared keys for the record protocol use for encryption/decryption and authentication. If the application can supply keys directly, this is considered explicit import; if the handshake protocol traditionally provides the keys directly, it is considered direct import; if the keys can only be shared by the handshake, they are considered non-importable.
+    - Explict import: QUIC, ESP
+    - Direct import: TLS, DTLS, MinimalT, tcpcrypt
+    - Non-importable: CurveCP
 
-- Explict import: QUIC, ESP
-- Direct import: TLS, DTLS, MinimalT, tcpcrypt
-- Non-importable: CurveCP
+- Encrypt application data  
+The application can send data to the record protocol to encrypt it into a format that can be sent on the underlying transport. The encryption step may require that the application data is treated as a stream or as datagrams, and that the transport to send the encrypted records present a stream or datagram interface.  
+    - Stream-to-Stream Protocols: TLS, tcpcrypt
+    - Datagram-to-Datagram Protocols: DTLS, ESP
+    - Stream-to-Datagram Protocols: QUIC ((Editor's Note: This depends on the interface QUIC exposes to applications.))
 
-### Encrypt application data
+- Decrypt application data  
+The application can receive data from its transport to be decrypted using record protocol. The decryption step may require that the incoming transport data is presented as a stream or as datagrams, and that the resulting application data is a stream or datagrams.  
+    - Stream-to-Stream Protocols: TLS, tcpcrypt
+    - Datagram-to-Datagram Protocols: DTLS, ESP
+    - Datagram-to-Stream Protocols: QUIC ((Editor's Note: This depends on the interface QUIC exposes to applications.))
 
-The application can send data to the record protocol to encrypt it into a format that can be sent on the underlying transport. The encryption step may require that the application data is treated as a stream or as datagrams, and that the transport to send the encrypted records present a stream or datagram interface.
+- Key Expiration  
+The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling between the record layer and the handshake layer.  
+Protocols: ESP ((Editor's note: One may consider TLS/DTLS to also have this interface))
 
-- Stream-to-Stream Protocols: TLS, tcpcrypt
-- Datagram-to-Datagram Protocols: DTLS, ESP
-- Stream-to-Datagram Protocols: QUIC ((Editor's Note: This depends on the interface QUIC exposes to applications.))
-
-### Decrypt application data
-
-The application can receive data from its transport to be decrypted using record protocol. The decryption step may require that the incoming transport data is presented as a stream or as datagrams, and that the resulting application data is a stream or datagrams.
-
-- Stream-to-Stream Protocols: TLS, tcpcrypt
-- Datagram-to-Datagram Protocols: DTLS, ESP
-- Datagram-to-Stream Protocols: QUIC ((Editor's Note: This depends on the interface QUIC exposes to applications.))
-
-### Key Expiration
-
-The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling between the record layer and the handshake layer.
-
-- Protocols: ESP ((Editor's note: One may consider TLS/DTLS to also have this interface))
-
-### Transport mobility
-
-The record protocol can be signaled that it is being migrated to another transport or interface due to connection mobility, which may reset address and state validation.
-
-- Protocols: QUIC, MinimalT, CurveCP, ESP
+- Transport mobility  
+The record protocol can be signaled that it is being migrated to another transport or interface due to connection mobility, which may reset address and state validation.  
+Protocols: QUIC, MinimalT, CurveCP, ESP
 
 # IANA Considerations
 
