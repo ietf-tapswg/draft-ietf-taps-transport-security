@@ -80,7 +80,7 @@ This document provides a survey of commonly used or notable network security pro
 
 # Introduction
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP). This survey is not limited to protocols developed within the scope or context of the IETF.
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP, and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
 
 For each protocol, this document provides a brief description, the security features it provides, and the dependencies it has on the underlying transport. This is followed by defining the set of transport security features shared by these protocols. Finally, we distill the application and transport interfaces provided by the transport security protocols.
 
@@ -438,6 +438,38 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 #### ESP
 
 - Since ESP is below transport protocols, it does not have any dependencies on the transports themselves, other than on UDP or TCP for NAT traversal.
+
+## SRTP
+
+XXX
+
+### Protocol descriptions
+
+XXX
+
+### Protocol features
+
+XXX
+
+### Protocol dependencies
+
+XXX
+
+## WireGuard
+
+XXX
+
+### Protocol descriptions
+
+XXX
+
+### Protocol features
+
+XXX
+
+### Protocol dependencies
+
+XXX
 
 # Common Transport Security Features
 
