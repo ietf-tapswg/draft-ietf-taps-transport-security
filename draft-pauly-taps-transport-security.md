@@ -172,6 +172,9 @@ for the server. It is assumed that the client must always store some state infor
 - Application-layer protocol negotiation.
 - Transparent data segmentation.
 
+<!-- caw: possibles to add -->
+- identity hiding
+
 ### Protocol Dependencies
 
 - TCP for in-order, reliable transport.
@@ -468,6 +471,52 @@ XXX
 XXX
 
 ### Protocol dependencies
+
+XXX
+
+## Noise Socket/Link
+
+XXX: https://noiseprotocol.org/docs/noise_stanford_seminar_2016.pdf
+
+### Protocol descriptions
+
+XXX
+
+### Protocol features
+
+XXX
+
+### Protocol dependencies
+
+XXX
+
+
+## Signal
+
+XXX
+
+## Pond
+
+XXX
+
+## NTor 
+
+XXX: https://gitweb.torproject.org/torspec.git/tree/proposals/216-ntor-handshake.txt
+XXX: http://www.cypherpunks.ca/~iang/pubs/torsec.pdf
+
+## TAP
+
+XXX: https://svn.torproject.org/svn/projects/design-paper/tor-design.pdf
+
+## CurveCP
+
+XXX
+
+## OTR
+
+XXX
+
+## ZRTP 
 
 XXX
 
