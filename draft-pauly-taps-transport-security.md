@@ -172,6 +172,9 @@ for the server. It is assumed that the client must always store some state infor
 - Application-layer protocol negotiation.
 - Transparent data segmentation.
 
+<!-- caw: possibles to add -->
+- identity hiding
+
 ### Protocol Dependencies
 
 - TCP for in-order, reliable transport.
@@ -574,6 +577,9 @@ XXX
 
 XXX
 
+XXX: https://gitweb.torproject.org/torspec.git/tree/proposals/216-ntor-handshake.txt
+XXX: http://www.cypherpunks.ca/~iang/pubs/torsec.pdf
+
 ### Protocol descriptions
 
 XXX
@@ -583,6 +589,20 @@ XXX
 XXX
 
 ### Protocol dependencies
+
+## TAP
+
+XXX: https://svn.torproject.org/svn/projects/design-paper/tor-design.pdf
+
+## CurveCP
+
+XXX
+
+## OTR
+
+XXX
+
+## ZRTP 
 
 XXX
 
