@@ -441,7 +441,42 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 
 ## SRTP
 
+XXX: https://tools.ietf.org/html/rfc3711
+XXX: https://tools.ietf.org/html/rfc5763
+
+### Protocol descriptions
+
 XXX
+
+### Protocol features
+
+XXX
+
+### Protocol dependencies
+
+XXX
+
+## ZRTP
+
+XXX: http://zfoneproject.com/faq.html#keycontinuity
+
+### Protocol descriptions
+
+XXX
+
+### Protocol features
+
+XXX
+
+### Protocol dependencies
+
+XXX
+
+## SS-TLS
+
+XXX
+
+https://www.esat.kuleuven.be/cosic/publications/article-2806.pdf
 
 ### Protocol descriptions
 
@@ -456,6 +491,86 @@ XXX
 XXX
 
 ## WireGuard
+
+XXX
+
+### Protocol descriptions
+
+XXX
+
+### Protocol features
+
+XXX
+
+### Protocol dependencies
+
+XXX
+
+## NoiseSocket
+
+XXX
+
+### Protocol descriptions
+
+XXX
+
+### Protocol features
+
+XXX
+
+### Protocol dependencies
+
+XXX
+
+## CurveCP
+
+XXX
+
+### Protocol descriptions
+
+XXX
+
+### Protocol features
+
+XXX
+
+### Protocol dependencies
+
+XXX
+
+## OTR
+
+XXX
+
+### Protocol descriptions
+
+XXX
+
+### Protocol features
+
+XXX
+
+### Protocol dependencies
+
+XXX
+
+## Signal
+
+XXX
+
+### Protocol descriptions
+
+XXX
+
+### Protocol features
+
+XXX
+
+### Protocol dependencies
+
+XXX
+
+## NTor
 
 XXX
 
@@ -567,7 +682,7 @@ over a transport to establish trust and negotiate keys.
 Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
 
 - Identity Validation  
-During a handshake, the security protocol will conduct identity validation of the peer. 
+During a handshake, the security protocol will conduct identity validation of the peer.
 This can call into the application to offload validation.  
 Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
 
