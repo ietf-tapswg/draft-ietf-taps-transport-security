@@ -173,7 +173,7 @@ for the server. It is assumed that the client must always store some state infor
 - Transparent data segmentation.
 
 <!-- caw: possibles to add -->
-- identity hiding
+<!-- - identity hiding -->
 
 ### Protocol Dependencies
 
@@ -447,97 +447,23 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 XXX: https://tools.ietf.org/html/rfc3711
 XXX: https://tools.ietf.org/html/rfc5763
 
-### Protocol descriptions
-
-XXX
-
-### Protocol features
-
-XXX
-
-### Protocol dependencies
-
-XXX
-
 ## ZRTP
 
 XXX: http://zfoneproject.com/faq.html#keycontinuity
 
-### Protocol descriptions
-
-XXX
-
-### Protocol features
-
-XXX
-
-### Protocol dependencies
-
-XXX
-
 ## SS-TLS
 
-XXX
-
-https://www.esat.kuleuven.be/cosic/publications/article-2806.pdf
-
-### Protocol descriptions
-
-XXX
-
-### Protocol features
-
-XXX
-
-### Protocol dependencies
-
-XXX
+XXX: https://www.esat.kuleuven.be/cosic/publications/article-2806.pdf
 
 ## WireGuard
 
-XXX
-
-### Protocol descriptions
-
-XXX
-
-### Protocol features
-
-XXX
-
-### Protocol dependencies
-
-XXX
+XXX: https://www.wireguard.com/papers/wireguard.pdf
 
 ## NoiseSocket
 
-XXX
-
-### Protocol descriptions
-
-XXX
-
-### Protocol features
-
-XXX
-
-### Protocol dependencies
-
-XXX
+XXX: http://noiseprotocol.org/specs/noisesocket.html
 
 ## CurveCP
-
-XXX
-
-### Protocol descriptions
-
-XXX
-
-### Protocol features
-
-XXX
-
-### Protocol dependencies
 
 XXX
 
@@ -545,31 +471,7 @@ XXX
 
 XXX
 
-### Protocol descriptions
-
-XXX
-
-### Protocol features
-
-XXX
-
-### Protocol dependencies
-
-XXX
-
 ## Signal
-
-XXX
-
-### Protocol descriptions
-
-XXX
-
-### Protocol features
-
-XXX
-
-### Protocol dependencies
 
 XXX
 
@@ -580,31 +482,9 @@ XXX
 XXX: https://gitweb.torproject.org/torspec.git/tree/proposals/216-ntor-handshake.txt
 XXX: http://www.cypherpunks.ca/~iang/pubs/torsec.pdf
 
-### Protocol descriptions
-
-XXX
-
-### Protocol features
-
-XXX
-
-### Protocol dependencies
-
 ## TAP
 
 XXX: https://svn.torproject.org/svn/projects/design-paper/tor-design.pdf
-
-## CurveCP
-
-XXX
-
-## OTR
-
-XXX
-
-## ZRTP 
-
-XXX
 
 # Common Transport Security Features
 
