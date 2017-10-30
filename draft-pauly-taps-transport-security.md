@@ -442,50 +442,6 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 
 - Since ESP is below transport protocols, it does not have any dependencies on the transports themselves, other than on UDP or TCP for NAT traversal.
 
-## SRTP
-
-XXX: https://tools.ietf.org/html/rfc3711
-XXX: https://tools.ietf.org/html/rfc5763
-
-## ZRTP
-
-XXX: http://zfoneproject.com/faq.html#keycontinuity
-
-## SS-TLS
-
-XXX: https://www.esat.kuleuven.be/cosic/publications/article-2806.pdf
-
-## WireGuard
-
-XXX: https://www.wireguard.com/papers/wireguard.pdf
-
-## NoiseSocket
-
-XXX: http://noiseprotocol.org/specs/noisesocket.html
-
-## CurveCP
-
-XXX
-
-## OTR
-
-XXX
-
-## Signal
-
-XXX
-
-## NTor
-
-XXX
-
-XXX: https://gitweb.torproject.org/torspec.git/tree/proposals/216-ntor-handshake.txt
-XXX: http://www.cypherpunks.ca/~iang/pubs/torsec.pdf
-
-## TAP
-
-XXX: https://svn.torproject.org/svn/projects/design-paper/tor-design.pdf
-
 # Common Transport Security Features
 
 There exists a common set of features shared across the transport protocols surveyed in this document.
