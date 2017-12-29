@@ -34,11 +34,13 @@ normative:
     RFC4555:
     RFC5246:
     RFC5723:
+    RFC5869:
     RFC6066:
     RFC6347:
     RFC7250:
     RFC7296:
     RFC7301:
+    RFC7539:
     RFC8095:
     I-D.ietf-tcpinc-tcpcrypt:
     I-D.ietf-tcpinc-tcpeno:
@@ -46,12 +48,48 @@ normative:
     I-D.ietf-quic-tls:
     I-D.ietf-tls-tls13:
     I-D.ietf-ipsecme-tcp-encaps:
+    BLAKE2:
+      title: BLAKE2 -- simpler, smaller, fast as MD5
+      url: https://blake2.net/blake2.pdf
+      authors:
+        -
+          ins: Jean-Philippe Aumasson
+        -
+          ins: Samuel Neves
+        -
+          ins: Zooko Wilcox-O’Hearn
+        -
+          ins: Christian Winnerlein
+    Noise:
+      title: The Noise Protocol Framework
+      url: http://noiseprotocol.org/noise.pdf
+      authors:
+        -
+          ins: Trevor Perrin
+    WireGuard:
+      title: WireGuard -- Next Generation Kernel Network Tunnel
+      url: https://www.wireguard.com/papers/wireguard.pdf
+      authors:
+        -
+          ins: Jason A. Donenfeld
+    SIGMA:
+      title: SIGMA -- The ‘SIGn-and-MAc’ Approach to Authenticated Diffie-Hellman and Its Use in the IKE-Protocols
+      url: http://www.iacr.org/cryptodb/archive/2003/CRYPTO/1495/1495.pdf 
+      authors:
+        -
+          ins: H. Krawczyk
     CurveCP:
-        title: CurveCP -- Usable security for the Internet
-        url: http://curvecp.org
-        authors:
-            -
-                ins: D. J. Bernstein
+      title: CurveCP -- Usable security for the Internet
+      url: http://curvecp.org
+      authors:
+        -
+          ins: D. J. Bernstein
+    Curve25519:
+      title: Curve25519 - new Diffie-Hellman speed records
+      url: https://cr.yp.to/ecdh/curve25519-20060209.pdf
+      authors:
+        -
+          ins: D. J. Bernstein
     MinimalT:
       title: MinimaLT -- Minimal-latency Networking Through Better Security
       url: http://dl.acm.org/citation.cfm?id=2516737
@@ -74,13 +112,13 @@ normative:
 
 --- abstract
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP). This survey is not limited to protocols developed within the scope or context of the IETF.
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
 
 --- middle
 
 # Introduction
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP, and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
 
 For each protocol, this document provides a brief description, the security features it provides, and the dependencies it has on the underlying transport. This is followed by defining the set of transport security features shared by these protocols. Finally, we distill the application and transport interfaces provided by the transport security protocols.
 
@@ -237,8 +275,9 @@ further records, are sent over this stream. This TLS connection follows the TLS 
 and inherits the security properties of TLS. The handshake generates keys, which are
 then exported to the rest of the QUIC connection, and are used to protect the rest of the streams.
 
-The initial QUIC messages are sent without encryption in order to start the TLS handshake.
-Once the handshake has generated keys, the subsequent messages are encrypted. The TLS 1.3
+Initial QUIC messages are encrypted using "fixed" keys derived from the QUIC version and 
+public packet information (Connection ID).
+Once handshake has generated keys, subsequent messages are encrypted. The TLS 1.3
 handshake for QUIC is used in either a single-RTT mode or a fast-open zero-RTT mode. When
 zero-RTT handshakes are possible, the encryption first transitions to use the zero-RTT keys
 before using single-RTT handshake keys after the next TLS flight.
@@ -442,6 +481,53 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 
 - Since ESP is below transport protocols, it does not have any dependencies on the transports themselves, other than on UDP or TCP for NAT traversal.
 
+## WireGuard
+
+WireGuard is a layer 3 protocol designed to complement or replace IPsec {{WireGuard}}.
+Unlike most transport security protocols, which rely on PKI for peer authentication, 
+WireGuard authenticates peers using pre-shared public keys delivered out-of-band, each 
+of which is bound to one or more IP addresses. 
+Moreover, as a protocol suited for VPNs, WireGuard offers no extensibility, negotiation, 
+or cryptographic agility. 
+
+### Protocol description
+
+WireGuard is a simple VPN protocol that binds a pre-shared public key to one or more
+IP addresses. Users configure WireGuard by associating peer public keys with IP addresses. 
+These mappings are stored in a CryptoKey Routing Table. (See Section 2 of {{WireGuard}}
+for more details and sample configurations.) These keys are used upon WireGuard packet 
+transmission and reception. For example, upon receipt of a Handshake Initiation message,
+receivers use the static public key in their CryptoKey routing table to perform necessary
+cryptographic computations.
+
+WireGuard builds on Noise {{Noise}} for 1-RTT key exchange with identity hiding. The handshake
+hides peer identities as per the SIGMA construction {{SIGMA}}. As a consequence of using Noise, 
+WireGuard comes with a fixed set of cryptographic algorithms:
+
+- x25519 {{Curve25519}} and HKDF {{RFC5869}} for ECDH and key derivation.
+- ChaCha20+Poly1305 {{RFC7539}} for packet authenticated encryption.
+- BLAKE2s {{BLAKE2}} for hashing.
+
+There is no cryptographic agility. If weaknesses are found in any of
+these algorithms, new message types using new algorithms must be introduced.
+
+WireGuard is designed to be entirely stateless, modulo the CryptoKey routing table, which has size
+linear with the number of trusted peers. If a WireGuard receiver is under heavy load and cannot process
+a packet, e.g., cannot spare CPU cycles for point multiplication, it can reply with a cookie similar
+to DTLS and IKEv2. 
+
+### Protocol features
+
+- Optional PSK-based session creation.
+- Mutual client and server authentication.
+- Stateful, timestamp-based replay prevention.
+- Cookie-based DoS mitigation similar to DTLS and IKEv2.
+
+### Protocol dependencies
+
+- Datagram transport.
+- Out-of-band key distribution and management.
+
 # Common Transport Security Features
 
 There exists a common set of features shared across the transport protocols surveyed in this document.
@@ -595,7 +681,8 @@ This document has on request to IANA.
 
 # Security Considerations
 
-N/A
+This document summarizes existing transport security protocols and their interfaces. 
+It does not propose changes to or recommend usage of reference protocols. 
 
 # Acknowledgments
 
