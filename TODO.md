@@ -6,7 +6,6 @@ XXX
 ### Protocol features
 ### Protocol dependencies
 
-
 ## SS-TLS
 
 XXX: https://www.esat.kuleuven.be/cosic/publications/article-2806.pdf
@@ -48,7 +47,6 @@ XXX
 ### Protocol features
 ### Protocol dependencies
 
-
 ## ZRTP
 
 XXX: http://zfoneproject.com/faq.html#keycontinuity
@@ -57,12 +55,4 @@ XXX: http://zfoneproject.com/faq.html#keycontinuity
 ### Protocol features
 ### Protocol dependencies
 
-## SRTP
-
-XXX: https://tools.ietf.org/html/rfc3711
-XXX: https://tools.ietf.org/html/rfc5763
-
-### Protocol descriptions
-### Protocol features
-### Protocol dependencies
 

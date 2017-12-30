@@ -30,10 +30,13 @@ author:
     email: cawood@apple.com
 
 normative:
+    RFC3711:
     RFC4303:
     RFC4555:
     RFC5246:
     RFC5723:
+    RFC5763:
+    RFC5764:
     RFC5869:
     RFC6066:
     RFC6347:
@@ -112,13 +115,13 @@ normative:
 
 --- abstract
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
 
 --- middle
 
 # Introduction
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
 
 For each protocol, this document provides a brief description, the security features it provides, and the dependencies it has on the underlying transport. This is followed by defining the set of transport security features shared by these protocols. Finally, we distill the application and transport interfaces provided by the transport security protocols.
 
@@ -527,6 +530,50 @@ to DTLS and IKEv2.
 
 - Datagram transport.
 - Out-of-band key distribution and management.
+
+## SRTP (with DTLS)
+
+SRTP -- Secure RTP -- is a profile for RTP that provides confidentiality, message 
+authentication, and replay protection for data and control packets {{RFC3711}}.
+SRTP packets are encrypted using a session key, which is derived from a separate
+master key. Master keys are derived and managed externally, e.g., via DTLS, as specified
+in RFC 5736 {{RFC5763}}.
+
+### Protocol descriptions
+
+SRTP adds confidentiality and, optionally, integrity protection to SRTP packets. 
+This is done by encrypting RTP payloads and optionally appending an authentication
+tag (MAC) to the packet trailer. Packets are encrypted using session keys, which
+are ultimately derived from a master key and some additional master salt and session salt.
+SRTP packets carry a 2-byte sequence number to partially identify the unique packet
+index. SRTP peers maintain a separate rollover counter (ROC) that is incremented whenever
+the sequence number wraps. The sequence number and ROC together determine the packet index.
+Packets also carry 
+
+Numerous encryption modes are supported. For popular modes of operation, e.g., AES-CTR, 
+The (unique) initialization vector (IV) used for each encryption mode is a function of 
+the RTP SSRC (synchronization source), packet index, and session "salting key".
+
+SRTP offers replay detection by keeping a Replay List of already seen and processed packet indices. 
+If a packet arrives with an index that matches one in the Replay List, it is silently discarded.
+
+DTLS {{RFC5764}} is commonly used as a way to perform mutually authentication key 
+establishment for SRTP {{RFC5763}}. (Here, certificates marshall public keys between
+endpoints. Thus, self-signed certificates may be used if peers do not mutually trust one another, 
+as is common on the Internet.) When DTLS is used, certificate fingerprints are transmitted
+out-of-band using SIP. Peers typically verify that DTLS-offered certificates match
+that which are offered over SIP. This prevents active attacks on RTP, but not on the signalling
+(SIP) channel. 
+
+### Protocol features
+
+- Optional replay protection with tunable replay windows.
+- Out-of-order packet receipt.
+- (RFC5763) Mandatory mutually authenticated key exchange.
+
+### Protocol dependencies
+
+- External key derivation and management mechanism or protocol, e.g., DTLS {{RFC5763}}.
 
 # Common Transport Security Features
 
