@@ -38,15 +38,20 @@ author:
     email: cawood@apple.com
 
 normative:
+    RFC3711:
     RFC4303:
     RFC4555:
     RFC5246:
     RFC5723:
+    RFC5763:
+    RFC5764:
+    RFC5869:
     RFC6066:
     RFC6347:
     RFC7250:
     RFC7296:
     RFC7301:
+    RFC7539:
     RFC8095:
     I-D.ietf-tcpinc-tcpcrypt:
     I-D.ietf-tcpinc-tcpeno:
@@ -54,12 +59,48 @@ normative:
     I-D.ietf-quic-tls:
     I-D.ietf-tls-tls13:
     I-D.ietf-ipsecme-tcp-encaps:
+    BLAKE2:
+      title: BLAKE2 -- simpler, smaller, fast as MD5
+      url: https://blake2.net/blake2.pdf
+      authors:
+        -
+          ins: Jean-Philippe Aumasson
+        -
+          ins: Samuel Neves
+        -
+          ins: Zooko Wilcox-O’Hearn
+        -
+          ins: Christian Winnerlein
+    Noise:
+      title: The Noise Protocol Framework
+      url: http://noiseprotocol.org/noise.pdf
+      authors:
+        -
+          ins: Trevor Perrin
+    WireGuard:
+      title: WireGuard -- Next Generation Kernel Network Tunnel
+      url: https://www.wireguard.com/papers/wireguard.pdf
+      authors:
+        -
+          ins: Jason A. Donenfeld
+    SIGMA:
+      title: SIGMA -- The ‘SIGn-and-MAc’ Approach to Authenticated Diffie-Hellman and Its Use in the IKE-Protocols
+      url: http://www.iacr.org/cryptodb/archive/2003/CRYPTO/1495/1495.pdf 
+      authors:
+        -
+          ins: H. Krawczyk
     CurveCP:
-        title: CurveCP -- Usable security for the Internet
-        url: http://curvecp.org
-        authors:
-            -
-                ins: D. J. Bernstein
+      title: CurveCP -- Usable security for the Internet
+      url: http://curvecp.org
+      authors:
+        -
+          ins: D. J. Bernstein
+    Curve25519:
+      title: Curve25519 - new Diffie-Hellman speed records
+      url: https://cr.yp.to/ecdh/curve25519-20060209.pdf
+      authors:
+        -
+          ins: D. J. Bernstein
     MinimalT:
       title: MinimaLT -- Minimal-latency Networking Through Better Security
       url: http://dl.acm.org/citation.cfm?id=2516737
@@ -82,13 +123,13 @@ normative:
 
 --- abstract
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP). This survey is not limited to protocols developed within the scope or context of the IETF.
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
 
 --- middle
 
 # Introduction
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, and Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP). This survey is not limited to protocols developed within the scope or context of the IETF.
+This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
 
 For each protocol, this document provides a brief description, the security features it provides, and the dependencies it has on the underlying transport. This is followed by defining the set of transport security features shared by these protocols. Finally, we distill the application and transport interfaces provided by the transport security protocols.
 
@@ -180,6 +221,9 @@ for the server. It is assumed that the client must always store some state infor
 - Application-layer protocol negotiation.
 - Transparent data segmentation.
 
+<!-- caw: possibles to add -->
+<!-- - identity hiding -->
+
 ### Protocol Dependencies
 
 - TCP for in-order, reliable transport.
@@ -242,8 +286,9 @@ further records, are sent over this stream. This TLS connection follows the TLS 
 and inherits the security properties of TLS. The handshake generates keys, which are
 then exported to the rest of the QUIC connection, and are used to protect the rest of the streams.
 
-The initial QUIC messages are sent without encryption in order to start the TLS handshake.
-Once the handshake has generated keys, the subsequent messages are encrypted. The TLS 1.3
+Initial QUIC messages (packets) are encrypted using "fixed" keys derived from the QUIC version and 
+public packet information (Connection ID). Packets are later encrypted using keys derived
+from the TLS traffic secret upon handshake completion. The TLS 1.3
 handshake for QUIC is used in either a single-RTT mode or a fast-open zero-RTT mode. When
 zero-RTT handshakes are possible, the encryption first transitions to use the zero-RTT keys
 before using single-RTT handshake keys after the next TLS flight.
@@ -449,6 +494,98 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 
 - Since ESP is below transport protocols, it does not have any dependencies on the transports themselves, other than on UDP or TCP for NAT traversal.
 
+## WireGuard
+
+WireGuard is a layer 3 protocol designed to complement or replace IPsec {{WireGuard}}.
+Unlike most transport security protocols, which rely on PKI for peer authentication, 
+WireGuard authenticates peers using pre-shared public keys delivered out-of-band, each 
+of which is bound to one or more IP addresses. 
+Moreover, as a protocol suited for VPNs, WireGuard offers no extensibility, negotiation, 
+or cryptographic agility. 
+
+### Protocol description
+
+WireGuard is a simple VPN protocol that binds a pre-shared public key to one or more
+IP addresses. Users configure WireGuard by associating peer public keys with IP addresses. 
+These mappings are stored in a CryptoKey Routing Table. (See Section 2 of {{WireGuard}}
+for more details and sample configurations.) These keys are used upon WireGuard packet 
+transmission and reception. For example, upon receipt of a Handshake Initiation message,
+receivers use the static public key in their CryptoKey routing table to perform necessary
+cryptographic computations.
+
+WireGuard builds on Noise {{Noise}} for 1-RTT key exchange with identity hiding. The handshake
+hides peer identities as per the SIGMA construction {{SIGMA}}. As a consequence of using Noise, 
+WireGuard comes with a fixed set of cryptographic algorithms:
+
+- x25519 {{Curve25519}} and HKDF {{RFC5869}} for ECDH and key derivation.
+- ChaCha20+Poly1305 {{RFC7539}} for packet authenticated encryption.
+- BLAKE2s {{BLAKE2}} for hashing.
+
+There is no cryptographic agility. If weaknesses are found in any of
+these algorithms, new message types using new algorithms must be introduced.
+
+WireGuard is designed to be entirely stateless, modulo the CryptoKey routing table, which has size
+linear with the number of trusted peers. If a WireGuard receiver is under heavy load and cannot process
+a packet, e.g., cannot spare CPU cycles for point multiplication, it can reply with a cookie similar
+to DTLS and IKEv2. This cookie only proves IP address ownership. Any rate limiting scheme can be applied
+to packets coming from non-spoofed addresses.
+
+### Protocol features
+
+- Optional PSK-based session creation.
+- Mutual client and server authentication.
+- Stateful, timestamp-based replay prevention.
+- Cookie-based DoS mitigation similar to DTLS and IKEv2.
+
+### Protocol dependencies
+
+- Datagram transport.
+- Out-of-band key distribution and management.
+
+## SRTP (with DTLS)
+
+SRTP -- Secure RTP -- is a profile for RTP that provides confidentiality, message 
+authentication, and replay protection for data and control packets {{RFC3711}}.
+SRTP packets are encrypted using a session key, which is derived from a separate
+master key. Master keys are derived and managed externally, e.g., via DTLS, as specified
+in RFC 5736 {{RFC5763}}.
+
+### Protocol descriptions
+
+SRTP adds confidentiality and, optionally, integrity protection to SRTP packets. 
+This is done by encrypting RTP payloads and optionally appending an authentication
+tag (MAC) to the packet trailer. Packets are encrypted using session keys, which
+are ultimately derived from a master key and some additional master salt and session salt.
+SRTP packets carry a 2-byte sequence number to partially identify the unique packet
+index. SRTP peers maintain a separate rollover counter (ROC) that is incremented whenever
+the sequence number wraps. The sequence number and ROC together determine the packet index.
+Packets also carry 
+
+Numerous encryption modes are supported. For popular modes of operation, e.g., AES-CTR, 
+The (unique) initialization vector (IV) used for each encryption mode is a function of 
+the RTP SSRC (synchronization source), packet index, and session "salting key".
+
+SRTP offers replay detection by keeping a Replay List of already seen and processed packet indices. 
+If a packet arrives with an index that matches one in the Replay List, it is silently discarded.
+
+DTLS {{RFC5764}} is commonly used as a way to perform mutually authentication key 
+establishment for SRTP {{RFC5763}}. (Here, certificates marshall public keys between
+endpoints. Thus, self-signed certificates may be used if peers do not mutually trust one another, 
+as is common on the Internet.) When DTLS is used, certificate fingerprints are transmitted
+out-of-band using SIP. Peers typically verify that DTLS-offered certificates match
+that which are offered over SIP. This prevents active attacks on RTP, but not on the signalling
+(SIP) channel. 
+
+### Protocol features
+
+- Optional replay protection with tunable replay windows.
+- Out-of-order packet receipt.
+- (RFC5763) Mandatory mutually authenticated key exchange.
+
+### Protocol dependencies
+
+- External key derivation and management mechanism or protocol, e.g., DTLS {{RFC5763}}.
+
 # Common Transport Security Features
 
 There exists a common set of features shared across the transport protocols surveyed in this document.
@@ -513,12 +650,12 @@ handshake begins or the keys are negotiated.
 - Identity and Private Keys  
 The application can provide its identities (certificates) and private keys, or
 mechanisms to access these, to the security protocol to use during handshakes.  
-Protocols: TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP
 
 - Supported Algorithms (Key Exchange, Signatures and Ciphersuites)  
 The application can choose the algorithms that are supported for key exchange,
 signatures, and ciphersuites.  
-Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2, SRTP
 
 - Session Cache  
 The application provides the ability to save and retrieve session state (tickets,
@@ -528,7 +665,7 @@ Protocols: TLS, DTLS, QUIC + TLS, MinimalT
 - Authentication Delegate  
 The application provides access to a separate module that will provide authentication,
 using EAP for example.  
-Protocols: IKEv2
+Protocols: IKEv2, SRTP
 
 ## Handshake Interfaces
 
@@ -537,23 +674,23 @@ the application, record protocol, and transport once the handshake is active.
 
 - Send Handshake Messages  
 The handshake protocol needs to be able to send messages over a transport to the remote peer to establish trust and negotiate keys.  
-Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
+Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP (DTLS))
 
 - Receive Handshake Messages  
 The handshake protocol needs to be able to receive messages from the remote peer
 over a transport to establish trust and negotiate keys.  
-Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
+Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP (DTLS))
 
 - Identity Validation  
-During a handshake, the security protocol will conduct identity validation of the peer. 
-This can call into the application to offload validation.  
-Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2)
+During a handshake, the security protocol will conduct identity validation of the peer.
+This can call into the application to offload validation.
+Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP (DTLS))
 
 - Source Address Validation  
 The handshake protocol may delegate validation of the remote peer that has sent
 data to the transport protocol or application. This involves sending a cookie
 exchange to avoid DoS attacks.  
-Protocols: QUIC + TLS
+Protocols: QUIC + TLS, DTLS, WireGuard
 
 - Key Update  
 The handshake protocol may be instructed to update its keying material, either
@@ -562,7 +699,7 @@ Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
 
 - Pre-Shared Key Export  
 The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication. These may be explicitly exportable to the application, traditionally limited to direct  export to the record protocol, or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.  
-    - Explict export: TLS (for QUIC), tcpcrypt, IKEv2
+    - Explict export: TLS (for QUIC), tcpcrypt, IKEv2, DTLS (for SRTP)
     - Direct export: TLS, DTLS, MinimalT
     - Non-exportable: CurveCP
 
@@ -573,19 +710,19 @@ Record interfaces are the points of interaction between a record protocol and th
 - Pre-Shared Key Import  
 Either the handshake protocol or the application directly can supply pre-shared keys for the record protocol use for encryption/decryption and authentication. If the application can supply keys directly, this is considered explicit import; if the handshake protocol traditionally provides the keys directly, it is considered direct import; if the keys can only be shared by the handshake, they are considered non-importable.
     - Explict import: QUIC, ESP
-    - Direct import: TLS, DTLS, MinimalT, tcpcrypt
+    - Direct import: TLS, DTLS, MinimalT, tcpcrypt, WireGuard
     - Non-importable: CurveCP
 
 - Encrypt application data  
 The application can send data to the record protocol to encrypt it into a format that can be sent on the underlying transport. The encryption step may require that the application data is treated as a stream or as datagrams, and that the transport to send the encrypted records present a stream or datagram interface.  
     - Stream-to-Stream Protocols: TLS, tcpcrypt
-    - Datagram-to-Datagram Protocols: DTLS, ESP
+    - Datagram-to-Datagram Protocols: DTLS, ESP, SRTP, WireGuard
     - Stream-to-Datagram Protocols: QUIC ((Editor's Note: This depends on the interface QUIC exposes to applications.))
 
 - Decrypt application data  
 The application can receive data from its transport to be decrypted using record protocol. The decryption step may require that the incoming transport data is presented as a stream or as datagrams, and that the resulting application data is a stream or datagrams.  
     - Stream-to-Stream Protocols: TLS, tcpcrypt
-    - Datagram-to-Datagram Protocols: DTLS, ESP
+    - Datagram-to-Datagram Protocols: DTLS, ESP, SRTP, WireGuard
     - Datagram-to-Stream Protocols: QUIC ((Editor's Note: This depends on the interface QUIC exposes to applications.))
 
 - Key Expiration  
@@ -594,7 +731,7 @@ Protocols: ESP ((Editor's note: One may consider TLS/DTLS to also have this inte
 
 - Transport mobility  
 The record protocol can be signaled that it is being migrated to another transport or interface due to connection mobility, which may reset address and state validation.  
-Protocols: QUIC, MinimalT, CurveCP, ESP
+Protocols: QUIC, MinimalT, CurveCP, ESP, WireGuard (roaming)
 
 # IANA Considerations
 
@@ -602,7 +739,8 @@ This document has on request to IANA.
 
 # Security Considerations
 
-N/A
+This document summarizes existing transport security protocols and their interfaces. 
+It does not propose changes to or recommend usage of reference protocols. 
 
 # Acknowledgments
 
