@@ -28,6 +28,14 @@ author:
     city: Cupertino, California 95014
     country: United States of America
     email: cawood@apple.com
+  -
+    ins: K. Rose
+    name: Kyle Rose
+    org: Akamai Technologies, Inc.
+    street: 150 Broadway
+    city: Cambridge, MA 02144
+    country: United States of America
+    email: krose@krose.org
 
 normative:
     RFC4303:
