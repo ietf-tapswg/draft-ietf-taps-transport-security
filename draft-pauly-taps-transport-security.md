@@ -278,9 +278,9 @@ further records, are sent over this stream. This TLS connection follows the TLS 
 and inherits the security properties of TLS. The handshake generates keys, which are
 then exported to the rest of the QUIC connection, and are used to protect the rest of the streams.
 
-Initial QUIC messages are encrypted using "fixed" keys derived from the QUIC version and 
-public packet information (Connection ID).
-Once handshake has generated keys, subsequent messages are encrypted. The TLS 1.3
+Initial QUIC messages (packets) are encrypted using "fixed" keys derived from the QUIC version and 
+public packet information (Connection ID). Packets are later encrypted using keys derived
+from the TLS traffic secret upon handshake completion. The TLS 1.3
 handshake for QUIC is used in either a single-RTT mode or a fast-open zero-RTT mode. When
 zero-RTT handshakes are possible, the encryption first transitions to use the zero-RTT keys
 before using single-RTT handshake keys after the next TLS flight.
@@ -517,7 +517,8 @@ these algorithms, new message types using new algorithms must be introduced.
 WireGuard is designed to be entirely stateless, modulo the CryptoKey routing table, which has size
 linear with the number of trusted peers. If a WireGuard receiver is under heavy load and cannot process
 a packet, e.g., cannot spare CPU cycles for point multiplication, it can reply with a cookie similar
-to DTLS and IKEv2. 
+to DTLS and IKEv2. This cookie only proves IP address ownership. Any rate limiting scheme can be applied
+to packets coming from non-spoofed addresses.
 
 ### Protocol features
 
