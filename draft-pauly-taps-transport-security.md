@@ -21,14 +21,6 @@ author:
     country: United States of America
     email: tpauly@apple.com
   -
-    ins: C. A. Wood
-    name: Christopher A. Wood
-    org: Apple Inc.
-    street: 1 Infinite Loop
-    city: Cupertino, California 95014
-    country: United States of America
-    email: cawood@apple.com
-  -
     ins: K. Rose
     name: Kyle Rose
     org: Akamai Technologies, Inc.
@@ -36,6 +28,14 @@ author:
     city: Cambridge, MA 02144
     country: United States of America
     email: krose@krose.org
+  -
+    ins: C. A. Wood
+    name: Christopher A. Wood
+    org: Apple Inc.
+    street: 1 Infinite Loop
+    city: Cupertino, California 95014
+    country: United States of America
+    email: cawood@apple.com
 
 normative:
     RFC4303:
