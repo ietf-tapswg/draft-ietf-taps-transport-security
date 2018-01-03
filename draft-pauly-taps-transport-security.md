@@ -28,6 +28,14 @@ author:
     city: Cupertino, California 95014
     country: United States of America
     email: cawood@apple.com
+  -
+    ins: K. Rose
+    name: Kyle Rose
+    org: Akamai Technologies, Inc.
+    street: 150 Broadway
+    city: Cambridge, MA 02144
+    country: United States of America
+    email: krose@krose.org
 
 normative:
     RFC4303:
@@ -345,37 +353,39 @@ in the clear. Everything else is encrypted.
 
 ## tcpcrypt
 
-tcpcrypt is a lightweight extension to the TCP protocol to enable opportunistic encryption.
+Tcpcrypt is a lightweight extension to the TCP protocol to enable opportunistic encryption with hooks available to the application layer for implementation of endpoint authentication.
 
 ### Protocol Description
 
-tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection {{I-D.ietf-tcpinc-tcpcrypt}}.
-It is a type of TCP Encryption Protocol (TEP). The use of a TEP is negotiated using TCP headers
-during the initial TCP handshake. Negotiating a TEP also involves agreeing upon a key exchange algorithm.
-If and when a TEP is negotiated, the tcpcrypt key exchange occurs within the data segments of
-the first packets exchanged after the handshake completes. The initiator of a connection
-sends a list of support AEAD algorithms, a random nonce, and an ephemeral public key share. The
-responder chooses an AEAD algorithm and replies with its own nonce and ephemeral key share.
-The traffic encryption keys are derived from the key exchange.
+Tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection {{I-D.ietf-tcpinc-tcpcrypt}}.
+It is a family of TCP encryption protocols (TEP), distinguished by key exchange algorithm.
+The use of a TEP is negotiated with a TCP option during the initial TCP handshake via the mechanism described by TCP Encryption Negotiation Option (ENO) {{I-D.ietf-tcpinc-tcpeno}}.
+In the case of initial session establishment, once a tcpcrypt TEP has been negotiated the key exchange occurs within the data segments of the first few packets exchanged after the handshake completes. The initiator of a connection sends a list of supported AEAD algorithms, a random nonce, and an ephemeral public key share.
+The responder typically chooses a mutually-supported AEAD algorithm and replies with this choice, its own nonce, and ephemeral key share.
+An initial shared secret is derived from the ENO handshake, the tcpcrypt handshake, and the initial keying material resulting from the key exchange. The traffic encryption keys on the initial connection are derived from the shared secret.
+Connections can be re-keyed before the natural AEAD limit for a single set of traffic encryption keys is reached.
 
-Each tcpcrypt session is associated with a unique session ID; the value of which is derived from the current
-shared secret used for the session. This can be cached and used to later resume a session.
-Willingness to resume a session is signaled within the TCP-ENO negotiation option
-during the TCP handshake {{I-D.ietf-tcpinc-tcpeno}}. Session identifiers are rotated each time they are resumed. Sessions may
-also be re-keyed if the natural AEAD limit is reached.
+Each tcpcrypt session is associated with a ladder of resumption IDs, each derived from the respective entry in a ladder of shared secrets.
+These resumption IDs can be used to negotiate a stateful resumption of the session in a subsequent connection, resulting in use of a new shared secret and traffic encryption keys without requiring a new key exchange.
+Willingness to resume a session is signaled via the ENO option during the TCP handshake.
+Given the length constraints imposed by TCP options, unlike stateless resumption mechanisms (such as that provided by session tickets in TLS) resumption in tcpcrypt requires the maintenance of state on the server, and so successful resumption across a pool of servers implies shared state.
 
-tcpcrypt only encrypts the data portion of a TCP packet. It does not encrypt any header information,
-such as the TCP sequence number.
+Owing to middlebox ossification issues, tcpcrypt only protects the payload portion of a TCP packet.
+It does not encrypt any header information, such as the TCP sequence number.
+
+Tcpcrypt exposes a universally-unique connection-specific session ID to the application, suitable for application-level endpoint authentication either in-band or out-of-band.
 
 ### Protocol Features
 
-- Forward-secure TCP packet encryption.
+- Forward-secure TCP payload encryption and integrity protection.
 - Session caching and address-agnostic resumption.
-- Session re-keying.
+- Connection re-keying.
+- Application-level authentication primitive.
 
 ### Protocol Dependencies
 
-- TCP (with option support).
+- TCP
+- TCP Encryption Negotiation Option (ENO)
 
 ## IKEv2 with ESP
 
