@@ -21,6 +21,14 @@ author:
     country: United States of America
     email: tpauly@apple.com
   -
+    ins: C. Perkins
+    name: Colin Perkins
+    org: University of Glasgow
+    street: School of Computing Science
+    city: Glasgow  G12 8QQ
+    country: United Kingdom
+    email: csp@csperkins.org
+  -
     ins: K. Rose
     name: Kyle Rose
     org: Akamai Technologies, Inc.
@@ -38,6 +46,9 @@ author:
     email: cawood@apple.com
 
 normative:
+    RFC2508:
+    RFC3261:
+    RFC3545:
     RFC3711:
     RFC4303:
     RFC4555:
@@ -53,6 +64,7 @@ normative:
     RFC7301:
     RFC7539:
     RFC8095:
+    I-D.ietf-rtcweb-security-arch:
     I-D.ietf-tcpinc-tcpcrypt:
     I-D.ietf-tcpinc-tcpeno:
     I-D.ietf-quic-transport:
@@ -548,18 +560,29 @@ SRTP -- Secure RTP -- is a profile for RTP that provides confidentiality, messag
 authentication, and replay protection for data and control packets {{RFC3711}}.
 SRTP packets are encrypted using a session key, which is derived from a separate
 master key. Master keys are derived and managed externally, e.g., via DTLS, as specified
-in RFC 5736 {{RFC5763}}.
+in RFC 5763 {{RFC5763}}, under the control of a signaling protocol such as SIP {{RFC3261}}
+or WebRTC {{I-D.ietf-rtcweb-security-arch}}.
 
 ### Protocol descriptions
 
-SRTP adds confidentiality and, optionally, integrity protection to SRTP packets. 
-This is done by encrypting RTP payloads and optionally appending an authentication
-tag (MAC) to the packet trailer. Packets are encrypted using session keys, which
+SRTP adds confidentiality and optional integrity protection to RTP data packets,
+and adds confidentially and mandatory integrity protection to RTP control (RTCP) packets.
+For RTP data packets, this is done by encrypting the payload section of the packet
+and optionally appending an authentication tag (MAC) as a packet trailer, with the RTP
+header authenticated but not encrypted. The RTP header itself is left unencrypted
+to enable RTP header compression {{RFC2508}}{{RFC3545}}. For RTCP packets, the first packet
+in the compound RTCP packet is partially encrypted, leaving the first eight octets of
+the header as cleartext to allow identification of the packet as RTCP, while the remainder 
+of the compound packet is fully encrypted. The entire RTCP packet is then authenticated
+by appending a MAC as packet trailer.
+
+Packets are encrypted using session keys, which
 are ultimately derived from a master key and some additional master salt and session salt.
 SRTP packets carry a 2-byte sequence number to partially identify the unique packet
-index. SRTP peers maintain a separate rollover counter (ROC) that is incremented whenever
-the sequence number wraps. The sequence number and ROC together determine the packet index.
-Packets also carry 
+index. SRTP peers maintain a separate rollover counter (ROC) for RTP data packets that is 
+incremented whenever the sequence number wraps. The sequence number and ROC together 
+determine the packet index. RTCP packets have a similar, yet differently named, field
+called the RTCP index which serves the same purpose.
 
 Numerous encryption modes are supported. For popular modes of operation, e.g., AES-CTR, 
 The (unique) initialization vector (IV) used for each encryption mode is a function of 
@@ -573,18 +596,21 @@ establishment for SRTP {{RFC5763}}. (Here, certificates marshall public keys bet
 endpoints. Thus, self-signed certificates may be used if peers do not mutually trust one another, 
 as is common on the Internet.) When DTLS is used, certificate fingerprints are transmitted
 out-of-band using SIP. Peers typically verify that DTLS-offered certificates match
-that which are offered over SIP. This prevents active attacks on RTP, but not on the signalling
-(SIP) channel. 
+that which are offered over SIP. This prevents active attacks on RTP, but not on the signaling (SIP or
+WebRTC) channel. 
 
 ### Protocol features
 
 - Optional replay protection with tunable replay windows.
 - Out-of-order packet receipt.
 - (RFC5763) Mandatory mutually authenticated key exchange.
+- Partial encryption, protecting media payloads and control packets but not data packet headers.
+- Optional authentication of data packets; mandatory authentication of control packets.
 
 ### Protocol dependencies
 
 - External key derivation and management mechanism or protocol, e.g., DTLS {{RFC5763}}.
+- External signaling protocol to manage RTP parameters and locate and identify peers, e.g., SIP {{RFC3261}} or WebRTC {{I-D.ietf-rtcweb-security-arch}}.
 
 # Common Transport Security Features
 
