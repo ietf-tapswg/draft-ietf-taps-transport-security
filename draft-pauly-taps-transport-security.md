@@ -163,10 +163,10 @@ and the dependencies it has on the underlying transport. This is followed by def
 transport security features shared by these protocols. Finally, we distill the application and 
 transport interfaces provided by the transport security protocols. 
 
-Authentication-only protocols such as TCP-AO {{RFC5925}} and IPsec AH {{RFC4302}} as excluded
+Authentication-only protocols such as TCP-AO {{RFC5925}} and IPsec AH {{RFC4302}} are excluded
 from this survey. TCP-AO adds authenticity protections to long-lived TCP connections, e.g., replay 
-protection  with per-packet Message Authentication Codes. (This protocol obseletes TCP MD5 "signature" 
-options specified in {{RFC2385}}.) One prime use case is for protecting BGP connections. 
+protection  with per-packet Message Authentication Codes. (This protocol obsoletes TCP MD5 "signature" 
+options specified in {{RFC2385}}.) One prime use case of TCP-AO is for protecting BGP connections. 
 Similarly, AH adds per-datagram authenticity and adds similar replay protection. Despite these
 improvements, neither protocol see general use and lack critical properties important for emergent
 transport security protocols: confidentiality, privacy protections, and agility. Thus, we omit
