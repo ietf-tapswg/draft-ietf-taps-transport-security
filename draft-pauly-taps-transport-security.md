@@ -46,10 +46,12 @@ author:
     email: cawood@apple.com
 
 normative:
+    RFC2385:
     RFC2508:
     RFC3261:
     RFC3545:
     RFC3711:
+    RFC4302:
     RFC4303:
     RFC4555:
     RFC5246:
@@ -57,6 +59,7 @@ normative:
     RFC5763:
     RFC5764:
     RFC5869:
+    RFC5925:
     RFC6066:
     RFC6347:
     RFC7250:
@@ -135,31 +138,62 @@ normative:
 
 --- abstract
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols. Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
+This document provides a survey of commonly used or notable network security protocols, with a focus 
+on how they interact and integrate with applications and transport protocols. Its goal is to supplement 
+efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to 
+add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), 
+Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange 
+with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and WireGuard. This survey is not 
+limited to protocols developed within the scope or context of the IETF.
 
 --- middle
 
 # Introduction
 
-This document provides a survey of commonly used or notable network security protocols, with a focus on how they interact and integrate with applications and transport protocols.  Its goal is to supplement efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
+This document provides a survey of commonly used or notable network security protocols, with a focus 
+on how they interact and integrate with applications and transport protocols.  Its goal is to supplement 
+efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to 
+add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer 
+Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, 
+Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and 
+WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
 
-For each protocol, this document provides a brief description, the security features it provides, and the dependencies it has on the underlying transport. This is followed by defining the set of transport security features shared by these protocols. Finally, we distill the application and transport interfaces provided by the transport security protocols.
+For each protocol, this document provides a brief description, the security features it provides, 
+and the dependencies it has on the underlying transport. This is followed by defining the set of 
+transport security features shared by these protocols. Finally, we distill the application and 
+transport interfaces provided by the transport security protocols. 
+
+Authentication-only protocols such as TCP-AO {{RFC5925}} and IPsec AH {{RFC4302}} are excluded
+from this survey. TCP-AO adds authenticity protections to long-lived TCP connections, e.g., replay 
+protection  with per-packet Message Authentication Codes. (This protocol obsoletes TCP MD5 "signature" 
+options specified in {{RFC2385}}.) One prime use case of TCP-AO is for protecting BGP connections. 
+Similarly, AH adds per-datagram authenticity and adds similar replay protection. Despite these
+improvements, neither protocol see general use and lack critical properties important for emergent
+transport security protocols: confidentiality, privacy protections, and agility. Thus, we omit
+these and related protocols from our survey.
 
 # Terminology
 
 The following terms are used throughout this document to describe the roles and interactions of transport security protocols:
 
-- Transport Feature: a specific end-to-end feature that the transport layer provides to an application.  Examples include confidentiality, reliable delivery, ordered delivery, message-versus-stream orientation, etc.
+- Transport Feature: a specific end-to-end feature that the transport layer provides to an application. 
+Examples include confidentiality, reliable delivery, ordered delivery, message-versus-stream orientation, etc.
 
-- Transport Service: a set of Transport Features, without an association to any given framing protocol, which provides a functionality to an application.
+- Transport Service: a set of Transport Features, without an association to any given framing protocol, 
+which provides a functionality to an application.
 
-- Transport Protocol: an implementation that provides one or more different transport services using a specific framing and header format on the wire. A Transport Protocol services an application.
+- Transport Protocol: an implementation that provides one or more different transport services using a 
+specific framing and header format on the wire. A Transport Protocol services an application.
 
-- Application: an entity that uses a transport protocol for end-to-end delivery of data across the network (this may also be an upper layer protocol or tunnel encapsulation).
+- Application: an entity that uses a transport protocol for end-to-end delivery of data across the network 
+(this may also be an upper layer protocol or tunnel encapsulation).
 
-- Security Feature: a specific feature that a network security layer provides to applications. Examples include authentication, encryption, key generation, session resumption, and privacy. A feature may be considered to be Mandatory or Optional to an application's implementation.
+- Security Feature: a specific feature that a network security layer provides to applications. Examples 
+include authentication, encryption, key generation, session resumption, and privacy. A feature may be 
+considered to be Mandatory or Optional to an application's implementation.
 
-- Security Protocol: a defined network protocol that implements one or more security features. Security protocols may be used alongside transport protocols, and in combination with one another when appropriate.
+- Security Protocol: a defined network protocol that implements one or more security features. Security 
+protocols may be used alongside transport protocols, and in combination with one another when appropriate.
 
 - Handshake Protocol: a security protocol that performs a handshake to validate peers and establish a shared cryptographic key.
 
@@ -167,9 +201,12 @@ The following terms are used throughout this document to describe the roles and 
 
 - Session: an ephemeral security association between applications.
 
-- Connection: the shared state of two or more endpoints that persists across messages that are transmitted between these endpoints. A connection is a transient participant of a session, and a session generally lasts between connection instances.
+- Connection: the shared state of two or more endpoints that persists across messages that are transmitted 
+between these endpoints. A connection is a transient participant of a session, and a session generally lasts 
+between connection instances.
 
-- Connection Mobility: a property of a connection that allows it to be multihomed or resilient across network interface or address changes.
+- Connection Mobility: a property of a connection that allows it to be multihomed or resilient across network 
+interface or address changes.
 
 - Peer: an endpoint application party to a session.
 
