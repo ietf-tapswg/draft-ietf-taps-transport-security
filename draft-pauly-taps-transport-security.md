@@ -67,13 +67,13 @@ normative:
     RFC7301:
     RFC7539:
     RFC8095:
+    RFC8229:
     I-D.ietf-rtcweb-security-arch:
     I-D.ietf-tcpinc-tcpcrypt:
     I-D.ietf-tcpinc-tcpeno:
     I-D.ietf-quic-transport:
     I-D.ietf-quic-tls:
     I-D.ietf-tls-tls13:
-    I-D.ietf-ipsecme-tcp-encaps:
     BLAKE2:
       title: BLAKE2 -- simpler, smaller, fast as MD5
       url: https://blake2.net/blake2.pdf
@@ -501,7 +501,7 @@ There is an extension to IKEv2 that allows session resumption {{RFC5723}}.
 
 MOBIKE is a Mobility and Multihoming extension to IKEv2 that allows a set of Security Associations to migrate over different addresses and interfaces {{RFC4555}}.
 
-When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP {{I-D.ietf-ipsecme-tcp-encaps}}.
+When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP {{RFC8229}}.
 
 #### ESP
 
@@ -513,7 +513,7 @@ From {{RFC4303}}, "ESP is used to provide confidentiality, data origin authentic
 
 Since ESP operates on IP packets, it is not directly tied to the transport protocols it encrypts. This means it requires little or no change from transports in order to provide security.
 
-ESP packets are sent directly over IP, except when a NAT is present, in which case they are sent on UDP port 4500, or via TCP encapsulation {{I-D.ietf-ipsecme-tcp-encaps}}.
+ESP packets are sent directly over IP, except when a NAT is present, in which case they are sent on UDP port 4500, or via TCP encapsulation {{RFC8229}}.
 
 ### Protocol features
 
