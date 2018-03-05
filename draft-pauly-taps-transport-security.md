@@ -317,7 +317,8 @@ Since datagrams may be replayed, DTLS provides optional anti-replay detection ba
 
 ## (IETF) QUIC with TLS
 
-QUIC (Quick UDP Internet Connections) is a new standards-track transport protocol that runs over UDP, loosely based on Google's original proprietary gQUIC protocol.
+QUIC (Quick UDP Internet Connections) is a new standards-track transport protocol that runs over 
+UDP, loosely based on Google's original proprietary gQUIC protocol. (See {{section-gquic}} for more details.)
 The QUIC transport layer itself provides support for data confidentiality and integrity.
 This requires keys to be derived with a separate handshake protocol.
 A mapping for QUIC over TLS 1.3 {{I-D.ietf-quic-tls}} has been specified to provide this handshake.
@@ -349,7 +350,8 @@ before using single-RTT handshake keys after the next TLS flight.
 
 - Handshake properties of TLS.
 - Multiple encrypted streams over a single connection without head-of-line blocking.
-- Packet payload encryption and complete packet authentication (with the exception of the Public Reset packet, which is not authenticated).
+- Packet payload encryption and complete packet authentication (with the exception of the 
+Public Reset packet, which is not authenticated).
 
 ### Protocol Dependencies
 
@@ -357,15 +359,21 @@ before using single-RTT handshake keys after the next TLS flight.
 - QUIC transport relies on TLS 1.3 for authentication and initial key derivation.
 - TLS within QUIC relies on a reliable stream abstraction for its handshake.
 
-## gQUIC
+## gQUIC {#section-gquic}
 
-gQUIC is a UDP-based multiplexed streaming protocol designed and deployed by Google following experience from deploying SPDY, the proprietary predecessor to HTTP/2.
-gQUIC was originally known as "QUIC": this document uses gQUIC to unambiguously distinguish it from the standards-track IETF QUIC.
-The proprietary technical forebear of IETF QUIC, gQUIC was originally designed with tightly-integrated security and application data transport protocols.
+gQUIC is a UDP-based multiplexed streaming protocol designed and deployed by Google 
+following experience from deploying SPDY, the proprietary predecessor to HTTP/2.
+gQUIC was originally known as "QUIC": this document uses gQUIC to unambiguously distinguish 
+it from the standards-track IETF QUIC. The proprietary technical forebear of IETF QUIC, gQUIC 
+was originally designed with tightly-integrated security and application data transport protocols.
 
 ### Protocol Description
 
+((TODO: write me))
+
 ### Protocol Dependencies
+
+((TODO: write me))
 
 ## MinimalT
 
