@@ -51,6 +51,7 @@ normative:
     RFC3261:
     RFC3545:
     RFC3711:
+    RFC3948:
     RFC4302:
     RFC4303:
     RFC4555:
@@ -68,6 +69,8 @@ normative:
     RFC7539:
     RFC8095:
     RFC8229:
+    I-D.ietf-tls-dtls13:
+    I-D.ietf-tls-dtls-connection-id:
     I-D.ietf-rtcweb-security-arch:
     I-D.ietf-tcpinc-tcpcrypt:
     I-D.ietf-tcpinc-tcpeno:
@@ -168,7 +171,7 @@ from this survey. TCP-AO adds authenticity protections to long-lived TCP connect
 protection  with per-packet Message Authentication Codes. (This protocol obsoletes TCP MD5 "signature" 
 options specified in {{RFC2385}}.) One prime use case of TCP-AO is for protecting BGP connections. 
 Similarly, AH adds per-datagram authenticity and adds similar replay protection. Despite these
-improvements, neither protocol see general use and lack critical properties important for emergent
+improvements, neither protocol sees general use and both lack critical properties important for emergent
 transport security protocols: confidentiality, privacy protections, and agility. Thus, we omit
 these and related protocols from our survey.
 
@@ -180,26 +183,29 @@ The following terms are used throughout this document to describe the roles and 
 Examples include confidentiality, reliable delivery, ordered delivery, message-versus-stream orientation, etc.
 
 - Transport Service: a set of Transport Features, without an association to any given framing protocol, 
-which provides a functionality to an application.
+which provides functionality to an application.
 
 - Transport Protocol: an implementation that provides one or more different transport services using a 
 specific framing and header format on the wire. A Transport Protocol services an application.
 
-- Application: an entity that uses a transport protocol for end-to-end delivery of data across the network 
-(this may also be an upper layer protocol or tunnel encapsulation).
+- Application: an entity that uses a transport protocol for end-to-end delivery of data across the network.
+This may also be an upper layer protocol or tunnel encapsulation.
 
 - Security Feature: a specific feature that a network security layer provides to applications. Examples 
 include authentication, encryption, key generation, session resumption, and privacy. A feature may be 
 considered to be Mandatory or Optional to an application's implementation.
 
 - Security Protocol: a defined network protocol that implements one or more security features. Security 
-protocols may be used alongside transport protocols, and in combination with one another when appropriate.
+protocols may be used alongside transport protocols, and in combination with other security protocols when
+appropriate.
 
-- Handshake Protocol: a security protocol that performs a handshake to validate peers and establish a shared cryptographic key.
+- Handshake Protocol: a protocol that enables peers to validate each other and to securely establish shared cryptographic context.
 
-- Record Protocol: a security protocol that allows data to be encrypted in records or datagrams based on a shared cryptographic key.
+- Record Protocol: a security protocol that allows data to be divided into manageable blocks and protected using a shared cryptographic context.
 
 - Session: an ephemeral security association between applications.
+
+- Cryptographic context: a set of cryptographic parameters, including but not necessarily limited to keys for encryption, authentication, and session resumption, enabling authorized parties to a session to communicate securely.
 
 - Connection: the shared state of two or more endpoints that persists across messages that are transmitted 
 between these endpoints. A connection is a transient participant of a session, and a session generally lasts 
@@ -238,35 +244,35 @@ to use an AEAD algorithm, it also handles nonce generation and encoding for each
 hidden from the client behind a byte stream-oriented API.
 
 The handshake protocol serves several purposes, including: peer authentication, protocol option (key exchange
-algorithm and ciphersuite) negotiation, and key derivation. Peer authentication may be mutual. However, commonly,
+algorithm and ciphersuite) negotiation, and key derivation. Peer authentication may be mutual; however, commonly,
 only the server is authenticated. X.509 certificates are commonly used in this authentication step, though
 other mechanisms, such as raw public keys {{RFC7250}}, exist. The client is not authenticated unless explicitly
-requested by the server with a CertificateRequest handshake message.
+requested by the server with a CertificateRequest handshake message. Assuming strong cryptography, an infrastructure for trust establishment, correctly-functioning endpoints, and communication patterns free from side channels, server authentication is sufficient to establish a channel resistant to eavesdroppers.
 
 The handshake protocol is also extensible. It allows for a variety of extensions to be included by either the client
 or server. These extensions are used to specify client preferences, e.g., the application-layer protocol to be driven
-with the TLS connection {{RFC7301}}, or signals to the server to aid operation, e.g., the server name {{RFC6066}}. Various extensions also exist
+with the TLS connection {{RFC7301}}, or signals to the server to aid operation, e.g., Server Name Indication (SNI) {{RFC6066}}. Various extensions also exist
 to tune the parameters of the record protocol, e.g., the maximum fragment length {{RFC6066}}.
 
 Alerts are used to convey errors and other atypical events to the endpoints. There are two classes of alerts: closure
 and error alerts. A closure alert is used to signal to the other peer that the sender wishes to terminate the connection.
 The sender typically follows a close alert with a TCP FIN segment to close the connection. Error alerts are used to
 indicate problems with the handshake or individual records. Most errors are fatal and are followed by connection
-termination. However, warning alerts may be handled at the discretion of each respective implementation.
+termination. However, warning alerts may be handled at the discretion of the implementation.
 
-Once a session is disconnected all session keying material must be torn down, unless resumption information was previously
-negotiated. TLS supports stateful and stateless resumption. (Here, the state refers to the information requirements
-for the server. It is assumed that the client must always store some state information in order to resume a session.)
+Once a session is disconnected all session keying material must be destroyed, with the exception of secrets previously established expressly for purposes of session resumption.
+TLS supports stateful and stateless resumption. (Here, "state" refers to bookkeeping on a per-session basis
+by the server. It is assumed that the client must always store some state information in order to resume a session.)
 
 ### Protocol Features
 
 - Key exchange and ciphersuite algorithm negotiation.
 - Stateful and stateless session resumption.
-- Certificate- and raw public-key-based authentication.
+- Certificate- and raw public key-based authentication.
 - Mutual client and server authentication.
 - Byte stream confidentiality and integrity.
 - Extensibility via well-defined extensions.
-- 0-RTT data support (in TLS 1.3 only).
+- 0-RTT data support (starting with TLS 1.3).
 - Application-layer protocol negotiation.
 - Transparent data segmentation.
 
@@ -288,15 +294,13 @@ so this document will assume that all properties from TLS are carried over excep
 
 ### Protocol Description
 
-DTLS is modified from TLS to account for packet loss and reordering that occur when operating over a datagram-based transport, i.e., UDP. Each message is assigned an explicit sequence number to be used to reorder on the receiving end. This removes the inter-record dependency and allows each record to be decrypt in isolation of the rest. However, DTLS does not deviate from TLS in that in still provides in-order delivery of data to the application.
+DTLS is modified from TLS to account for packet loss, reordering, and duplication that may occur when operating over UDP. To enable out-of-order delivery of application data, the DTLS record protocol itself has no inter-record dependencies. However, as the handshake requires reliability, each handshake message is assigned an explicit sequence number to enable retransmissions of lost packets and in-order processing by the receiver. Handshake message loss is remedied by sender retransmission after a configurable period in which the expected response has not yet been received.
 
-With respect to packet loss, if one peer has sent a handshake message and has not yet received its expected response, it will retransmit the handshake message after a configurable timeout.
+As the DTLS handshake protocol runs atop the record protocol, to account for long handshake messages that cannot fit within a single record, DTLS supports fragmentation and subsequent reconstruction of handshake messages across records. The receiver must reassemble records before processing.
 
-To account for long records that cannot fit within a single UDP datagram, DTLS supports fragmentation of records across datagrams, keeping track of fragment offsets and lengths in each datagram. The receiving peer must re-assemble records before decrypting.
+DTLS relies on unique UDP 4-tuples to allow peers with multiple DTLS connections between them to demultiplex connections, constraining protocol design slightly more than UDP: application-layer demultiplexing over the same 4-tuple is not possible without trial decryption as all application-layer data is encrypted to a connection-specific cryptographic context. Starting with DTLS 1.3 {{I-D.ietf-tls-dtls13}}, a connection identifier extension to permit multiplexing of independent connections over the same 4-tuple is available {{I-D.ietf-tls-dtls-connection-id}}.
 
-DTLS relies on UDP's port numbers to allow peers with multiple DTLS sessions between them to demultiplex 'streams' of encrypted packets that share a single TLS session.
-
-Since datagrams may be replayed, DTLS provides anti-replay detection based on a window of acceptable sequence numbers {{RFC4303}}.
+Since datagrams may be replayed, DTLS provides optional anti-replay detection based on a window of acceptable sequence numbers {{RFC6347}}.
 
 ### Protocol Features
 
@@ -307,22 +311,21 @@ Since datagrams may be replayed, DTLS provides anti-replay detection based on a 
 ### Protocol Dependencies
 
 - Since DTLS runs over an unreliable, unordered datagram transport, it does not require any reliability features.
-- DTLS contains its own length, so although it runs over a datagram transport, it does not rely on the transport protocol supporting framing.
-- UDP for port numbers used for demultiplexing.
+- The DTLS record protocol explicitly encodes record lengths, so although it runs over a datagram transport, it does not rely on the transport protocol's framing beyond requiring transport-level reconstruction of datagrams fragmented over packets.
+- UDP 4-tuple uniqueness, or the connection identifier extension, for demultiplexing.
 - Path MTU discovery.
 
-## QUIC with TLS
+## (IETF) QUIC with TLS
 
-QUIC (Quick UDP Internet Connections) is a new transport protocol that runs over UDP, and was
-originally designed with a tight integration with its security protocol and application protocol
-mappings. The QUIC transport layer itself provides support for data confidentiality and integrity.
-This requires keys to be derived with a separate handshake protocol. A mapping for QUIC over
-TLS 1.3 {{I-D.ietf-quic-tls}} has been specified to provide this handshake.
+QUIC (Quick UDP Internet Connections) is a new standards-track transport protocol that runs over UDP, loosely based on Google's original proprietary gQUIC protocol.
+The QUIC transport layer itself provides support for data confidentiality and integrity.
+This requires keys to be derived with a separate handshake protocol.
+A mapping for QUIC over TLS 1.3 {{I-D.ietf-quic-tls}} has been specified to provide this handshake.
 
 ### Protocol Description
 
-Since QUIC integrates TLS with its transport, it relies on specific integration points
-between its security and transport sides. Specifically, these points are:
+As QUIC relies on TLS to secure its transport functions, it creates specific integration points
+between its security and transport functions:
 
 - Starting the handshake to generate keys and provide authentication (and providing the transport for the handshake).
 - Client address validation.
@@ -353,6 +356,16 @@ before using single-RTT handshake keys after the next TLS flight.
 - QUIC transport relies on UDP.
 - QUIC transport relies on TLS 1.3 for authentication and initial key derivation.
 - TLS within QUIC relies on a reliable stream abstraction for its handshake.
+
+## gQUIC
+
+gQUIC is a UDP-based multiplexed streaming protocol designed and deployed by Google following experience from deploying SPDY, the proprietary predecessor to HTTP/2.
+gQUIC was originally known as "QUIC": this document uses gQUIC to unambiguously distinguish it from the standards-track IETF QUIC.
+The proprietary technical forebear of IETF QUIC, gQUIC was originally designed with tightly-integrated security and application data transport protocols.
+
+### Protocol Description
+
+### Protocol Dependencies
 
 ## MinimalT
 
@@ -412,9 +425,10 @@ parties can communicate.
 
 The use of only public-key encryption and authentication, or "boxing", is done to simplify problems that come with symmetric key management
 and synchronization. For example, it allows the sender of a message to be in complete control of each message's nonce. It does not require
-either end to share secret keying material. And it allows ephemeral public keys to be associated with connections (or sessions).
+either end to share secret keying material.
+Furthermore, it allows connections (or sessions) to be associated with unique ephemeral public keys as a mechanism for enabling forward secrecy given the risk of long-term private key compromise.
 
-The client and server do not perform a standard key exchange. Instead, in the initial exchange of packets, the each party provides its
+The client and server do not perform a standard key exchange. Instead, in the initial exchange of packets, each party provides its
 own ephemeral key to the other end. The client can choose a new ephemeral key for every new connection. However, the server must rotate
 these keys on a slower basis. Otherwise, it would be trivial for an attacker to force the server to create and store ephemeral keys
 with a fake client initialization packet.
@@ -429,7 +443,7 @@ will be detected by the server.
 CurveCP supports a weak form of client authentication. Clients are permitted to send their long-term public keys in the second initialization
 packet. A server can verify this public key and, if untrusted, drop the connection and subsequent data.
 
-Unlike some other protocols, CurveCP data packets only leave the ephemeral public key, i.e., the connection ID, and the per-message nonce
+Unlike some other protocols, CurveCP data packets leave only the ephemeral public key, the connection ID, and the per-message nonce
 in the clear. Everything else is encrypted.
 
 ### Protocol Features
@@ -505,7 +519,7 @@ When UDP is not available or well-supported on a network, IKEv2 may be encapsula
 
 #### ESP
 
-ESP is a protocol that encrypts and authenticates IP and IPv6 packets. The keys used for both encryption and authentication can be derived from an IKEv2 exchange. ESP Security Associations come as pairs, one for each direction between two peers. Each SA is identified by a Security Parameter Index (SPI), which is marked on each encrypted ESP packet.
+ESP is a protocol that encrypts and authenticates IPv4 and IPv6 packets. The keys used for both encryption and authentication can be derived from an IKEv2 exchange. ESP Security Associations come as pairs, one for each direction between two peers. Each SA is identified by a Security Parameter Index (SPI), which is marked on each encrypted ESP packet.
 
 ESP packets include the SPI, a sequence number, an optional Initialization Vector (IV), payload data, padding, a length and next header field, and an Integrity Check Value.
 
@@ -513,7 +527,7 @@ From {{RFC4303}}, "ESP is used to provide confidentiality, data origin authentic
 
 Since ESP operates on IP packets, it is not directly tied to the transport protocols it encrypts. This means it requires little or no change from transports in order to provide security.
 
-ESP packets are sent directly over IP, except when a NAT is present, in which case they are sent on UDP port 4500, or via TCP encapsulation {{RFC8229}}.
+ESP packets may be sent directly over IP, but where network conditions warrant (e.g., when a NAT is present or when a firewall blocks such packets) they may be encapsulated in UDP {{RFC3948}} or TCP {{RFC8229}}.
 
 ### Protocol features
 
@@ -523,7 +537,7 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 - Cryptographic algorithm negotiation.
 - Session resumption.
 - Mobility across addresses and interfaces.
-- Peer authentication extensibility based on Shared Secret, Certificates, Digital Signatures, or EAP methods.
+- Peer authentication extensibility based on shared secret, certificates, digital signatures, or EAP methods.
 
 #### ESP
 
@@ -541,7 +555,7 @@ ESP packets are sent directly over IP, except when a NAT is present, in which ca
 
 #### ESP
 
-- Since ESP is below transport protocols, it does not have any dependencies on the transports themselves, other than on UDP or TCP for NAT traversal.
+- Since ESP is below transport protocols, it does not have any dependencies on the transports themselves, other than on UDP or TCP where encapsulation is employed.
 
 ## WireGuard
 
@@ -622,14 +636,14 @@ determine the packet index. RTCP packets have a similar, yet differently named, 
 called the RTCP index which serves the same purpose.
 
 Numerous encryption modes are supported. For popular modes of operation, e.g., AES-CTR, 
-The (unique) initialization vector (IV) used for each encryption mode is a function of 
+the (unique) initialization vector (IV) used for each encryption mode is a function of 
 the RTP SSRC (synchronization source), packet index, and session "salting key".
 
-SRTP offers replay detection by keeping a Replay List of already seen and processed packet indices. 
-If a packet arrives with an index that matches one in the Replay List, it is silently discarded.
+SRTP offers replay detection by keeping a replay list of already seen and processed packet indices. 
+If a packet arrives with an index that matches one in the replay list, it is silently discarded.
 
-DTLS {{RFC5764}} is commonly used as a way to perform mutually authentication key 
-establishment for SRTP {{RFC5763}}. (Here, certificates marshall public keys between
+DTLS {{RFC5764}} is commonly used as a way to perform mutual authentication and key 
+agreement for SRTP {{RFC5763}}. (Here, certificates marshal public keys between
 endpoints. Thus, self-signed certificates may be used if peers do not mutually trust one another, 
 as is common on the Internet.) When DTLS is used, certificate fingerprints are transmitted
 out-of-band using SIP. Peers typically verify that DTLS-offered certificates match
@@ -681,7 +695,7 @@ out-of-band to encrypt individual messages, packets, or datagrams.
 
 ### Handshake
 
-- Mutual authentication: Transport security protocols should allow both endpoints to authenticate one another if needed.
+- Mutual authentication: Transport security protocols must allow each endpoint to authenticate the other if required by the application.
 
 - Application-layer feature negotiation: The type of application using a transport security protocol often requires
 features configured at the connection establishment layer, e.g., ALPN {{RFC7301}}. Moreover, application-layer features may often be used to
@@ -696,7 +710,7 @@ session establishment handshakes.
 
 ### Record
 
-- Connection mobility: Sessions should not be bound to a network connection (or 5 tuple). This allows cryptographic
+- Connection mobility: Sessions should not be bound to a network connection (or 5-tuple). This allows cryptographic
 key material and other state information to be reused in the event of a connection change. Examples of this include
 a NAT rebinding that occurs without a client's knowledge.
 
@@ -715,17 +729,17 @@ The application can provide its identities (certificates) and private keys, or
 mechanisms to access these, to the security protocol to use during handshakes.  
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP
 
-- Supported Algorithms (Key Exchange, Signatures and Ciphersuites)  
+- Supported Algorithms (Key Exchange, Signatures, and Ciphersuites)  
 The application can choose the algorithms that are supported for key exchange,
 signatures, and ciphersuites.  
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2, SRTP
 
 - Session Cache  
-The application provides the ability to save and retrieve session state (tickets,
-keying material, server parameters) that may be used to resume the security session.  
+The application provides the ability to save and retrieve session state (such as tickets,
+keying material, and server parameters) that may be used to resume the security session.  
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT
 
-- Authentication Delegate  
+- Authentication Delegation  
 The application provides access to a separate module that will provide authentication,
 using EAP for example.  
 Protocols: IKEv2, SRTP
@@ -736,12 +750,12 @@ Handshake interfaces are the points of interaction between a handshake protocol 
 the application, record protocol, and transport once the handshake is active.
 
 - Send Handshake Messages  
-The handshake protocol needs to be able to send messages over a transport to the remote peer to establish trust and negotiate keys.  
+The handshake protocol needs to be able to send messages over a transport to the remote peer to establish trust and to negotiate keys.  
 Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP (DTLS))
 
 - Receive Handshake Messages  
 The handshake protocol needs to be able to receive messages from the remote peer
-over a transport to establish trust and negotiate keys.  
+over a transport to establish trust and to negotiate keys.  
 Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP (DTLS))
 
 - Identity Validation  
@@ -761,7 +775,7 @@ by the application directly or by the record protocol sending a key expiration e
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
 
 - Pre-Shared Key Export  
-The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication. These may be explicitly exportable to the application, traditionally limited to direct  export to the record protocol, or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.  
+The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication. These may be explicitly exportable to the application, traditionally limited to direct export to the record protocol, or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.  
     - Explict export: TLS (for QUIC), tcpcrypt, IKEv2, DTLS (for SRTP)
     - Direct export: TLS, DTLS, MinimalT
     - Non-exportable: CurveCP
@@ -798,7 +812,7 @@ Protocols: QUIC, MinimalT, CurveCP, ESP, WireGuard (roaming)
 
 # IANA Considerations
 
-This document has on request to IANA.
+This document has no request to IANA.
 
 # Security Considerations
 
