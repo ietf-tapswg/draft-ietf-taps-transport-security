@@ -1,7 +1,7 @@
 ---
 title: A Survey of Transport Security Protocols
 abbrev: transport security survey
-docname: draft-pauly-taps-transport-security-latest
+docname: draft-ietf-taps-transport-security-latest
 date:
 category: info
 
