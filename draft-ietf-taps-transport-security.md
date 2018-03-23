@@ -16,7 +16,7 @@ author:
     ins: T. Pauly
     name: Tommy Pauly
     org: Apple Inc.
-    street: 1 Infinite Loop
+    street: One Apple Park Way
     city: Cupertino, California 95014
     country: United States of America
     email: tpauly@apple.com
@@ -40,7 +40,7 @@ author:
     ins: C. A. Wood
     name: Christopher A. Wood
     org: Apple Inc.
-    street: 1 Infinite Loop
+    street: One Apple Park Way
     city: Cupertino, California 95014
     country: United States of America
     email: cawood@apple.com
