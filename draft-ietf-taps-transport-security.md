@@ -674,7 +674,7 @@ WebRTC) channel.
 # Security Features and Transport Dependencies
 
 There exists a common set of features shared across the transport protocols surveyed in this document.
-Features which have no transport or application dependencies are mandgatory. All others are optional, and 
+Features which have no transport or application dependencies are mandatory. All others are optional, and 
 are commonly part of a subset of protocols described above. We do not distinguish between features provided 
 by different components of a transport security protocol. 
 
