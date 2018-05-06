@@ -359,9 +359,9 @@ Public Reset packet, which is not authenticated).
 - QUIC transport relies on TLS 1.3 for authentication and initial key derivation.
 - TLS within QUIC relies on a reliable stream abstraction for its handshake.
 
-## gQUIC {#section-gquic}
+### Differences from Google QUIC {#section-gquic}
 
-gQUIC is a UDP-based multiplexed streaming protocol designed and deployed by Google 
+Google QUIC (gQUIC) is a UDP-based multiplexed streaming protocol designed and deployed by Google 
 following experience from deploying SPDY, the proprietary predecessor to HTTP/2.
 gQUIC was originally known as "QUIC": this document uses gQUIC to unambiguously distinguish 
 it from the standards-track IETF QUIC. The proprietary technical forebear of IETF QUIC, gQUIC 
@@ -374,6 +374,215 @@ was originally designed with tightly-integrated security and application data tr
 ### Protocol Dependencies
 
 ((TODO: write me))
+
+## IKEv2 with ESP
+
+IKEv2 {{RFC7296}} and ESP {{RFC4303}} together form the modern IPsec protocol suite that encrypts and authenticates IP packets, either as for creating tunnels (tunnel-mode) or for direct transport connections (transport-mode). This suite of protocols separates out the key generation protocol (IKEv2) from the transport encryption protocol (ESP). Each protocol can be used independently, but this document considers them together, since that is the most common pattern.
+
+### Protocol descriptions
+
+#### IKEv2
+
+IKEv2 is a control protocol that runs on UDP port 500. Its primary goal is to generate keys for Security Associations (SAs). It first uses a Diffie-Hellman key exchange to generate keys for the "IKE SA", which is a set of keys used to encrypt further IKEv2 messages. It then goes through a phase of authentication in which both peers present blobs signed by a shared secret or private key, after which another set of keys is derived, referred to as the "Child SA". These Child SA keys are used by ESP.
+
+IKEv2 negotiates which protocols are acceptable to each peer for both the IKE and Child SAs using "Proposals". Each proposal may contain an encryption algorithm, an authentication algorithm, a Diffie-Hellman group, and (for IKE SAs only) a pseudorandom function algorithm. Each peer may support multiple proposals, and the most preferred mutually supported proposal is chosen during the handshake.
+
+The authentication phase of IKEv2 may use Shared Secrets, Certificates, Digital Signatures, or an EAP (Extensible Authentication Protocol) method. At a minimum, IKEv2 takes two round trips to set up both an IKE SA and a Child SA. If EAP is used, this exchange may be expanded.
+
+Any SA used by IKEv2 can be rekeyed upon expiration, which is usually based either on time or number of bytes encrypted.
+
+There is an extension to IKEv2 that allows session resumption {{RFC5723}}.
+
+MOBIKE is a Mobility and Multihoming extension to IKEv2 that allows a set of Security Associations to migrate over different addresses and interfaces {{RFC4555}}.
+
+When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP {{RFC8229}}.
+
+#### ESP
+
+ESP is a protocol that encrypts and authenticates IPv4 and IPv6 packets. The keys used for both encryption and authentication can be derived from an IKEv2 exchange. ESP Security Associations come as pairs, one for each direction between two peers. Each SA is identified by a Security Parameter Index (SPI), which is marked on each encrypted ESP packet.
+
+ESP packets include the SPI, a sequence number, an optional Initialization Vector (IV), payload data, padding, a length and next header field, and an Integrity Check Value.
+
+From {{RFC4303}}, "ESP is used to provide confidentiality, data origin authentication, connectionless integrity, an anti-replay service (a form of partial sequence integrity), and limited traffic flow confidentiality."
+
+Since ESP operates on IP packets, it is not directly tied to the transport protocols it encrypts. This means it requires little or no change from transports in order to provide security.
+
+ESP packets may be sent directly over IP, but where network conditions warrant (e.g., when a NAT is present or when a firewall blocks such packets) they may be encapsulated in UDP {{RFC3948}} or TCP {{RFC8229}}.
+
+### Protocol features
+
+#### IKEv2
+
+- Encryption and authentication of handshake packets.
+- Cryptographic algorithm negotiation.
+- Session resumption.
+- Mobility across addresses and interfaces.
+- Peer authentication extensibility based on shared secret, certificates, digital signatures, or EAP methods.
+
+#### ESP
+
+- Data confidentiality and authentication.
+- Connectionless integrity.
+- Anti-replay protection.
+- Limited flow confidentiality.
+
+### Protocol dependencies
+
+#### IKEv2
+
+- Availability of UDP to negotiate, or implementation support for TCP-encapsulation.
+- Some EAP authentication types require accessing a hardware device, such as a SIM card; or interacting with a user, such as password prompting.
+
+#### ESP
+
+- Since ESP is below transport protocols, it does not have any dependencies on the transports themselves, other than on UDP or TCP where encapsulation is employed.
+
+## SRTP (with DTLS)
+
+SRTP -- Secure RTP -- is a profile for RTP that provides confidentiality, message 
+authentication, and replay protection for data and control packets {{RFC3711}}.
+SRTP packets are encrypted using a session key, which is derived from a separate
+master key. Master keys are derived and managed externally, e.g., via DTLS, as specified
+in RFC 5763 {{RFC5763}}, under the control of a signaling protocol such as SIP {{RFC3261}}
+or WebRTC {{I-D.ietf-rtcweb-security-arch}}.
+
+### Protocol descriptions
+
+SRTP adds confidentiality and optional integrity protection to RTP data packets,
+and adds confidentially and mandatory integrity protection to RTP control (RTCP) packets.
+For RTP data packets, this is done by encrypting the payload section of the packet
+and optionally appending an authentication tag (MAC) as a packet trailer, with the RTP
+header authenticated but not encrypted. The RTP header itself is left unencrypted
+to enable RTP header compression {{RFC2508}}{{RFC3545}}. For RTCP packets, the first packet
+in the compound RTCP packet is partially encrypted, leaving the first eight octets of
+the header as cleartext to allow identification of the packet as RTCP, while the remainder 
+of the compound packet is fully encrypted. The entire RTCP packet is then authenticated
+by appending a MAC as packet trailer.
+
+Packets are encrypted using session keys, which
+are ultimately derived from a master key and some additional master salt and session salt.
+SRTP packets carry a 2-byte sequence number to partially identify the unique packet
+index. SRTP peers maintain a separate rollover counter (ROC) for RTP data packets that is 
+incremented whenever the sequence number wraps. The sequence number and ROC together 
+determine the packet index. RTCP packets have a similar, yet differently named, field
+called the RTCP index which serves the same purpose.
+
+Numerous encryption modes are supported. For popular modes of operation, e.g., AES-CTR, 
+the (unique) initialization vector (IV) used for each encryption mode is a function of 
+the RTP SSRC (synchronization source), packet index, and session "salting key".
+
+SRTP offers replay detection by keeping a replay list of already seen and processed packet indices. 
+If a packet arrives with an index that matches one in the replay list, it is silently discarded.
+
+DTLS {{RFC5764}} is commonly used as a way to perform mutual authentication and key 
+agreement for SRTP {{RFC5763}}. (Here, certificates marshal public keys between
+endpoints. Thus, self-signed certificates may be used if peers do not mutually trust one another, 
+as is common on the Internet.) When DTLS is used, certificate fingerprints are transmitted
+out-of-band using SIP. Peers typically verify that DTLS-offered certificates match
+that which are offered over SIP. This prevents active attacks on RTP, but not on the signaling (SIP or
+WebRTC) channel. 
+
+### Protocol features
+
+- Optional replay protection with tunable replay windows.
+- Out-of-order packet receipt.
+- (RFC5763) Mandatory mutually authenticated key exchange.
+- Partial encryption, protecting media payloads and control packets but not data packet headers.
+- Optional authentication of data packets; mandatory authentication of control packets.
+
+### Protocol dependencies
+
+- External key derivation and management mechanism or protocol, e.g., DTLS {{RFC5763}}.
+- External signaling protocol to manage RTP parameters and locate and identify peers, e.g., 
+SIP {{RFC3261}} or WebRTC {{I-D.ietf-rtcweb-security-arch}}.
+
+## Differences from ZRTP
+
+((TODO: write me))
+
+## tcpcrypt
+
+Tcpcrypt is a lightweight extension to the TCP protocol to enable opportunistic encryption with hooks available to the application layer for implementation of endpoint authentication.
+
+### Protocol Description
+
+Tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection {{I-D.ietf-tcpinc-tcpcrypt}}.
+It is a family of TCP encryption protocols (TEP), distinguished by key exchange algorithm.
+The use of a TEP is negotiated with a TCP option during the initial TCP handshake via the mechanism described by TCP Encryption Negotiation Option (ENO) {{I-D.ietf-tcpinc-tcpeno}}.
+In the case of initial session establishment, once a tcpcrypt TEP has been negotiated the key exchange occurs within the data segments of the first few packets exchanged after the handshake completes. The initiator of a connection sends a list of supported AEAD algorithms, a random nonce, and an ephemeral public key share.
+The responder typically chooses a mutually-supported AEAD algorithm and replies with this choice, its own nonce, and ephemeral key share.
+An initial shared secret is derived from the ENO handshake, the tcpcrypt handshake, and the initial keying material resulting from the key exchange. The traffic encryption keys on the initial connection are derived from the shared secret.
+Connections can be re-keyed before the natural AEAD limit for a single set of traffic encryption keys is reached.
+
+Each tcpcrypt session is associated with a ladder of resumption IDs, each derived from the respective entry in a ladder of shared secrets.
+These resumption IDs can be used to negotiate a stateful resumption of the session in a subsequent connection, resulting in use of a new shared secret and traffic encryption keys without requiring a new key exchange.
+Willingness to resume a session is signaled via the ENO option during the TCP handshake.
+Given the length constraints imposed by TCP options, unlike stateless resumption mechanisms (such as that provided by session tickets in TLS) resumption in tcpcrypt requires the maintenance of state on the server, and so successful resumption across a pool of servers implies shared state.
+
+Owing to middlebox ossification issues, tcpcrypt only protects the payload portion of a TCP packet.
+It does not encrypt any header information, such as the TCP sequence number.
+
+Tcpcrypt exposes a universally-unique connection-specific session ID to the application, suitable for application-level endpoint authentication either in-band or out-of-band.
+
+### Protocol Features
+
+- Forward-secure TCP payload encryption and integrity protection.
+- Session caching and address-agnostic resumption.
+- Connection re-keying.
+- Application-level authentication primitive.
+
+### Protocol Dependencies
+
+- TCP
+- TCP Encryption Negotiation Option (ENO)
+
+## WireGuard
+
+WireGuard is a layer 3 protocol designed to complement or replace IPsec {{WireGuard}}.
+Unlike most transport security protocols, which rely on PKI for peer authentication, 
+WireGuard authenticates peers using pre-shared public keys delivered out-of-band, each 
+of which is bound to one or more IP addresses. 
+Moreover, as a protocol suited for VPNs, WireGuard offers no extensibility, negotiation, 
+or cryptographic agility. 
+
+### Protocol description
+
+WireGuard is a simple VPN protocol that binds a pre-shared public key to one or more
+IP addresses. Users configure WireGuard by associating peer public keys with IP addresses. 
+These mappings are stored in a CryptoKey Routing Table. (See Section 2 of {{WireGuard}}
+for more details and sample configurations.) These keys are used upon WireGuard packet 
+transmission and reception. For example, upon receipt of a Handshake Initiation message,
+receivers use the static public key in their CryptoKey routing table to perform necessary
+cryptographic computations.
+
+WireGuard builds on Noise {{Noise}} for 1-RTT key exchange with identity hiding. The handshake
+hides peer identities as per the SIGMA construction {{SIGMA}}. As a consequence of using Noise, 
+WireGuard comes with a fixed set of cryptographic algorithms:
+
+- x25519 {{Curve25519}} and HKDF {{RFC5869}} for ECDH and key derivation.
+- ChaCha20+Poly1305 {{RFC7539}} for packet authenticated encryption.
+- BLAKE2s {{BLAKE2}} for hashing.
+
+There is no cryptographic agility. If weaknesses are found in any of
+these algorithms, new message types using new algorithms must be introduced.
+
+WireGuard is designed to be entirely stateless, modulo the CryptoKey routing table, which has size
+linear with the number of trusted peers. If a WireGuard receiver is under heavy load and cannot process
+a packet, e.g., cannot spare CPU cycles for point multiplication, it can reply with a cookie similar
+to DTLS and IKEv2. This cookie only proves IP address ownership. Any rate limiting scheme can be applied
+to packets coming from non-spoofed addresses.
+
+### Protocol features
+
+- Optional PSK-based session creation.
+- Mutual client and server authentication.
+- Stateful, timestamp-based replay prevention.
+- Cookie-based DoS mitigation similar to DTLS and IKEv2.
+
+### Protocol dependencies
+
+- Datagram transport.
+- Out-of-band key distribution and management.
 
 ## MinimalT
 
@@ -466,210 +675,6 @@ in the clear. Everything else is encrypted.
 ### Protocol Dependencies
 
 - An unreliable transport protocol such as UDP.
-
-## tcpcrypt
-
-Tcpcrypt is a lightweight extension to the TCP protocol to enable opportunistic encryption with hooks available to the application layer for implementation of endpoint authentication.
-
-### Protocol Description
-
-Tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection {{I-D.ietf-tcpinc-tcpcrypt}}.
-It is a family of TCP encryption protocols (TEP), distinguished by key exchange algorithm.
-The use of a TEP is negotiated with a TCP option during the initial TCP handshake via the mechanism described by TCP Encryption Negotiation Option (ENO) {{I-D.ietf-tcpinc-tcpeno}}.
-In the case of initial session establishment, once a tcpcrypt TEP has been negotiated the key exchange occurs within the data segments of the first few packets exchanged after the handshake completes. The initiator of a connection sends a list of supported AEAD algorithms, a random nonce, and an ephemeral public key share.
-The responder typically chooses a mutually-supported AEAD algorithm and replies with this choice, its own nonce, and ephemeral key share.
-An initial shared secret is derived from the ENO handshake, the tcpcrypt handshake, and the initial keying material resulting from the key exchange. The traffic encryption keys on the initial connection are derived from the shared secret.
-Connections can be re-keyed before the natural AEAD limit for a single set of traffic encryption keys is reached.
-
-Each tcpcrypt session is associated with a ladder of resumption IDs, each derived from the respective entry in a ladder of shared secrets.
-These resumption IDs can be used to negotiate a stateful resumption of the session in a subsequent connection, resulting in use of a new shared secret and traffic encryption keys without requiring a new key exchange.
-Willingness to resume a session is signaled via the ENO option during the TCP handshake.
-Given the length constraints imposed by TCP options, unlike stateless resumption mechanisms (such as that provided by session tickets in TLS) resumption in tcpcrypt requires the maintenance of state on the server, and so successful resumption across a pool of servers implies shared state.
-
-Owing to middlebox ossification issues, tcpcrypt only protects the payload portion of a TCP packet.
-It does not encrypt any header information, such as the TCP sequence number.
-
-Tcpcrypt exposes a universally-unique connection-specific session ID to the application, suitable for application-level endpoint authentication either in-band or out-of-band.
-
-### Protocol Features
-
-- Forward-secure TCP payload encryption and integrity protection.
-- Session caching and address-agnostic resumption.
-- Connection re-keying.
-- Application-level authentication primitive.
-
-### Protocol Dependencies
-
-- TCP
-- TCP Encryption Negotiation Option (ENO)
-
-## IKEv2 with ESP
-
-IKEv2 {{RFC7296}} and ESP {{RFC4303}} together form the modern IPsec protocol suite that encrypts and authenticates IP packets, either as for creating tunnels (tunnel-mode) or for direct transport connections (transport-mode). This suite of protocols separates out the key generation protocol (IKEv2) from the transport encryption protocol (ESP). Each protocol can be used independently, but this document considers them together, since that is the most common pattern.
-
-### Protocol descriptions
-
-#### IKEv2
-
-IKEv2 is a control protocol that runs on UDP port 500. Its primary goal is to generate keys for Security Associations (SAs). It first uses a Diffie-Hellman key exchange to generate keys for the "IKE SA", which is a set of keys used to encrypt further IKEv2 messages. It then goes through a phase of authentication in which both peers present blobs signed by a shared secret or private key, after which another set of keys is derived, referred to as the "Child SA". These Child SA keys are used by ESP.
-
-IKEv2 negotiates which protocols are acceptable to each peer for both the IKE and Child SAs using "Proposals". Each proposal may contain an encryption algorithm, an authentication algorithm, a Diffie-Hellman group, and (for IKE SAs only) a pseudorandom function algorithm. Each peer may support multiple proposals, and the most preferred mutually supported proposal is chosen during the handshake.
-
-The authentication phase of IKEv2 may use Shared Secrets, Certificates, Digital Signatures, or an EAP (Extensible Authentication Protocol) method. At a minimum, IKEv2 takes two round trips to set up both an IKE SA and a Child SA. If EAP is used, this exchange may be expanded.
-
-Any SA used by IKEv2 can be rekeyed upon expiration, which is usually based either on time or number of bytes encrypted.
-
-There is an extension to IKEv2 that allows session resumption {{RFC5723}}.
-
-MOBIKE is a Mobility and Multihoming extension to IKEv2 that allows a set of Security Associations to migrate over different addresses and interfaces {{RFC4555}}.
-
-When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP {{RFC8229}}.
-
-#### ESP
-
-ESP is a protocol that encrypts and authenticates IPv4 and IPv6 packets. The keys used for both encryption and authentication can be derived from an IKEv2 exchange. ESP Security Associations come as pairs, one for each direction between two peers. Each SA is identified by a Security Parameter Index (SPI), which is marked on each encrypted ESP packet.
-
-ESP packets include the SPI, a sequence number, an optional Initialization Vector (IV), payload data, padding, a length and next header field, and an Integrity Check Value.
-
-From {{RFC4303}}, "ESP is used to provide confidentiality, data origin authentication, connectionless integrity, an anti-replay service (a form of partial sequence integrity), and limited traffic flow confidentiality."
-
-Since ESP operates on IP packets, it is not directly tied to the transport protocols it encrypts. This means it requires little or no change from transports in order to provide security.
-
-ESP packets may be sent directly over IP, but where network conditions warrant (e.g., when a NAT is present or when a firewall blocks such packets) they may be encapsulated in UDP {{RFC3948}} or TCP {{RFC8229}}.
-
-### Protocol features
-
-#### IKEv2
-
-- Encryption and authentication of handshake packets.
-- Cryptographic algorithm negotiation.
-- Session resumption.
-- Mobility across addresses and interfaces.
-- Peer authentication extensibility based on shared secret, certificates, digital signatures, or EAP methods.
-
-#### ESP
-
-- Data confidentiality and authentication.
-- Connectionless integrity.
-- Anti-replay protection.
-- Limited flow confidentiality.
-
-### Protocol dependencies
-
-#### IKEv2
-
-- Availability of UDP to negotiate, or implementation support for TCP-encapsulation.
-- Some EAP authentication types require accessing a hardware device, such as a SIM card; or interacting with a user, such as password prompting.
-
-#### ESP
-
-- Since ESP is below transport protocols, it does not have any dependencies on the transports themselves, other than on UDP or TCP where encapsulation is employed.
-
-## WireGuard
-
-WireGuard is a layer 3 protocol designed to complement or replace IPsec {{WireGuard}}.
-Unlike most transport security protocols, which rely on PKI for peer authentication, 
-WireGuard authenticates peers using pre-shared public keys delivered out-of-band, each 
-of which is bound to one or more IP addresses. 
-Moreover, as a protocol suited for VPNs, WireGuard offers no extensibility, negotiation, 
-or cryptographic agility. 
-
-### Protocol description
-
-WireGuard is a simple VPN protocol that binds a pre-shared public key to one or more
-IP addresses. Users configure WireGuard by associating peer public keys with IP addresses. 
-These mappings are stored in a CryptoKey Routing Table. (See Section 2 of {{WireGuard}}
-for more details and sample configurations.) These keys are used upon WireGuard packet 
-transmission and reception. For example, upon receipt of a Handshake Initiation message,
-receivers use the static public key in their CryptoKey routing table to perform necessary
-cryptographic computations.
-
-WireGuard builds on Noise {{Noise}} for 1-RTT key exchange with identity hiding. The handshake
-hides peer identities as per the SIGMA construction {{SIGMA}}. As a consequence of using Noise, 
-WireGuard comes with a fixed set of cryptographic algorithms:
-
-- x25519 {{Curve25519}} and HKDF {{RFC5869}} for ECDH and key derivation.
-- ChaCha20+Poly1305 {{RFC7539}} for packet authenticated encryption.
-- BLAKE2s {{BLAKE2}} for hashing.
-
-There is no cryptographic agility. If weaknesses are found in any of
-these algorithms, new message types using new algorithms must be introduced.
-
-WireGuard is designed to be entirely stateless, modulo the CryptoKey routing table, which has size
-linear with the number of trusted peers. If a WireGuard receiver is under heavy load and cannot process
-a packet, e.g., cannot spare CPU cycles for point multiplication, it can reply with a cookie similar
-to DTLS and IKEv2. This cookie only proves IP address ownership. Any rate limiting scheme can be applied
-to packets coming from non-spoofed addresses.
-
-### Protocol features
-
-- Optional PSK-based session creation.
-- Mutual client and server authentication.
-- Stateful, timestamp-based replay prevention.
-- Cookie-based DoS mitigation similar to DTLS and IKEv2.
-
-### Protocol dependencies
-
-- Datagram transport.
-- Out-of-band key distribution and management.
-
-## SRTP (with DTLS)
-
-SRTP -- Secure RTP -- is a profile for RTP that provides confidentiality, message 
-authentication, and replay protection for data and control packets {{RFC3711}}.
-SRTP packets are encrypted using a session key, which is derived from a separate
-master key. Master keys are derived and managed externally, e.g., via DTLS, as specified
-in RFC 5763 {{RFC5763}}, under the control of a signaling protocol such as SIP {{RFC3261}}
-or WebRTC {{I-D.ietf-rtcweb-security-arch}}.
-
-### Protocol descriptions
-
-SRTP adds confidentiality and optional integrity protection to RTP data packets,
-and adds confidentially and mandatory integrity protection to RTP control (RTCP) packets.
-For RTP data packets, this is done by encrypting the payload section of the packet
-and optionally appending an authentication tag (MAC) as a packet trailer, with the RTP
-header authenticated but not encrypted. The RTP header itself is left unencrypted
-to enable RTP header compression {{RFC2508}}{{RFC3545}}. For RTCP packets, the first packet
-in the compound RTCP packet is partially encrypted, leaving the first eight octets of
-the header as cleartext to allow identification of the packet as RTCP, while the remainder 
-of the compound packet is fully encrypted. The entire RTCP packet is then authenticated
-by appending a MAC as packet trailer.
-
-Packets are encrypted using session keys, which
-are ultimately derived from a master key and some additional master salt and session salt.
-SRTP packets carry a 2-byte sequence number to partially identify the unique packet
-index. SRTP peers maintain a separate rollover counter (ROC) for RTP data packets that is 
-incremented whenever the sequence number wraps. The sequence number and ROC together 
-determine the packet index. RTCP packets have a similar, yet differently named, field
-called the RTCP index which serves the same purpose.
-
-Numerous encryption modes are supported. For popular modes of operation, e.g., AES-CTR, 
-the (unique) initialization vector (IV) used for each encryption mode is a function of 
-the RTP SSRC (synchronization source), packet index, and session "salting key".
-
-SRTP offers replay detection by keeping a replay list of already seen and processed packet indices. 
-If a packet arrives with an index that matches one in the replay list, it is silently discarded.
-
-DTLS {{RFC5764}} is commonly used as a way to perform mutual authentication and key 
-agreement for SRTP {{RFC5763}}. (Here, certificates marshal public keys between
-endpoints. Thus, self-signed certificates may be used if peers do not mutually trust one another, 
-as is common on the Internet.) When DTLS is used, certificate fingerprints are transmitted
-out-of-band using SIP. Peers typically verify that DTLS-offered certificates match
-that which are offered over SIP. This prevents active attacks on RTP, but not on the signaling (SIP or
-WebRTC) channel. 
-
-### Protocol features
-
-- Optional replay protection with tunable replay windows.
-- Out-of-order packet receipt.
-- (RFC5763) Mandatory mutually authenticated key exchange.
-- Partial encryption, protecting media payloads and control packets but not data packet headers.
-- Optional authentication of data packets; mandatory authentication of control packets.
-
-### Protocol dependencies
-
-- External key derivation and management mechanism or protocol, e.g., DTLS {{RFC5763}}.
-- External signaling protocol to manage RTP parameters and locate and identify peers, e.g., SIP {{RFC3261}} or WebRTC {{I-D.ietf-rtcweb-security-arch}}.
 
 # Security Features and Transport Dependencies
 
