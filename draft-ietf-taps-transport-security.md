@@ -679,14 +679,19 @@ in the clear. Everything else is encrypted.
 # Security Features and Transport Dependencies
 
 There exists a common set of features shared across the transport protocols surveyed in this document.
-Features which have no transport or application dependencies are mandatory. All others are optional, and 
-are commonly part of a subset of protocols described above. We do not distinguish between features provided 
-by different components of a transport security protocol. 
+Mandatory features constitute a baseline of functionality that an application may assume for any TAPS
+implementation. Optional features by contrast may be available to an application depending on application
+and transport dependencies. Applications learn of and use optional features by querying for their presence 
+and support. Optional features may be disabled if their presence impacts transport services, or if a necessary
+transport service is unavailable.
 
 ## Mandatory Features
 
-- Forward-secure segment encryption and authentication: Transit data must be protected with an
-authenticated encryption algorithm.
+- Segment encryption and authentication: Transit data must be protected with an authenticated 
+encryption algorithm.
+
+- Forward-secure key establishment: Negotiated keying material must come from an authenticated,
+forward-secure key exchange protocol.
 
 - Private key interface or injection: Authentication based on public key signatures is commonplace for
 many transport security protocols.
@@ -722,16 +727,16 @@ features may often be used to offload the session to another server which can be
 is one example of such a feature.) As such, transport security protocols should provide a generic mechanism to allow 
 for such application-specific features and options to be configured or otherwise negotiated.
   - Transport dependency: None.
-  - Application dependency: Secure negotiation of application-layer features or functionality.
+  - Application dependency: Specification of application-layer features or functionality.
 
 - Configuration extensions: The protocol negotiation should be extensible with addition of new configuration options.
   - Transport dependency: None.
-  - Application dependency: Custom or otherwise application-specific modifications to security protocols.
+  - Application dependency: Specification of application-specific extensions.
 
 - Session caching and management: Sessions should be cacheable to enable reuse and amortize the cost of performing
 session establishment handshakes.
   - Transport dependency: None.
-  - Application dependency: Reduced session establishment latency costs or session sharing across trust domains.
+  - Application dependency: None.
 
 # Transport Security Protocol Interfaces
 
