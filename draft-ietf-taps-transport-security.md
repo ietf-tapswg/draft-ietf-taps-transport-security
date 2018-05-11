@@ -680,10 +680,10 @@ in the clear. Everything else is encrypted.
 
 There exists a common set of features shared across the transport protocols surveyed in this document.
 Mandatory features constitute a baseline of functionality that an application may assume for any TAPS
-implementation. Optional features by contrast may be available to an application depending on application
-and transport dependencies. Applications learn of and use optional features by querying for their presence 
-and support. Optional features may be disabled if their presence impacts transport services, or if a necessary
-transport service is unavailable.
+implementation. Optional features by contrast may vary from implementation to implementation, and so 
+an application cannot simply assume they are available. Applications learn of and use optional features by 
+querying for their presence and support. Optional features may not be implemented, or may be disabled if 
+their presence impacts transport services or if a necessary transport service is unavailable.
 
 ## Mandatory Features
 
