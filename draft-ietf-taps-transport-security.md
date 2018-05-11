@@ -676,19 +676,22 @@ in the clear. Everything else is encrypted.
 
 - An unreliable transport protocol such as UDP.
 
-# Common Transport Security Features
+# Security Features and Transport Dependencies
 
 There exists a common set of features shared across the transport protocols surveyed in this document.
-The mandatory features should be provided by any transport security protocol, while the optional features
-are extensions that a subset of the protocols provide. For clarity, we also distinguish between handshake
-and record features.
+Mandatory features constitute a baseline of functionality that an application may assume for any TAPS
+implementation. Optional features by contrast may vary from implementation to implementation, and so 
+an application cannot simply assume they are available. Applications learn of and use optional features by 
+querying for their presence and support. Optional features may not be implemented, or may be disabled if 
+their presence impacts transport services or if a necessary transport service is unavailable.
 
 ## Mandatory Features
 
-### Handshake
+- Segment encryption and authentication: Transit data must be protected with an authenticated 
+encryption algorithm.
 
-- Forward-secure segment encryption and authentication: Transit data must be protected with an
-authenticated encryption algorithm.
+- Forward-secure key establishment: Negotiated keying material must come from an authenticated,
+forward-secure key exchange protocol.
 
 - Private key interface or injection: Authentication based on public key signatures is commonplace for
 many transport security protocols.
@@ -696,43 +699,52 @@ many transport security protocols.
 - Endpoint authentication: The endpoint (receiver) of a new connection must be authenticated before any
 data is sent to said party.
 
-- Source validation: Source validation must be provided to mitigate server-targeted DoS attacks. This can
-be done with puzzles or cookies.
-
-### Record
-
-- Pre-shared key support: A record protocol must be able to use a pre-shared key established
-out-of-band to encrypt individual messages, packets, or datagrams.
+- Pre-shared key support: A security protocol must be able to use a pre-shared key established 
+out-of-band or from a prior session to encrypt individual messages, packets, or datagrams.
 
 ## Optional Features
 
-### Handshake
-
-- Mutual authentication: Transport security protocols must allow each endpoint to authenticate the other if required by the application.
-
-- Application-layer feature negotiation: The type of application using a transport security protocol often requires
-features configured at the connection establishment layer, e.g., ALPN {{RFC7301}}. Moreover, application-layer features may often be used to
-offload the session to another server which can better handle the request. (The TLS SNI is one example of such a feature.)
-As such, transport security protocols should provide a generic mechanism to allow for such application-specific features
-and options to be configured or otherwise negotiated.
-
-- Configuration extensions: The protocol negotiation should be extensible with addition of new configuration options.
-
-- Session caching and management: Sessions should be cacheable to enable reuse and amortize the cost of performing
-session establishment handshakes.
-
-### Record
+- Mutual authentication: Transport security protocols must allow each endpoint to authenticate the other if 
+required by the application.
+  - Transport dependency: None.
+  - Application dependency: Mutual authentication required for application support.
 
 - Connection mobility: Sessions should not be bound to a network connection (or 5-tuple). This allows cryptographic
 key material and other state information to be reused in the event of a connection change. Examples of this include
 a NAT rebinding that occurs without a client's knowledge.
+  - Transport dependency: Connections are unreliable or can change due to unpredictable network events, e.g.,
+  NAT re-bindings.
+  - Application dependency: None.
+
+- Source validation: Source validation must be provided to mitigate server-targeted DoS attacks. This can
+be done with puzzles or cookies.
+  - Transport dependency: Packets may arrive as datagrams instead of streams from unauthenticated sources.
+  - Application dependency: None.
+
+- Application-layer feature negotiation: The type of application using a transport security protocol often requires
+features configured at the connection establishment layer, e.g., ALPN {{RFC7301}}. Moreover, application-layer 
+features may often be used to offload the session to another server which can better handle the request. (The TLS SNI 
+is one example of such a feature.) As such, transport security protocols should provide a generic mechanism to allow 
+for such application-specific features and options to be configured or otherwise negotiated.
+  - Transport dependency: None.
+  - Application dependency: Specification of application-layer features or functionality.
+
+- Configuration extensions: The protocol negotiation should be extensible with addition of new configuration options.
+  - Transport dependency: None.
+  - Application dependency: Specification of application-specific extensions.
+
+- Session caching and management: Sessions should be cacheable to enable reuse and amortize the cost of performing
+session establishment handshakes.
+  - Transport dependency: None.
+  - Application dependency: None.
 
 # Transport Security Protocol Interfaces
 
-This section describes the interface surface exposed by the security protocols described
-above, with each interface. Note that not all protocols support each interface.
+This section describes the interface surface exposed by the security protocols described above. 
+Note that not all protocols support each interface. We partition these interfaces into 
+pre-connection (configuration), connection, and post-connection interfaces. 
 
-## Configuration Interfaces
+## Pre-Connection Interfaces
 
 Configuration interfaces are used to configure the security protocols before a
 handshake begins or the keys are negotiated.
@@ -747,7 +759,7 @@ The application can choose the algorithms that are supported for key exchange,
 signatures, and ciphersuites.  
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2, SRTP
 
-- Session Cache  
+- Session Cache Management
 The application provides the ability to save and retrieve session state (such as tickets,
 keying material, and server parameters) that may be used to resume the security session.  
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT
@@ -757,19 +769,13 @@ The application provides access to a separate module that will provide authentic
 using EAP for example.  
 Protocols: IKEv2, SRTP
 
-## Handshake Interfaces
+- Pre-Shared Key Import  
+Either the handshake protocol or the application directly can supply pre-shared keys for the record protocol use for encryption/decryption and authentication. If the application can supply keys directly, this is considered explicit import; if the handshake protocol traditionally provides the keys directly, it is considered direct import; if the keys can only be shared by the handshake, they are considered non-importable.
+  - Explict import: QUIC, ESP
+  - Direct import: TLS, DTLS, MinimalT, tcpcrypt, WireGuard
+  - Non-importable: CurveCP
 
-Handshake interfaces are the points of interaction between a handshake protocol and
-the application, record protocol, and transport once the handshake is active.
-
-- Send Handshake Messages  
-The handshake protocol needs to be able to send messages over a transport to the remote peer to establish trust and to negotiate keys.  
-Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP (DTLS))
-
-- Receive Handshake Messages  
-The handshake protocol needs to be able to receive messages from the remote peer
-over a transport to establish trust and to negotiate keys.  
-Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP (DTLS))
+## Connection Interfaces
 
 - Identity Validation  
 During a handshake, the security protocol will conduct identity validation of the peer.
@@ -782,45 +788,31 @@ data to the transport protocol or application. This involves sending a cookie
 exchange to avoid DoS attacks.  
 Protocols: QUIC + TLS, DTLS, WireGuard
 
+## Post-Connection Interfaces
+
+- Connection Termination
+The security protocol may be instructed to tear down its connection and session information.
+This is needed by some protocols to prevent application data truncation attacks.
+Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
+
 - Key Update  
 The handshake protocol may be instructed to update its keying material, either
 by the application directly or by the record protocol sending a key expiration event.  
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
 
-- Pre-Shared Key Export  
+- Pre-Shared Key Export
 The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication. These may be explicitly exportable to the application, traditionally limited to direct export to the record protocol, or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.  
-    - Explict export: TLS (for QUIC), tcpcrypt, IKEv2, DTLS (for SRTP)
-    - Direct export: TLS, DTLS, MinimalT
-    - Non-exportable: CurveCP
-
-## Record Interfaces
-
-Record interfaces are the points of interaction between a record protocol and the application, handshake protocol, and transport once in use.
-
-- Pre-Shared Key Import  
-Either the handshake protocol or the application directly can supply pre-shared keys for the record protocol use for encryption/decryption and authentication. If the application can supply keys directly, this is considered explicit import; if the handshake protocol traditionally provides the keys directly, it is considered direct import; if the keys can only be shared by the handshake, they are considered non-importable.
-    - Explict import: QUIC, ESP
-    - Direct import: TLS, DTLS, MinimalT, tcpcrypt, WireGuard
-    - Non-importable: CurveCP
-
-- Encrypt application data  
-The application can send data to the record protocol to encrypt it into a format that can be sent on the underlying transport. The encryption step may require that the application data is treated as a stream or as datagrams, and that the transport to send the encrypted records present a stream or datagram interface.  
-    - Stream-to-Stream Protocols: TLS, tcpcrypt
-    - Datagram-to-Datagram Protocols: DTLS, ESP, SRTP, WireGuard
-    - Stream-to-Datagram Protocols: QUIC ((Editor's Note: This depends on the interface QUIC exposes to applications.))
-
-- Decrypt application data  
-The application can receive data from its transport to be decrypted using record protocol. The decryption step may require that the incoming transport data is presented as a stream or as datagrams, and that the resulting application data is a stream or datagrams.  
-    - Stream-to-Stream Protocols: TLS, tcpcrypt
-    - Datagram-to-Datagram Protocols: DTLS, ESP, SRTP, WireGuard
-    - Datagram-to-Stream Protocols: QUIC ((Editor's Note: This depends on the interface QUIC exposes to applications.))
+  - Explict export: TLS (for QUIC), tcpcrypt, IKEv2, DTLS (for SRTP)
+  - Direct export: TLS, DTLS, MinimalT
+  - Non-exportable: CurveCP
 
 - Key Expiration  
 The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling between the record layer and the handshake layer.  
 Protocols: ESP ((Editor's note: One may consider TLS/DTLS to also have this interface))
 
 - Transport mobility  
-The record protocol can be signaled that it is being migrated to another transport or interface due to connection mobility, which may reset address and state validation.  
+The record protocol can be signaled that it is being migrated to another transport or interface due to 
+connection mobility, which may reset address and state validation.  
 Protocols: QUIC, MinimalT, CurveCP, ESP, WireGuard (roaming)
 
 # IANA Considerations
