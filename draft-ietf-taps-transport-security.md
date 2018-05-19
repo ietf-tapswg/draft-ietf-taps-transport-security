@@ -147,7 +147,8 @@ efforts to define and catalog transport services {{RFC8095}} by describing the i
 add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), 
 Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange 
 with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and WireGuard. This survey is not 
-limited to protocols developed within the scope or context of the IETF.
+limited to protocols developed within the scope or context of the IETF, and those included represent a superset
+of features a TAPS system may need to support.
 
 --- middle
 
@@ -159,7 +160,9 @@ efforts to define and catalog transport services {{RFC8095}} by describing the i
 add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer 
 Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, 
 Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and 
-WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
+WireGuard. Selected protocols represent a superset of functionality and features a TAPS system may 
+need to support, both internally and externally -- via an API -- for applications. As such, 
+this survey is not limited to protocols developed within the scope or context of the IETF.
 
 For each protocol, this document provides a brief description, the security features it provides, 
 and the dependencies it has on the underlying transport. This is followed by defining the set of 
