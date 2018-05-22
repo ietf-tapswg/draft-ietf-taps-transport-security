@@ -52,6 +52,7 @@ normative:
     RFC3545:
     RFC3711:
     RFC3948:
+    RFC4253:
     RFC4302:
     RFC4303:
     RFC4555:
@@ -536,7 +537,8 @@ users must read and verbally compare to validate the hashes and ensure security.
 Endpoints cache some key material after the first call to use in subsequent
 calls; this is mixed in with the Diffie-Hellman shared secret, so the short
 authentication string need only be checked once for a given user.  This
-gives key continuity properties analogous to the secure shell (ssh).
+gives key continuity properties analogous to the secure shell (ssh)
+{{RFC4253}}.
 
 ## tcpcrypt
 
