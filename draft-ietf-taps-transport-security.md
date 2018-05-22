@@ -503,9 +503,9 @@ If they are self-signed, certificate fingerprints are included in the signalling
 exchange (e.g., in SIP or WebRTC), and used to bind the DTLS key exchange in
 the media plane to the signaling plane.
 The combination of a mutually authenticated DTLS key exchange on the media
-path and a fingerprint sent in the signalling channel will protect against
+path and a fingerprint sent in the signalling channel protects against
 active attacks on the media, provided the signalling can be trusted.
-The signalling needs to be protected as described in, for example, SIP
+Signalling needs to be protected as described in, for example, SIP
 {{RFC3261}} Authenticated Identity Management {{RFC4474}} or the WebRTC
 security architecture {{I-D.ietf-rtcweb-security-arch}}, to provide
 complete system security.
@@ -523,7 +523,7 @@ complete system security.
 ### Protocol dependencies
 
 - External key derivation and management protocol, e.g., DTLS {{RFC5763}}.
-- External identify management protocol, e.g., SIP Authenticated Identify Management
+- External identity management protocol, e.g., SIP Authenticated Identity Management
   {{RFC4474}}, WebRTC Security Architecture {{I-D.ietf-rtcweb-security-arch}}.
 
 ## Differences from ZRTP
