@@ -62,6 +62,7 @@ normative:
     RFC5869:
     RFC5925:
     RFC6066:
+    RFC6189:
     RFC6347:
     RFC7250:
     RFC7296:
@@ -517,9 +518,26 @@ WebRTC) channel.
 - External signaling protocol to manage RTP parameters and locate and identify peers, e.g., 
 SIP {{RFC3261}} or WebRTC {{I-D.ietf-rtcweb-security-arch}}.
 
-## Differences from ZRTP
+## ZRTP: Media Path Key Agreement for SRTP
 
-((TODO: write me))
+ZRTP {{RFC6189}} is an alternative key agreement protocol for SRTP. 
+It uses standard SRTP to protect RTP data packets and RTCP packets, but
+provides alternative key agreement and identity management protocols.
+
+Key agreement is performed using a Diffie-Hellman key exchange that runs
+on the media path. This generates a shared secret that is then used to
+generate the master key and salt for SRTP.
+
+ZRTP does not rely on a PKI or external identity management system.
+Rather, it uses an ephemeral Diffie-Hellman key exchange with hash
+commitment to allow detection of man-in-the-middle attacks.
+This requires endpoints to display a short authentication string that the
+users must read and verbally compare in order to validate the hashes.
+Key continuity is used, so this comparison need only be performed once for
+a given user.
+ZRTP avoids some complexity of signalling and key management when compared
+to DTLS-based key management approaches for SRTP, but relies on the users
+comparing the short authentication strings to ensure security.
 
 ## tcpcrypt
 
