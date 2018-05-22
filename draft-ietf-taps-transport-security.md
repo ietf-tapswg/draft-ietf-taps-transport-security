@@ -52,6 +52,7 @@ normative:
     RFC3545:
     RFC3711:
     RFC3948:
+    RFC4253:
     RFC4302:
     RFC4303:
     RFC4474:
@@ -63,6 +64,7 @@ normative:
     RFC5869:
     RFC5925:
     RFC6066:
+    RFC6189:
     RFC6347:
     RFC7250:
     RFC7296:
@@ -526,9 +528,26 @@ complete system security.
 - External identity management protocol, e.g., SIP Authenticated Identity Management
   {{RFC4474}}, WebRTC Security Architecture {{I-D.ietf-rtcweb-security-arch}}.
 
-## Differences from ZRTP
+## ZRTP: Media Path Key Agreement for SRTP
 
-((TODO: write me))
+ZRTP {{RFC6189}} is an alternative key agreement protocol for SRTP. 
+It uses standard SRTP to protect RTP data packets and RTCP packets, but
+provides alternative key agreement and identity management protocols.
+
+Key agreement is performed using a Diffie-Hellman key exchange that runs
+on the media path. This generates a shared secret that is then used to
+generate the master key and salt for SRTP.
+
+ZRTP does not rely on a PKI or external identity management system.
+Rather, it uses an ephemeral Diffie-Hellman key exchange with hash
+commitment to allow detection of man-in-the-middle attacks.
+This requires endpoints to display a short authentication string that the
+users must read and verbally compare to validate the hashes and ensure security.
+Endpoints cache some key material after the first call to use in subsequent
+calls; this is mixed in with the Diffie-Hellman shared secret, so the short
+authentication string need only be checked once for a given user.  This
+gives key continuity properties analogous to the secure shell (ssh)
+{{RFC4253}}.
 
 ## tcpcrypt
 
