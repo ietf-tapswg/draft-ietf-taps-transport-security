@@ -77,6 +77,7 @@ normative:
     I-D.ietf-quic-transport:
     I-D.ietf-quic-tls:
     I-D.ietf-tls-tls13:
+    I-D.ietf-taps-arch:
     BLAKE2:
       title: BLAKE2 -- simpler, smaller, fast as MD5
       url: https://blake2.net/blake2.pdf
@@ -182,12 +183,12 @@ set of transport security features shared by these protocols. Finally, we distil
 transport interfaces provided by the transport security protocols. 
 
 Selected protocols represent a superset of functionality and features a TAPS system may 
-need to support, both internally and externally -- via an API -- for applications. Ubiquitous
+need to support, both internally and externally -- via an API -- for applications {{I-D.ietf-taps-arch}}. Ubiquitous
 IETF protocols such as (D)TLS, as well as non-standard protocols such as Google QUIC,
 are both included despite overlapping features. As such, this survey is not limited to protocols 
 developed within the scope or context of the IETF. Outside of this candidate set, protocols
 that do not offer new features are omitted. For example, newer protocols such as WireGuard make
-unique design choices that have important implications on TAPS applications, such as how to
+unique design choices that have important implications on applications, such as how to
 best configure peer public keys and to delegate algorithm selection to the system. In contrast,
 protocols such as ALTS {{ALTS}} are omitted since they do not represent features deemed unique.
 
