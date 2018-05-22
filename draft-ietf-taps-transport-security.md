@@ -532,12 +532,11 @@ ZRTP does not rely on a PKI or external identity management system.
 Rather, it uses an ephemeral Diffie-Hellman key exchange with hash
 commitment to allow detection of man-in-the-middle attacks.
 This requires endpoints to display a short authentication string that the
-users must read and verbally compare in order to validate the hashes.
-Key continuity is used, so this comparison need only be performed once for
-a given user.
-ZRTP avoids some complexity of signalling and key management when compared
-to DTLS-based key management approaches for SRTP, but relies on the users
-comparing the short authentication strings to ensure security.
+users must read and verbally compare to validate the hashes and ensure security.
+Endpoints cache some key material after the first call to use in subsequent
+calls; this is mixed in with the Diffie-Hellman shared secret, so the short
+authentication string need only be checked once for a given user.  This
+gives key continuity properties analogous to the secure shell (ssh).
 
 ## tcpcrypt
 
