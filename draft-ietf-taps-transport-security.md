@@ -77,6 +77,7 @@ normative:
     I-D.ietf-quic-transport:
     I-D.ietf-quic-tls:
     I-D.ietf-tls-tls13:
+    I-D.ietf-taps-arch:
     BLAKE2:
       title: BLAKE2 -- simpler, smaller, fast as MD5
       url: https://blake2.net/blake2.pdf
@@ -101,6 +102,22 @@ normative:
       authors:
         -
           ins: Jason A. Donenfeld
+    ALTS:
+      title: Application Layer Transport Security
+      url: https://cloud.google.com/security/encryption-in-transit/application-layer-transport-security/
+      authors:
+        -
+          ins: C. Ghali
+        - 
+          ins: A. Stubblefield 
+        - 
+          ins: E. Knapp
+        -
+          ins: J. Li
+        -
+          ins: B. Schmidt
+        - 
+          ins: J. Boeuf
     SIGMA:
       title: SIGMA -- The ‘SIGn-and-MAc’ Approach to Authenticated Diffie-Hellman and Its Use in the IKE-Protocols
       url: http://www.iacr.org/cryptodb/archive/2003/CRYPTO/1495/1495.pdf 
@@ -147,7 +164,8 @@ efforts to define and catalog transport services {{RFC8095}} by describing the i
 add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS), 
 Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange 
 with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and WireGuard. This survey is not 
-limited to protocols developed within the scope or context of the IETF.
+limited to protocols developed within the scope or context of the IETF, and those included represent a superset
+of features a TAPS system may need to support.
 
 --- middle
 
@@ -159,14 +177,22 @@ efforts to define and catalog transport services {{RFC8095}} by describing the i
 add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer 
 Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, 
 Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and 
-WireGuard. This survey is not limited to protocols developed within the scope or context of the IETF.
-
-For each protocol, this document provides a brief description, the security features it provides, 
-and the dependencies it has on the underlying transport. This is followed by defining the set of 
-transport security features shared by these protocols. Finally, we distill the application and 
+WireGuard. For each protocol, this document provides a brief description, the security features it 
+provides, and the dependencies it has on the underlying transport. This is followed by defining the 
+set of transport security features shared by these protocols. Finally, we distill the application and 
 transport interfaces provided by the transport security protocols. 
 
-Authentication-only protocols such as TCP-AO {{RFC5925}} and IPsec AH {{RFC4302}} are excluded
+Selected protocols represent a superset of functionality and features a TAPS system may 
+need to support, both internally and externally -- via an API -- for applications {{I-D.ietf-taps-arch}}. Ubiquitous
+IETF protocols such as (D)TLS, as well as non-standard protocols such as Google QUIC,
+are both included despite overlapping features. As such, this survey is not limited to protocols 
+developed within the scope or context of the IETF. Outside of this candidate set, protocols
+that do not offer new features are omitted. For example, newer protocols such as WireGuard make
+unique design choices that have important implications on applications, such as how to
+best configure peer public keys and to delegate algorithm selection to the system. In contrast,
+protocols such as ALTS {{ALTS}} are omitted since they do not represent features deemed unique.
+
+Also, authentication-only protocols such as TCP-AO {{RFC5925}} and IPsec AH {{RFC4302}} are excluded
 from this survey. TCP-AO adds authenticity protections to long-lived TCP connections, e.g., replay 
 protection  with per-packet Message Authentication Codes. (This protocol obsoletes TCP MD5 "signature" 
 options specified in {{RFC2385}}.) One prime use case of TCP-AO is for protecting BGP connections. 
@@ -222,7 +248,7 @@ interface or address changes.
 
 # Transport Security Protocol Descriptions
 
-This section contains descriptions of security protocols that currently used to protect data being sent over a network.
+This section contains descriptions of security protocols currently used to protect data being sent over a network.
 
 For each protocol, we describe the features it provides and its dependencies on other protocols.
 
@@ -240,8 +266,9 @@ peer to the other. This data may contain handshake messages or raw application d
 TLS is the composition of a handshake and record protocol {{I-D.ietf-tls-tls13}}.
 The record protocol is designed to marshal an arbitrary, in-order stream of bytes from one endpoint to the other.
 It handles segmenting, compressing (when enabled), and encrypting data into discrete records. When configured
-to use an AEAD algorithm, it also handles nonce generation and encoding for each record. The record protocol is
-hidden from the client behind a byte stream-oriented API.
+to use an authenticated encryption with associated data (AEAD) algorithm, it also handles nonce 
+generation and encoding for each record. The record protocol is hidden from the client behind a 
+bytestream-oriented API.
 
 The handshake protocol serves several purposes, including: peer authentication, protocol option (key exchange
 algorithm and ciphersuite) negotiation, and key derivation. Peer authentication may be mutual; however, commonly,
@@ -294,13 +321,13 @@ so this document will assume that all properties from TLS are carried over excep
 
 ### Protocol Description
 
-DTLS is modified from TLS to account for packet loss, reordering, and duplication that may occur when operating over UDP. To enable out-of-order delivery of application data, the DTLS record protocol itself has no inter-record dependencies. However, as the handshake requires reliability, each handshake message is assigned an explicit sequence number to enable retransmissions of lost packets and in-order processing by the receiver. Handshake message loss is remedied by sender retransmission after a configurable period in which the expected response has not yet been received.
+DTLS is modified from TLS to operate with the possibility of packet loss, reordering, and duplication that may occur when operating over UDP. To enable out-of-order delivery of application data, the DTLS record protocol itself has no inter-record dependencies. However, as the handshake requires reliability, each handshake message is assigned an explicit sequence number to enable retransmissions of lost packets and in-order processing by the receiver. Handshake message loss is remedied by sender retransmission after a configurable period in which the expected response has not yet been received.
 
 As the DTLS handshake protocol runs atop the record protocol, to account for long handshake messages that cannot fit within a single record, DTLS supports fragmentation and subsequent reconstruction of handshake messages across records. The receiver must reassemble records before processing.
 
 DTLS relies on unique UDP 4-tuples to allow peers with multiple DTLS connections between them to demultiplex connections, constraining protocol design slightly more than UDP: application-layer demultiplexing over the same 4-tuple is not possible without trial decryption as all application-layer data is encrypted to a connection-specific cryptographic context. Starting with DTLS 1.3 {{I-D.ietf-tls-dtls13}}, a connection identifier extension to permit multiplexing of independent connections over the same 4-tuple is available {{I-D.ietf-tls-dtls-connection-id}}.
 
-Since datagrams may be replayed, DTLS provides optional anti-replay detection based on a window of acceptable sequence numbers {{RFC6347}}.
+Since datagrams can be replayed, DTLS provides optional anti-replay detection based on a window of acceptable sequence numbers {{RFC6347}}.
 
 ### Protocol Features
 
@@ -318,9 +345,9 @@ Since datagrams may be replayed, DTLS provides optional anti-replay detection ba
 ## (IETF) QUIC with TLS
 
 QUIC (Quick UDP Internet Connections) is a new standards-track transport protocol that runs over 
-UDP, loosely based on Google's original proprietary gQUIC protocol. (See {{section-gquic}} for more details.)
-The QUIC transport layer itself provides support for data confidentiality and integrity.
-This requires keys to be derived with a separate handshake protocol.
+UDP, loosely based on Google's original proprietary gQUIC protocol {{I-D.ietf-quic-transport}}. 
+(See {{section-gquic}} for more details.) The QUIC transport layer itself provides support for data 
+confidentiality and integrity. This requires keys to be derived with a separate handshake protocol.
 A mapping for QUIC over TLS 1.3 {{I-D.ietf-quic-tls}} has been specified to provide this handshake.
 
 ### Protocol Description
@@ -367,14 +394,6 @@ gQUIC was originally known as "QUIC": this document uses gQUIC to unambiguously 
 it from the standards-track IETF QUIC. The proprietary technical forebear of IETF QUIC, gQUIC 
 was originally designed with tightly-integrated security and application data transport protocols.
 
-### Protocol Description
-
-((TODO: write me))
-
-### Protocol Dependencies
-
-((TODO: write me))
-
 ## IKEv2 with ESP
 
 IKEv2 {{RFC7296}} and ESP {{RFC4303}} together form the modern IPsec protocol suite that encrypts and authenticates IP packets, either as for creating tunnels (tunnel-mode) or for direct transport connections (transport-mode). This suite of protocols separates out the key generation protocol (IKEv2) from the transport encryption protocol (ESP). Each protocol can be used independently, but this document considers them together, since that is the most common pattern.
@@ -383,7 +402,9 @@ IKEv2 {{RFC7296}} and ESP {{RFC4303}} together form the modern IPsec protocol su
 
 #### IKEv2
 
-IKEv2 is a control protocol that runs on UDP port 500. Its primary goal is to generate keys for Security Associations (SAs). It first uses a Diffie-Hellman key exchange to generate keys for the "IKE SA", which is a set of keys used to encrypt further IKEv2 messages. It then goes through a phase of authentication in which both peers present blobs signed by a shared secret or private key, after which another set of keys is derived, referred to as the "Child SA". These Child SA keys are used by ESP.
+IKEv2 is a control protocol that runs on UDP port 500. Its primary goal is to generate keys for Security Associations (SAs). 
+An SA contains shared (cryptographic) information used for establishing other SAs or keying ESP; See {{ESP}}.
+IKEv2 first uses a Diffie-Hellman key exchange to generate keys for the "IKE SA", which is a set of keys used to encrypt further IKEv2 messages. It then goes through a phase of authentication in which both peers present blobs signed by a shared secret or private key, after which another set of keys is derived, referred to as the "Child SA". These Child SA keys are used by ESP.
 
 IKEv2 negotiates which protocols are acceptable to each peer for both the IKE and Child SAs using "Proposals". Each proposal may contain an encryption algorithm, an authentication algorithm, a Diffie-Hellman group, and (for IKE SAs only) a pseudorandom function algorithm. Each peer may support multiple proposals, and the most preferred mutually supported proposal is chosen during the handshake.
 
@@ -397,8 +418,8 @@ MOBIKE is a Mobility and Multihoming extension to IKEv2 that allows a set of Sec
 
 When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP {{RFC8229}}.
 
-#### ESP
-
+#### ESP {#ESP}
+ 
 ESP is a protocol that encrypts and authenticates IPv4 and IPv6 packets. The keys used for both encryption and authentication can be derived from an IKEv2 exchange. ESP Security Associations come as pairs, one for each direction between two peers. Each SA is identified by a Security Parameter Index (SPI), which is marked on each encrypted ESP packet.
 
 ESP packets include the SPI, a sequence number, an optional Initialization Vector (IV), payload data, padding, a length and next header field, and an Integrity Check Value.
@@ -453,7 +474,7 @@ and adds confidentially and mandatory integrity protection to RTP control (RTCP)
 For RTP data packets, this is done by encrypting the payload section of the packet
 and optionally appending an authentication tag (MAC) as a packet trailer, with the RTP
 header authenticated but not encrypted. The RTP header itself is left unencrypted
-to enable RTP header compression {{RFC2508}}{{RFC3545}}. For RTCP packets, the first packet
+to enable RTP header compression {{RFC2508}} {{RFC3545}}. For RTCP packets, the first packet
 in the compound RTCP packet is partially encrypted, leaving the first eight octets of
 the header as cleartext to allow identification of the packet as RTCP, while the remainder 
 of the compound packet is fully encrypted. The entire RTCP packet is then authenticated
