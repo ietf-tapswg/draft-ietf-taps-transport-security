@@ -54,6 +54,7 @@ normative:
     RFC3948:
     RFC4302:
     RFC4303:
+    RFC4474:
     RFC4555:
     RFC5246:
     RFC5723:
@@ -458,32 +459,29 @@ ESP packets may be sent directly over IP, but where network conditions warrant (
 
 - Since ESP is below transport protocols, it does not have any dependencies on the transports themselves, other than on UDP or TCP where encapsulation is employed.
 
-## SRTP (with DTLS)
+## Secure RTP (with DTLS)
 
-SRTP -- Secure RTP -- is a profile for RTP that provides confidentiality, message 
-authentication, and replay protection for data and control packets {{RFC3711}}.
-SRTP packets are encrypted using a session key, which is derived from a separate
-master key. Master keys are derived and managed externally, e.g., via DTLS, as specified
-in RFC 5763 {{RFC5763}}, under the control of a signaling protocol such as SIP {{RFC3261}}
-or WebRTC {{I-D.ietf-rtcweb-security-arch}}.
+Secure RTP (SRTP) is a profile for RTP that provides confidentiality, message
+authentication, and replay protection for RTP data packets and RTP control
+protocol (RTCP) packets {{RFC3711}}.
 
-### Protocol descriptions
+### Protocol description
 
 SRTP adds confidentiality and optional integrity protection to RTP data packets,
-and adds confidentially and mandatory integrity protection to RTP control (RTCP) packets.
+and adds confidentially and mandatory integrity protection to RTCP packets.
 For RTP data packets, this is done by encrypting the payload section of the packet
 and optionally appending an authentication tag (MAC) as a packet trailer, with the RTP
-header authenticated but not encrypted. The RTP header itself is left unencrypted
-to enable RTP header compression {{RFC2508}} {{RFC3545}}. For RTCP packets, the first packet
+header authenticated but not encrypted (the RTP header was left unencrypted
+to enable RTP header compression {{RFC2508}} {{RFC3545}}). For RTCP packets, the first packet
 in the compound RTCP packet is partially encrypted, leaving the first eight octets of
-the header as cleartext to allow identification of the packet as RTCP, while the remainder 
+the header as clear-text to allow identification of the packet as RTCP, while the remainder
 of the compound packet is fully encrypted. The entire RTCP packet is then authenticated
 by appending a MAC as packet trailer.
 
 Packets are encrypted using session keys, which
-are ultimately derived from a master key and some additional master salt and session salt.
+are ultimately derived from a master key and an additional master salt and session salt.
 SRTP packets carry a 2-byte sequence number to partially identify the unique packet
-index. SRTP peers maintain a separate rollover counter (ROC) for RTP data packets that is 
+index. SRTP peers maintain a separate roll-over counter (ROC) for RTP data packets that is
 incremented whenever the sequence number wraps. The sequence number and ROC together 
 determine the packet index. RTCP packets have a similar, yet differently named, field
 called the RTCP index which serves the same purpose.
@@ -495,27 +493,38 @@ the RTP SSRC (synchronization source), packet index, and session "salting key".
 SRTP offers replay detection by keeping a replay list of already seen and processed packet indices. 
 If a packet arrives with an index that matches one in the replay list, it is silently discarded.
 
-DTLS {{RFC5764}} is commonly used as a way to perform mutual authentication and key 
-agreement for SRTP {{RFC5763}}. (Here, certificates marshal public keys between
-endpoints. Thus, self-signed certificates may be used if peers do not mutually trust one another, 
-as is common on the Internet.) When DTLS is used, certificate fingerprints are transmitted
-out-of-band using SIP. Peers typically verify that DTLS-offered certificates match
-that which are offered over SIP. This prevents active attacks on RTP, but not on the signaling (SIP or
-WebRTC) channel. 
+DTLS {{RFC5764}} is commonly used to perform mutual authentication and key
+agreement for SRTP {{RFC5763}}.
+Peers use DTLS to perform mutual certificate-based authentication on the
+media path, and to generate the SRTP master key.
+Peer certificates can be issued and signed by a certificate authority.
+Alternatively, certificates used in the DTLS exchange can be self-signed.
+If they are self-signed, certificate fingerprints are included in the signalling
+exchange (e.g., in SIP or WebRTC), and used to bind the DTLS key exchange in
+the media plane to the signaling plane.
+The combination of a mutually authenticated DTLS key exchange on the media
+path and a fingerprint sent in the signalling channel protects against
+active attacks on the media, provided the signalling can be trusted.
+Signalling needs to be protected as described in, for example, SIP
+{{RFC3261}} Authenticated Identity Management {{RFC4474}} or the WebRTC
+security architecture {{I-D.ietf-rtcweb-security-arch}}, to provide
+complete system security.
+
+
 
 ### Protocol features
 
-- Optional replay protection with tunable replay windows.
-- Out-of-order packet receipt.
-- (RFC5763) Mandatory mutually authenticated key exchange.
 - Partial encryption, protecting media payloads and control packets but not data packet headers.
 - Optional authentication of data packets; mandatory authentication of control packets.
+- Optional replay protection with tunable replay windows.
+- Out-of-order packet receipt.
+- Mutually authenticated key exchange {{RFC5764}}
 
 ### Protocol dependencies
 
-- External key derivation and management mechanism or protocol, e.g., DTLS {{RFC5763}}.
-- External signaling protocol to manage RTP parameters and locate and identify peers, e.g., 
-SIP {{RFC3261}} or WebRTC {{I-D.ietf-rtcweb-security-arch}}.
+- External key derivation and management protocol, e.g., DTLS {{RFC5763}}.
+- External identity management protocol, e.g., SIP Authenticated Identity Management
+  {{RFC4474}}, WebRTC Security Architecture {{I-D.ietf-rtcweb-security-arch}}.
 
 ## Differences from ZRTP
 
