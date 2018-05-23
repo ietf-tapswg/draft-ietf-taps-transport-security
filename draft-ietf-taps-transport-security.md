@@ -328,7 +328,10 @@ DTLS is modified from TLS to operate with the possibility of packet loss, reorde
 
 As the DTLS handshake protocol runs atop the record protocol, to account for long handshake messages that cannot fit within a single record, DTLS supports fragmentation and subsequent reconstruction of handshake messages across records. The receiver must reassemble records before processing.
 
-DTLS relies on unique UDP 4-tuples to allow peers with multiple DTLS connections between them to demultiplex connections, constraining protocol design slightly more than UDP: application-layer demultiplexing over the same 4-tuple is not possible without trial decryption as all application-layer data is encrypted to a connection-specific cryptographic context. {{I-D.ietf-tls-dtls-connection-id}} specifies a connection identifier extension for DTLS 1.2 and 1.3 {{I-D.ietf-tls-dtls13} that permits multiplexing of independent connections over the same 4-tuple.
+DTLS relies on unique UDP 4-tuples to identify connections. Since all application-layer data is encrypted, 
+demultiplexing over the same 4-tuple requires the use of a connection identifier extension {{I-D.ietf-tls-dtls-connection-id}} 
+to permit identification of the correct connection-specific cryptographic context without the use of trial decryption. 
+(Note that this extension is only supported in DTLS 1.2 and 1.3 {{I-D.ietf-tls-dtls13}.)
 
 Since datagrams can be replayed, DTLS provides optional anti-replay detection based on a window of acceptable sequence numbers {{RFC6347}}.
 
