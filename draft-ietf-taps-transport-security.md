@@ -221,8 +221,8 @@ specific framing and header format on the wire. A Transport Protocol services an
 This may also be an upper layer protocol or tunnel encapsulation.
 
 - Security Feature: a specific feature that a network security layer provides to applications. Examples 
-include authentication, encryption, key generation, session resumption, and privacy. A feature may be 
-considered to be Mandatory or Optional to an application's implementation.
+include authentication, encryption, key generation, session resumption, and privacy. Features may be 
+Mandatory or Optional for an application's implementation.
 
 - Security Protocol: a defined network protocol that implements one or more security features. Security 
 protocols may be used alongside transport protocols, and in combination with other security protocols when
@@ -328,7 +328,7 @@ DTLS is modified from TLS to operate with the possibility of packet loss, reorde
 
 As the DTLS handshake protocol runs atop the record protocol, to account for long handshake messages that cannot fit within a single record, DTLS supports fragmentation and subsequent reconstruction of handshake messages across records. The receiver must reassemble records before processing.
 
-DTLS relies on unique UDP 4-tuples to allow peers with multiple DTLS connections between them to demultiplex connections, constraining protocol design slightly more than UDP: application-layer demultiplexing over the same 4-tuple is not possible without trial decryption as all application-layer data is encrypted to a connection-specific cryptographic context. Starting with DTLS 1.3 {{I-D.ietf-tls-dtls13}}, a connection identifier extension to permit multiplexing of independent connections over the same 4-tuple is available {{I-D.ietf-tls-dtls-connection-id}}.
+DTLS relies on unique UDP 4-tuples to allow peers with multiple DTLS connections between them to demultiplex connections, constraining protocol design slightly more than UDP: application-layer demultiplexing over the same 4-tuple is not possible without trial decryption as all application-layer data is encrypted to a connection-specific cryptographic context. {{I-D.ietf-tls-dtls-connection-id}} specifies a connection identifier extension for DTLS 1.2 and 1.3 {{I-D.ietf-tls-dtls13} that permits multiplexing of independent connections over the same 4-tuple.
 
 Since datagrams can be replayed, DTLS provides optional anti-replay detection based on a window of acceptable sequence numbers {{RFC6347}}.
 
@@ -341,7 +341,8 @@ Since datagrams can be replayed, DTLS provides optional anti-replay detection ba
 ### Protocol Dependencies
 
 - Since DTLS runs over an unreliable, unordered datagram transport, it does not require any reliability features.
-- The DTLS record protocol explicitly encodes record lengths, so although it runs over a datagram transport, it does not rely on the transport protocol's framing beyond requiring transport-level reconstruction of datagrams fragmented over packets.
+- The DTLS record protocol explicitly encodes record lengths, so although it runs over a datagram transport, it does not rely on the transport protocol's framing beyond requiring transport-level reconstruction of datagrams fragmented over packets. 
+(Note: DTLS 1.3 short header records omit the explicit length field.)
 - UDP 4-tuple uniqueness, or the connection identifier extension, for demultiplexing.
 - Path MTU discovery.
 
@@ -389,7 +390,7 @@ Public Reset packet, which is not authenticated).
 - QUIC transport relies on TLS 1.3 for authentication and initial key derivation.
 - TLS within QUIC relies on a reliable stream abstraction for its handshake.
 
-### Differences from Google QUIC {#section-gquic}
+### Variant: Google QUIC {#section-gquic}
 
 Google QUIC (gQUIC) is a UDP-based multiplexed streaming protocol designed and deployed by Google 
 following experience from deploying SPDY, the proprietary predecessor to HTTP/2.
@@ -512,8 +513,6 @@ Signalling needs to be protected as described in, for example, SIP
 security architecture {{I-D.ietf-rtcweb-security-arch}}, to provide
 complete system security.
 
-
-
 ### Protocol features
 
 - Partial encryption, protecting media payloads and control packets but not data packet headers.
@@ -528,7 +527,7 @@ complete system security.
 - External identity management protocol, e.g., SIP Authenticated Identity Management
   {{RFC4474}}, WebRTC Security Architecture {{I-D.ietf-rtcweb-security-arch}}.
 
-## ZRTP: Media Path Key Agreement for SRTP
+### Variant: ZRTP for Media Path Key Agreement
 
 ZRTP {{RFC6189}} is an alternative key agreement protocol for SRTP. 
 It uses standard SRTP to protect RTP data packets and RTCP packets, but
