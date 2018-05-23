@@ -837,39 +837,39 @@ out-of-band or from a prior session to encrypt individual messages, packets, or 
 
 ## Optional Features
 
-- Cryptographic algorithm negotiation: Transport security protocols should permit applications to configure 
+- Cryptographic algorithm negotiation (AN): Transport security protocols should permit applications to configure 
 supported or enabled cryptographic algorithms.
   - Transport dependency: None.
   - Application dependency: Application awareness of supported or desired algorithms.
 
-- Application authentication delegation: Some protocols may completely defer endpoint authentication to applications,
+- Application authentication delegation (AD): Some protocols may completely defer endpoint authentication to applications,
 e.g., to reduce online protocol complexity.
   - Transport dependency: None.
   - Application dependency: Application opt-in and policy for endpoint authentication
 
-- Mutual authentication: Transport security protocols should allow each endpoint to authenticate the other if 
+- Mutual authentication (MA): Transport security protocols should allow each endpoint to authenticate the other if
 required by the application.
   - Transport dependency: None.
   - Application dependency: Mutual authentication required for application support.
 
-- DoS mitigation: Transport security protocols may need to support volumetric DoS prevention via, e.g., 
+- DoS mitigation (DM): Transport security protocols may need to support volumetric DoS prevention via, e.g., 
 cookies or initiator-side puzzles.
   - Transport dependency: None.
   - Application dependency: None.
 
-- Connection mobility: Sessions should not be bound to a network connection (or 5-tuple). This allows cryptographic
+- Connection mobility (CM): Sessions should not be bound to a network connection (or 5-tuple). This allows cryptographic
 key material and other state information to be reused in the event of a connection change. Examples of this include
 a NAT rebinding that occurs without a client's knowledge.
   - Transport dependency: Connections are unreliable or can change due to unpredictable network events, e.g.,
   NAT re-bindings.
   - Application dependency: None.
 
-- Source validation: Source validation must be provided to mitigate server-targeted DoS attacks. This can
+- Source validation (SV): Source validation must be provided to mitigate server-targeted DoS attacks. This can
 be done with puzzles or cookies.
   - Transport dependency: Packets may arrive as datagrams instead of streams from unauthenticated sources.
   - Application dependency: None.
 
-- Application-layer feature negotiation: The type of application using a transport security protocol often requires
+- Application-layer feature negotiation (FN): The type of application using a transport security protocol often requires
 features configured at the connection establishment layer, e.g., ALPN {{RFC7301}}. Moreover, application-layer 
 features may often be used to offload the session to another server which can better handle the request. (The TLS SNI 
 is one example of such a feature.) As such, transport security protocols should provide a generic mechanism to allow 
@@ -877,19 +877,40 @@ for such application-specific features and options to be configured or otherwise
   - Transport dependency: None.
   - Application dependency: Specification of application-layer features or functionality.
 
-- Configuration extensions: The protocol negotiation should be extensible with addition of new configuration options.
+- Configuration extensions (CX): The protocol negotiation should be extensible with addition of new configuration options.
   - Transport dependency: None.
   - Application dependency: Specification of application-specific extensions.
 
-- Session caching (and management): Sessions should be cacheable to enable reuse and amortize the cost 
+- Session caching and management (SC): Sessions should be cacheable to enable reuse and amortize the cost 
 of performing session establishment handshakes.
   - Transport dependency: None.
   - Application dependency: None.
 
-- Length-hiding padding: Applications may wish to defer traffic padding to the security protocol to deter traffic
+- Length-hiding padding (LH): Applications may wish to defer traffic padding to the security protocol to deter traffic
 analysis attacks.
   - Transport dependency: None.
   - Application dependency: Knowledge of desired padding policies.
+
+## Optional Feature Availability
+
+|---
+| Protocol | MA | CM | SV | FN | CX | SC |
+|:---------|:--:|:--:|:--:|:--:|:--:|:--:|
+| TLS      | S  | N\* | Y | Y  | Y  | Y
+| DTLS     | S  | S  | Y  | Y  | Y  | Y
+| IETF QUIC | S | S  | Y  | Y  | Y  | Y
+| IKEv2    |
+| SRTP     |
+| tcpcrypt |
+| WireGuard |
+| MinimalT |
+| CurveCP  |
+|---
+
+Y=Yes N=No  
+S=Supported but not required  
+\*=On TCP; MPTCP would provide this ability
+>>>>>>> Request for comments on the format
 
 # Transport Security Protocol Interfaces
 
