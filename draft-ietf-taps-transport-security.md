@@ -450,7 +450,7 @@ ESP packets may be sent directly over IP, but where network conditions warrant (
 - Mutual authentication.
 - Cryptographic algorithm negotiation.
 - Datagram confidentiality and integrity.
-- Session resumption {{RFC5723}}.
+- Session resumption.
 - Connection mobility.
 - Cookie-based DoS mitigation.
 - Certificate, raw public key, pre-shared key, and EAP peer authentication.
