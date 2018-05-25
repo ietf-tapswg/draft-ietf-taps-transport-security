@@ -869,7 +869,7 @@ be done with puzzles or cookies.
   - Transport dependency: Packets may arrive as datagrams instead of streams from unauthenticated sources.
   - Application dependency: None.
 
-- Application-layer feature negotiation (FN): The type of application using a transport security protocol often requires
+- Application-layer feature negotiation (AFN): The type of application using a transport security protocol often requires
 features configured at the connection establishment layer, e.g., ALPN {{RFC7301}}. Moreover, application-layer 
 features may often be used to offload the session to another server which can better handle the request. (The TLS SNI 
 is one example of such a feature.) As such, transport security protocols should provide a generic mechanism to allow 
@@ -893,24 +893,28 @@ analysis attacks.
 
 ## Optional Feature Availability
 
+The following table lists the availability of the above-listed optional features in each of the analyzed protocols. "Mandatory" indicates that the feature is intrinsic to the protocol and cannot be disabled. "Supported" indicates that the feature is optionally provided natively or through a (standardized, where applicable) extension.
+
 |---
-| Protocol | MA | CM | SV | FN | CX | SC |
-|:---------|:--:|:--:|:--:|:--:|:--:|:--:|
-| TLS      | S  | N\* | Y | Y  | Y  | Y
-| DTLS     | S  | S  | Y  | Y  | Y  | Y
-| IETF QUIC | S | S  | Y  | Y  | Y  | Y
-| IKEv2    |
-| SRTP     |
-| tcpcrypt |
-| WireGuard |
-| MinimalT |
-| CurveCP  |
+| Protocol | MA | CM | SV | AFN | CX | SC |
+|:---------|:--:|:--:|:--:|:---:|:--:|:--:|
+| TLS      | S  | N\* | M | S   | S  | S
+| DTLS     | S  | S  | M  | S   | S  | S
+| IETF QUIC | S | S  | M  | S   | S  | S
+| IKEv2+ESP | M | S  | M  | ?   | S  | S
+| SRTP+DTLS | S | ?  | M  | S   | S  | S
+| SRTP+ZRTP | U | ?  | ?  | U   | U  | N
+| tcpcrypt | U  | N\* | M | U   | U  | S
+| WireGuard | M | ?  | M  | U   | U  | ?
+| MinimalT | M  | M  | M  | ?   | U  | N
+| CurveCP  | S  | M  | M  | U   | U  | N
 |---
 
-Y=Yes N=No  
+M=Mandatory  
 S=Supported but not required  
+U=Unsupported  
+?=No f'ing idea: needs research (FIXME)  
 \*=On TCP; MPTCP would provide this ability
->>>>>>> Request for comments on the format
 
 # Transport Security Protocol Interfaces
 
