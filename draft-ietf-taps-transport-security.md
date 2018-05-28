@@ -898,16 +898,16 @@ The following table lists the availability of the above-listed optional features
 |---
 | Protocol | MA | CM | SV | AFN | CX | SC |
 |:---------|:--:|:--:|:--:|:---:|:--:|:--:|
-| TLS      | S  | N\* | M | S   | S  | S
+| TLS      | S  | U\* | M | S   | S  | S
 | DTLS     | S  | S  | M  | S   | S  | S
 | IETF QUIC | S | S  | M  | S   | S  | S
 | IKEv2+ESP | M | S  | M  | ?   | S  | S
 | SRTP+DTLS | S | ?  | M  | S   | S  | S
-| SRTP+ZRTP | U | ?  | ?  | U   | U  | N
-| tcpcrypt | U  | N\* | M | U   | U  | S
+| SRTP+ZRTP | U | ?  | ?  | U   | U  | U
+| tcpcrypt | U  | U\* | M | U   | U  | S
 | WireGuard | M | ?  | M  | U   | U  | ?
-| MinimalT | M  | M  | M  | ?   | U  | N
-| CurveCP  | S  | M  | M  | U   | U  | N
+| MinimalT | M  | M  | M  | ?   | U  | U
+| CurveCP  | S  | M  | M  | U   | U  | U
 |---
 
 M=Mandatory  
