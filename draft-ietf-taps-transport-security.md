@@ -220,7 +220,7 @@ specific framing and header format on the wire. A Transport Protocol services an
 - Application: an entity that uses a transport protocol for end-to-end delivery of data across the network.
 This may also be an upper layer protocol or tunnel encapsulation.
 
-- Security Feature: a specific feature that a network security layer provides to applications. Examples 
+- Security Feature: a feature that a network security layer provides to applications. Examples 
 include authentication, encryption, key generation, session resumption, and privacy. Features may be 
 Mandatory or Optional for an application's implementation.
 
@@ -228,9 +228,11 @@ Mandatory or Optional for an application's implementation.
 protocols may be used alongside transport protocols, and in combination with other security protocols when
 appropriate.
 
-- Handshake Protocol: a protocol that enables peers to validate each other and to securely establish shared cryptographic context.
+- Handshake Protocol: a protocol that enables peers to validate each other and to securely establish 
+shared cryptographic context.
 
-- Record Protocol: a security protocol that allows data to be divided into manageable blocks and protected using a shared cryptographic context.
+- Record Protocol: a security protocol that allows data to be divided into manageable blocks and protected 
+using shared cryptographic context.
 
 - Session: an ephemeral security association between applications.
 
@@ -249,11 +251,63 @@ interface or address changes.
 
 - Server: the peer responsible for responding to a session initiation.
 
+# Security Features
+
+In this section, we enumerate Security Features exposed by protocols discussed in the
+remainder of this document. Protocol security properties that are unrelated to the API surface
+exposed by such protocols, such as client or server identity hiding, are not listed 
+here as features.
+
+- Forward-secure key establishment: Cryptographic key establishment with forward secure properties.
+
+- Cryptographic algorithm negotiation: Negotiate support of protocol algorithms, including: encryption, 
+hash, MAC (PRF), and digital signature algorithms.
+
+- Stateful and stateless cross-connection session resumption: Connection establishment without needing 
+to complete an entirely new handshake. 
+
+- Peer authentication (certificate, raw public key, pre-shared key, or EAP-based): Peer authentication using 
+select or protocol-specific mechanisms.
+
+- Mutual authentication: Connection establishment wherein both endpoints are authenticated.
+
+- Record (channel or datagram) confidentiality and integrity: Encryption and authentication of 
+application plaintext bytes sent between peers over a channel or in individual datagrams.
+
+- Partial record confidentiality: Encryption of some portion of records.
+
+- Optional record integrity: Optional authentication of certain records.
+
+- Record replay prevention: Protocol detection and defense against record replays, e.g., due 
+to in-network retransmissions.
+
+- Application-layer feature negotiation: Securely negotiate application-specific functionality.
+
+- Early data support (starting with TLS 1.3): Transmission of application data prior to connection 
+(handshake) establishment.
+
+- Connection mobility: Connection continuation in the presence of 5-tuple changes beneath the 
+secure transport protocol, e.g., due to NAT rebindings.
+
+- Application-layer authentication delegation: Out-of-band peer authentication performed by 
+applications outside of the connection establishment.
+
+- Out-of-order record receipt: Processing of records received out-of-order.
+
+- DoS mitigation (cookie or puzzle based): Peer DoS mitigation via explicit proof of origin (cookie) or
+work mechanisms (puzzles).
+
+- Connection re-keying: In-band cryptographic handshake re-keying.
+
+- Optional length-hiding and anti-amplification padding: Protocol-drive record padding aimed at hiding
+plaintext message length and mitigating amplification attack vectors.
+
 # Transport Security Protocol Descriptions
 
-This section contains descriptions of security protocols currently used to protect data being sent over a network.
+This section contains descriptions of security protocols currently used to protect data 
+being sent over a network.
 
-For each protocol, we describe the features it provides and its dependencies on other protocols.
+For each protocol, we describe its provided features and dependencies on other protocols.
 
 ## TLS
 
@@ -296,18 +350,16 @@ by the server. It is assumed that the client must always store some state inform
 
 ### Protocol Features
 
-- Key exchange and ciphersuite algorithm negotiation.
-- Stateful and stateless session resumption.
-- Certificate- and raw public key-based authentication.
-- Mutual client and server authentication.
-- Byte stream confidentiality and integrity.
-- Extensibility via well-defined extensions.
-- 0-RTT data support (starting with TLS 1.3).
-- Application-layer protocol negotiation.
-- Transparent data segmentation.
-
-<!-- caw: possibles to add -->
-<!-- - identity hiding -->
+- Forward-secure key establishment.
+- Cryptographic algorithm negotiation.
+- Stateful and stateless cross-connection session resumption.
+- Peer authentication (Certificate, raw public key, and pre-shared key).
+- Mandatory server authentication, optional client authentication.
+- Record (channel) confidentiality and integrity.
+- Record replay prevention.
+- Application-layer feature negotiation.
+- Early data support (starting with TLS 1.3).
+- Optional length-hiding padding (starting with TLS 1.3).
 
 ### Protocol Dependencies
 
@@ -337,9 +389,12 @@ Since datagrams can be replayed, DTLS provides optional anti-replay detection ba
 
 ### Protocol Features
 
-- Anti-replay protection between datagrams.
-- Basic reliability for handshake messages.
-- See also the features from TLS.
+- Record replay protection.
+- Record (datagram) confidentiality and integrity.
+- Out-of-order record receipt.
+- DoS mitigation (cookie-based).
+
+See also the features from TLS.
 
 ### Protocol Dependencies
 
@@ -382,16 +437,15 @@ before using single-RTT handshake keys after the next TLS flight.
 
 ### Protocol Features
 
-- Handshake properties of TLS.
-- Multiple encrypted streams over a single connection without head-of-line blocking.
-- Packet payload encryption and complete packet authentication (with the exception of the 
-Public Reset packet, which is not authenticated).
+- DoS mitigation (cookie-based).
+
+See also the properties of TLS.
 
 ### Protocol Dependencies
 
 - QUIC transport relies on UDP.
-- QUIC transport relies on TLS 1.3 for authentication and initial key derivation.
-- TLS within QUIC relies on a reliable stream abstraction for its handshake.
+- QUIC transport relies on TLS 1.3 for peer authentication and initial key derivation.
+- TLS within QUIC relies on QUIC for reliable handshake record transmission and receipt.
 
 ### Variant: Google QUIC {#section-gquic}
 
@@ -413,57 +467,76 @@ IKEv2 is a control protocol that runs on UDP port 500. Its primary goal is to ge
 An SA contains shared (cryptographic) information used for establishing other SAs or keying ESP; See {{ESP}}.
 IKEv2 first uses a Diffie-Hellman key exchange to generate keys for the "IKE SA", which is a set of keys used to encrypt further IKEv2 messages. It then goes through a phase of authentication in which both peers present blobs signed by a shared secret or private key, after which another set of keys is derived, referred to as the "Child SA". These Child SA keys are used by ESP.
 
-IKEv2 negotiates which protocols are acceptable to each peer for both the IKE and Child SAs using "Proposals". Each proposal may contain an encryption algorithm, an authentication algorithm, a Diffie-Hellman group, and (for IKE SAs only) a pseudorandom function algorithm. Each peer may support multiple proposals, and the most preferred mutually supported proposal is chosen during the handshake.
+IKEv2 negotiates which protocols are acceptable to each peer for both the IKE and Child SAs using 
+"Proposals". Each proposal may contain an encryption algorithm, an authentication algorithm, a 
+Diffie-Hellman group, and (for IKE SAs only) a pseudorandom function algorithm. Each peer may 
+support multiple proposals, and the most preferred mutually supported proposal is chosen during 
+the handshake.
 
-The authentication phase of IKEv2 may use Shared Secrets, Certificates, Digital Signatures, or an EAP (Extensible Authentication Protocol) method. At a minimum, IKEv2 takes two round trips to set up both an IKE SA and a Child SA. If EAP is used, this exchange may be expanded.
+The authentication phase of IKEv2 may use Shared Secrets, Certificates, Digital Signatures, or an 
+EAP (Extensible Authentication Protocol) method. At a minimum, IKEv2 takes two round trips to set 
+up both an IKE SA and a Child SA. If EAP is used, this exchange may be expanded.
 
-Any SA used by IKEv2 can be rekeyed upon expiration, which is usually based either on time or number of bytes encrypted.
+Any SA used by IKEv2 can be rekeyed upon expiration, which is usually based either on time or 
+number of bytes encrypted.
 
 There is an extension to IKEv2 that allows session resumption {{RFC5723}}.
 
-MOBIKE is a Mobility and Multihoming extension to IKEv2 that allows a set of Security Associations to migrate over different addresses and interfaces {{RFC4555}}.
+MOBIKE is a Mobility and Multihoming extension to IKEv2 that allows a set of Security Associations 
+to migrate over different addresses and interfaces {{RFC4555}}.
 
 When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP {{RFC8229}}.
 
 #### ESP {#ESP}
  
-ESP is a protocol that encrypts and authenticates IPv4 and IPv6 packets. The keys used for both encryption and authentication can be derived from an IKEv2 exchange. ESP Security Associations come as pairs, one for each direction between two peers. Each SA is identified by a Security Parameter Index (SPI), which is marked on each encrypted ESP packet.
+ESP is a protocol that encrypts and authenticates IPv4 and IPv6 packets. The keys used for both 
+encryption and authentication can be derived from an IKEv2 exchange. ESP Security Associations come 
+as pairs, one for each direction between two peers. Each SA is identified by a Security Parameter 
+Index (SPI), which is marked on each encrypted ESP packet.
 
-ESP packets include the SPI, a sequence number, an optional Initialization Vector (IV), payload data, padding, a length and next header field, and an Integrity Check Value.
+ESP packets include the SPI, a sequence number, an optional Initialization Vector (IV), payload 
+data, padding, a length and next header field, and an Integrity Check Value.
 
-From {{RFC4303}}, "ESP is used to provide confidentiality, data origin authentication, connectionless integrity, an anti-replay service (a form of partial sequence integrity), and limited traffic flow confidentiality."
+From {{RFC4303}}, "ESP is used to provide confidentiality, data origin authentication, connectionless 
+integrity, an anti-replay service (a form of partial sequence integrity), and limited traffic 
+flow confidentiality."
 
-Since ESP operates on IP packets, it is not directly tied to the transport protocols it encrypts. This means it requires little or no change from transports in order to provide security.
+Since ESP operates on IP packets, it is not directly tied to the transport protocols it encrypts. 
+This means it requires little or no change from transports in order to provide security.
 
-ESP packets may be sent directly over IP, but where network conditions warrant (e.g., when a NAT is present or when a firewall blocks such packets) they may be encapsulated in UDP {{RFC3948}} or TCP {{RFC8229}}.
+ESP packets may be sent directly over IP, but where network conditions warrant (e.g., when a NAT 
+is present or when a firewall blocks such packets) they may be encapsulated in UDP {{RFC3948}} or TCP {{RFC8229}}.
 
 ### Protocol features
 
 #### IKEv2
 
-- Encryption and authentication of handshake packets.
+- Forward-secure key establishment.
 - Cryptographic algorithm negotiation.
+- Peer authentication (Certificate, raw public key, pre-shared key, and EAP).
+- Mutual authentication.
+- Record (datagram) confidentiality and integrity.
 - Session resumption.
-- Mobility across addresses and interfaces.
-- Peer authentication extensibility based on shared secret, certificates, digital signatures, or EAP methods.
+- Connection mobility.
+- DoS mitigation (cookie-based).
 
 #### ESP
 
-- Data confidentiality and authentication.
-- Connectionless integrity.
-- Anti-replay protection.
-- Limited flow confidentiality.
+- Record confidentiality and integrity.
+- Record replay protection.
 
 ### Protocol dependencies
 
 #### IKEv2
 
 - Availability of UDP to negotiate, or implementation support for TCP-encapsulation.
-- Some EAP authentication types require accessing a hardware device, such as a SIM card; or interacting with a user, such as password prompting.
+- Some EAP authentication types require accessing a hardware device, such as a SIM 
+card; or interacting with a user, such as password prompting.
 
 #### ESP
 
-- Since ESP is below transport protocols, it does not have any dependencies on the transports themselves, other than on UDP or TCP where encapsulation is employed.
+- Since ESP is below transport protocols, it does not have any dependencies on the 
+transports themselves, other than on UDP or TCP where encapsulation is employed.
 
 ## Secure RTP (with DTLS)
 
@@ -518,11 +591,13 @@ complete system security.
 
 ### Protocol features
 
-- Partial encryption, protecting media payloads and control packets but not data packet headers.
-- Optional authentication of data packets; mandatory authentication of control packets.
-- Optional replay protection with tunable replay windows.
-- Out-of-order packet receipt.
-- Mutually authenticated key exchange {{RFC5764}}
+- Forward-secure key establishment.
+- Cryptographic algorithm negotiation.
+- Mutual authentication.
+- Partial datagram confidentiality. (Packet headers are not encrypted.)
+- Optional authentication of data packets.
+- Mandatory authentication of control packets.
+- Out-of-order record receipt.
 
 ### Protocol dependencies
 
@@ -553,7 +628,8 @@ gives key continuity properties analogous to the secure shell (ssh)
 
 ## tcpcrypt
 
-Tcpcrypt is a lightweight extension to the TCP protocol to enable opportunistic encryption with hooks available to the application layer for implementation of endpoint authentication.
+Tcpcrypt is a lightweight extension to the TCP protocol to enable opportunistic encryption with hooks 
+available to the application layer for implementation of endpoint authentication.
 
 ### Protocol Description
 
@@ -577,10 +653,11 @@ Tcpcrypt exposes a universally-unique connection-specific session ID to the appl
 
 ### Protocol Features
 
-- Forward-secure TCP payload encryption and integrity protection.
-- Session caching and address-agnostic resumption.
+- Forward-secure key establishment.
+- Record (channel) confidentiality and integrity.
+- Stateful cross-connection session resumption.
 - Connection re-keying.
-- Application-level authentication primitive.
+- Application authentication delegation.
 
 ### Protocol Dependencies
 
@@ -625,10 +702,11 @@ to packets coming from non-spoofed addresses.
 
 ### Protocol features
 
-- Optional PSK-based session creation.
-- Mutual client and server authentication.
-- Stateful, timestamp-based replay prevention.
-- Cookie-based DoS mitigation similar to DTLS and IKEv2.
+- Forward-secure key establishment.
+- Peer authentication (Public-key and PSK).
+- Mutual authentication.
+- Record replay prevention (Stateful, timestamp-based).
+- DoS mitigation (cookie-based).
 
 ### Protocol dependencies
 
@@ -637,35 +715,41 @@ to packets coming from non-spoofed addresses.
 
 ## MinimalT
 
-MinimalT is a UDP-based transport security protocol designed to offer confidentiality, mutual authentication, DoS prevention, and connection
-mobility {{MinimalT}}. One major goal of the protocol is to leverage existing protocols to obtain server-side configuration information used to
-more quickly bootstrap a connection. MinimalT uses a variant of TCP's congestion control algorithm.
+MinimalT is a UDP-based transport security protocol designed to offer confidentiality, 
+mutual authentication, DoS prevention, and connection mobility {{MinimalT}}. One major 
+goal of the protocol is to leverage existing protocols to obtain server-side configuration 
+information used to more quickly bootstrap a connection. MinimalT uses a variant of TCP's 
+congestion control algorithm.
 
 ### Protocol Description
 
-MinimalT is a secure transport protocol built on top of a widespread directory service. Clients and servers interact with local directory
-services to (a) resolve server information and (b) public ephemeral state information, respectively. Clients connect to a local
-resolver once at boot time. Through this resolver they recover the IP address(es) and public key(s) of each server to which
-they want to connect.
+MinimalT is a secure transport protocol built on top of a widespread directory service. 
+Clients and servers interact with local directory services to (a) resolve server information 
+and (b) public ephemeral state information, respectively. Clients connect to a local
+resolver once at boot time. Through this resolver they recover the IP address(es) and 
+public key(s) of each server to which they want to connect.
 
-Connections are instances of user-authenticated, mobile sessions between two endpoints. Connections run within tunnels between hosts. A tunnel
-is a server-authenticated container that multiplexes multiple connections between the same hosts. All connections in a tunnel share the
-same transport state machine and encryption. Each tunnel has a dedicated control connection used to configure and manage the tunnel over time.
-Moreover, since tunnels are independent of the network address information, they may be reused as both ends of the tunnel move about the network.
+Connections are instances of user-authenticated, mobile sessions between two endpoints. 
+Connections run within tunnels between hosts. A tunnel is a server-authenticated container 
+that multiplexes multiple connections between the same hosts. All connections in a tunnel share the
+same transport state machine and encryption. Each tunnel has a dedicated control connection 
+used to configure and manage the tunnel over time. Moreover, since tunnels are independent of 
+the network address information, they may be reused as both ends of the tunnel move about the network.
 This does however imply that the connection establishment and packet encryption mechanisms are coupled.
 
-Before a client connects to a remote service, it must first establish a tunnel to the host providing or offering the service. Tunnels are established
-in 1-RTT using an ephemeral key obtained from the directory service. Tunnel initiators provide their own ephemeral key and, optionally, a
-DoS puzzle solution such that the recipient (server) can verify the authenticity of the request and derive a shared secret. Within a tunnel,
-new connections to services may be established.
+Before a client connects to a remote service, it must first establish a tunnel to the host 
+providing or offering the service. Tunnels are established in 1-RTT using an ephemeral key 
+obtained from the directory service. Tunnel initiators provide their own ephemeral key and, optionally, a
+DoS puzzle solution such that the recipient (server) can verify the authenticity of the 
+request and derive a shared secret. Within a tunnel, new connections to services may be established.
 
 ### Protocol Features
 
-- 0-RTT forward secrecy for new connections.
-- DoS prevention by client-side puzzles.
-- Tunnel-based mobility.
-- (Transport Feature) Connection multiplexing between hosts across shared tunnels.
-- (Transport Feature) Congestion control state is shared across connections between the same host pairs.
+- Forward-secure key establishment.
+- DoS mitigation (puzzle-based).
+- Connection mobility (tunnel-based).
+
+Additional (orthogonal) transport features include: connection multiplexing between hosts across shared tunnels, and congestion control state is shared across connections between the same host pairs.
 
 ### Protocol Dependencies
 
@@ -716,12 +800,10 @@ in the clear. Everything else is encrypted.
 
 ### Protocol Features
 
-- Forward-secure data encryption and authentication.
-- Per-packet public-key encryption.
+- Datagram confidentiality and integrity (via public key encryption).
 - 1-RTT session bootstrapping.
-- Connection mobility based on a client-chosen ephemeral identifier.
-- Connection establishment message padding to prevent traffic amplification.
-- Sender-chosen explicit nonces, e.g., based on a sequence number.
+- Connection mobility (based on a client-chosen ephemeral identifier).
+- Optional length-hiding and anti-amplification padding.
 
 ### Protocol Dependencies
 
@@ -738,16 +820,16 @@ their presence impacts transport services or if a necessary transport service is
 
 ## Mandatory Features
 
-- Segment encryption and authentication: Transit data must be protected with an authenticated 
+- Segment or datagram encryption and authentication: Transit data must be protected with an authenticated 
 encryption algorithm.
 
 - Forward-secure key establishment: Negotiated keying material must come from an authenticated,
 forward-secure key exchange protocol.
 
-- Private key interface or injection: Authentication based on public key signatures is commonplace for
-many transport security protocols.
+- Public-key (raw or certificate) based authentication: Authentication based on public key signatures is 
+commonplace for many transport security protocols.
 
-- Endpoint authentication: The endpoint (receiver) of a new connection must be authenticated before any
+- Responder authentication: The endpoint (receiver) of a new connection must be authenticated before any
 data is sent to said party.
 
 - Pre-shared key support: A security protocol must be able to use a pre-shared key established 
@@ -755,10 +837,25 @@ out-of-band or from a prior session to encrypt individual messages, packets, or 
 
 ## Optional Features
 
-- Mutual authentication: Transport security protocols must allow each endpoint to authenticate the other if 
+- Cryptographic algorithm negotiation: Transport security protocols should permit applications to configure 
+supported or enabled cryptographic algorithms.
+  - Transport dependency: None.
+  - Application dependency: Application awareness of supported or desired algorithms.
+
+- Application authentication delegation: Some protocols may completely defer endpoint authentication to applications,
+e.g., to reduce online protocol complexity.
+  - Transport dependency: None.
+  - Application dependency: Application opt-in and policy for endpoint authentication
+
+- Mutual authentication: Transport security protocols should allow each endpoint to authenticate the other if 
 required by the application.
   - Transport dependency: None.
   - Application dependency: Mutual authentication required for application support.
+
+- DoS mitigation: Transport security protocols may need to support volumetric DoS prevention via, e.g., 
+cookies or initiator-side puzzles.
+  - Transport dependency: None.
+  - Application dependency: None.
 
 - Connection mobility: Sessions should not be bound to a network connection (or 5-tuple). This allows cryptographic
 key material and other state information to be reused in the event of a connection change. Examples of this include
@@ -784,10 +881,15 @@ for such application-specific features and options to be configured or otherwise
   - Transport dependency: None.
   - Application dependency: Specification of application-specific extensions.
 
-- Session caching and management: Sessions should be cacheable to enable reuse and amortize the cost of performing
-session establishment handshakes.
+- Session caching (and management): Sessions should be cacheable to enable reuse and amortize the cost 
+of performing session establishment handshakes.
   - Transport dependency: None.
   - Application dependency: None.
+
+- Length-hiding padding: Applications may wish to defer traffic padding to the security protocol to deter traffic
+analysis attacks.
+  - Transport dependency: None.
+  - Application dependency: Knowledge of desired padding policies.
 
 # Transport Security Protocol Interfaces
 
@@ -853,7 +955,7 @@ Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
 
 - Pre-Shared Key Export
 The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication. These may be explicitly exportable to the application, traditionally limited to direct export to the record protocol, or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.  
-  - Explict export: TLS (for QUIC), tcpcrypt, IKEv2, DTLS (for SRTP)
+  - Explicit export: TLS (for QUIC), tcpcrypt, IKEv2, DTLS (for SRTP)
   - Direct export: TLS, DTLS, MinimalT
   - Non-exportable: CurveCP
 
@@ -861,7 +963,7 @@ The handshake protocol will generate one or more keys to be used for record encr
 The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling between the record layer and the handshake layer.  
 Protocols: ESP ((Editor's note: One may consider TLS/DTLS to also have this interface))
 
-- Transport mobility  
+- Connection mobility  
 The record protocol can be signaled that it is being migrated to another transport or interface due to 
 connection mobility, which may reset address and state validation.  
 Protocols: QUIC, MinimalT, CurveCP, ESP, WireGuard (roaming)
@@ -873,7 +975,12 @@ This document has no request to IANA.
 # Security Considerations
 
 This document summarizes existing transport security protocols and their interfaces. 
-It does not propose changes to or recommend usage of reference protocols. 
+It does not propose changes to or recommend usage of reference protocols. Moreover,
+no claims of security and privacy properties beyond those guaranteed by the protocols 
+discussed are made. For example, metadata leakage via timing side channels and traffic
+analysis may compromise any protocol discussed in this survey. Applications using
+Security Interfaces SHOULD take such limitations into consideration when using a particular
+protocol implementation.
 
 # Acknowledgments
 
