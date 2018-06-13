@@ -886,7 +886,7 @@ of performing session establishment handshakes.
   - Transport dependency: None.
   - Application dependency: None.
 
-- Length-hiding padding (LH): Applications may wish to defer traffic padding to the security protocol to deter traffic
+- Length-hiding padding (LHP): Applications may wish to defer traffic padding to the security protocol to deter traffic
 analysis attacks.
   - Transport dependency: None.
   - Application dependency: Knowledge of desired padding policies.
@@ -896,25 +896,26 @@ analysis attacks.
 The following table lists the availability of the above-listed optional features in each of the analyzed protocols. "Mandatory" indicates that the feature is intrinsic to the protocol and cannot be disabled. "Supported" indicates that the feature is optionally provided natively or through a (standardized, where applicable) extension.
 
 |---
-| Protocol | MA | CM | SV | AFN | CX | SC |
-|:---------|:--:|:--:|:--:|:---:|:--:|:--:|
-| TLS      | S  | U\* | M | S   | S  | S
-| DTLS     | S  | S  | M  | S   | S  | S
-| IETF QUIC | S | S  | M  | S   | S  | S
-| IKEv2+ESP | M | S  | M  | ?   | S  | S
-| SRTP+DTLS | S | ?  | M  | S   | S  | S
-| SRTP+ZRTP | U | ?  | ?  | U   | U  | U
-| tcpcrypt | U  | U\* | M | U   | U  | S
-| WireGuard | M | ?  | M  | U   | U  | ?
-| MinimalT | M  | M  | M  | ?   | U  | U
-| CurveCP  | S  | M  | M  | U   | U  | U
+| Protocol  | AN | AD | MA | DM | CM | SV | AFN | CX | SC | LHP |
+|:----------|:--:|:--:|:--:|:--:|:--:|:--:|:---:|:--:|:--:|:---:|
+| TLS       | S  | S  | S  | S  | U\* | M | S   | S  | S  | S
+| DTLS      | S  | S  | S  | S  | S  | M  | S   | S  | S  | S
+| IETF QUIC | S  | S  | S  | S  | S  | M  | S   | S  | S  | S
+| IKEv2+ESP | S  | ?  | M  | S  | S  | M  | ?   | S  | S  | S
+| SRTP+DTLS | S  | S  | S  | S  | ?  | M  | S   | S  | S  | U
+| SRTP+ZRTP | ?  | ?  | U  | U  | ?  | ?  | ?   | ?  | ?  | U
+| tcpcrypt  | S  | M  | U  | U\*\* | U\* | M | U | U | S  | U
+| WireGuard | U  | S  | M  | S  | ?  | M  | U   | U  | ?  | ?
+| MinimalT  | U  | ?  | M  | S  | M  | M  | ?   | U  | U  | ?
+| CurveCP   | U  | ?  | S  | S  | M  | M  | U   | U  | U  | S
 |---
 
 M=Mandatory  
 S=Supported but not required  
 U=Unsupported  
-?=No f'ing idea: needs research (FIXME)  
-\*=On TCP; MPTCP would provide this ability
+?=TBD (FIXME)  
+\*=On TCP; MPTCP would provide this ability  
+\*\*=TCP provides SYN cookies natively, but these are not cryptographically strong  
 
 # Transport Security Protocol Interfaces
 
