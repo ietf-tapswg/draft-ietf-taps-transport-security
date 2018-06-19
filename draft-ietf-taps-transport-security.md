@@ -901,21 +901,20 @@ The following table lists the availability of the above-listed optional features
 | TLS       | S  | S  | S  | S  | U\* | M | S   | S  | S  | S
 | DTLS      | S  | S  | S  | S  | S  | M  | S   | S  | S  | S
 | IETF QUIC | S  | S  | S  | S  | S  | M  | S   | S  | S  | S
-| IKEv2+ESP | S  | ?  | M  | S  | S  | M  | ?   | S  | S  | S
-| SRTP+DTLS | S  | S  | S  | S  | ?  | M  | S   | S  | S  | U
-| SRTP+ZRTP | ?  | ?  | U  | U  | ?  | ?  | ?   | ?  | ?  | U
+| IKEv2+ESP | S  | S  | M  | S  | S  | M  | S   | S  | S  | S
+| SRTP+DTLS | S  | S  | S  | S  | U  | M  | S   | S  | S  | U
 | tcpcrypt  | S  | M  | U  | U\*\* | U\* | M | U | U | S  | U
-| WireGuard | U  | S  | M  | S  | ?  | M  | U   | U  | ?  | ?
-| MinimalT  | U  | ?  | M  | S  | M  | M  | ?   | U  | U  | ?
-| CurveCP   | U  | ?  | S  | S  | M  | M  | U   | U  | U  | S
+| WireGuard | U  | S  | M  | S  | U  | M  | U   | U  | U  | S+
+| MinimalT  | U  | U  | M  | S  | M  | M  | U   | U  | U  | S
+| CurveCP   | U  | U  | S  | S  | M  | M  | U   | U  | U  | S
 |---
 
 M=Mandatory  
 S=Supported but not required  
 U=Unsupported  
-?=TBD (FIXME)  
 \*=On TCP; MPTCP would provide this ability  
 \*\*=TCP provides SYN cookies natively, but these are not cryptographically strong  
++=For transport packets only  
 
 # Transport Security Protocol Interfaces
 
