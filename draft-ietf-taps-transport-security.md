@@ -949,7 +949,7 @@ U=Unsupported
 This section describes the interface surface exposed by the security protocols described above.
 Note that not all protocols support each interface. We partition these interfaces into
 pre-connection (configuration), connection, and post-connection interfaces, following
-conventions in {{!I-D.ietf-taps-api}} and {{!I-D.ietf-taps-architecture}}.
+conventions in {{!I-D.ietf-taps-interface}} and {{!I-D.ietf-taps-arch}}.
 
 ## Pre-Connection Interfaces
 
