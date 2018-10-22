@@ -257,8 +257,9 @@ cryptographic key material and other state information to be reused in the event
 # Security Features
 
 In this section, we enumerate Security Features exposed by protocols discussed in the
-remainder of this document. A Security Feature is a Transport Feature that a network security
-layer provides to applications. Protocol security properties that are unrelated to the API surface
+remainder of this document. Security Features extend the set of Transport Features
+described in {{!RFC8095}} and provided by Transport Services implementations.
+Protocol security properties that are unrelated to the API surface
 exposed by such protocols, such as client or server identity hiding, are not listed
 here as features.
 
