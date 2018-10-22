@@ -278,6 +278,9 @@ select or protocol-specific mechanisms.
 
 - Mutual authentication: Connection establishment wherein both endpoints are authenticated.
 
+- Application-layer authentication delegation: Out-of-band peer authentication performed by
+applications outside of the connection establishment.
+
 - Record (channel or datagram) confidentiality and integrity: Encryption and authentication of
 application plaintext bytes sent between peers over a channel or in individual datagrams.
 
@@ -288,18 +291,15 @@ application plaintext bytes sent between peers over a channel or in individual d
 - Record replay prevention: Protocol detection and defense against record replays, e.g., due
 to in-network retransmissions.
 
-- Application-layer feature negotiation: Securely negotiate application-specific functionality,
-including those necessary for connection handling and management, e.g., the TLS parent connection
-protocol type via ALPN {{RFC7301}} or desired application identity via SNI {{RFC6066}}.
-
 - Early data support (starting with TLS 1.3): Transmission of application data prior to connection
 (handshake) establishment.
 
 - Connection mobility: Connection continuation in the presence of 5-tuple changes beneath the
 secure transport protocol, e.g., due to NAT rebindings.
 
-- Application-layer authentication delegation: Out-of-band peer authentication performed by
-applications outside of the connection establishment.
+- Application-layer feature negotiation: Securely negotiate application-specific functionality,
+including those necessary for connection handling and management, e.g., the TLS parent connection
+protocol type via ALPN {{RFC7301}} or desired application identity via SNI {{RFC6066}}.
 
 - Configuration extensions: Add protocol features via extensions or configuration options. TLS
 extensions are a primary example of this feature.
@@ -343,12 +343,13 @@ The handshake protocol serves several purposes, including: peer authentication, 
 algorithm and ciphersuite) negotiation, and key derivation. Peer authentication may be mutual; however, commonly,
 only the server is authenticated. X.509 certificates are commonly used in this authentication step, though
 other mechanisms, such as raw public keys {{RFC7250}}, exist. The client is not authenticated unless explicitly
-requested by the server with a CertificateRequest handshake message. Assuming strong cryptography, an infrastructure for trust establishment, correctly-functioning endpoints, and communication patterns free from side channels, server authentication is sufficient to establish a channel resistant to eavesdroppers.
+requested by the server.
 
 The handshake protocol is also extensible. It allows for a variety of extensions to be included by either the client
 or server. These extensions are used to specify client preferences, e.g., the application-layer protocol to be driven
-with the TLS connection {{RFC7301}}, or signals to the server to aid operation, e.g., Server Name Indication (SNI) {{RFC6066}}. Various extensions also exist to tune the parameters of the record protocol, e.g., the maximum fragment length {{RFC6066}}
-and record size limit {{!I-D.ietf-tls-record-limit}}.
+with the TLS connection {{RFC7301}}, or signals to the server to aid operation, e.g., Server Name Indication
+(SNI) {{RFC6066}}. Various extensions also exist to tune the parameters of the record protocol, e.g., the
+maximum fragment length {{RFC6066}} and record size limit {{!I-D.ietf-tls-record-limit}}.
 
 Alerts are used to convey errors and other atypical events to the endpoints. There are two classes of alerts: closure
 and error alerts. A closure alert is used to signal to the other peer that the sender wishes to terminate the connection.
