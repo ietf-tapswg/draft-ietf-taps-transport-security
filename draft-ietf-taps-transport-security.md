@@ -222,7 +222,8 @@ This may also be an upper layer protocol or tunnel encapsulation.
 
 - Security Feature: a feature that a network security layer provides to applications. Examples
 include authentication, encryption, key generation, session resumption, and privacy. Features may be
-Mandatory or Optional for an application's implementation.
+Mandatory or Optional for an application's implementation. Security Features extend the set of
+Transport Features described in {{!RFC8095}} and provided by Transport Services implementations.
 
 - Security Protocol: a defined network protocol that implements one or more security features. Security
 protocols may be used alongside transport protocols, and in combination with other security protocols when
@@ -238,15 +239,12 @@ using shared cryptographic context.
 
 - Session: an ephemeral security association between applications.
 
-- Cryptographic context: a set of cryptographic parameters, including but not necessarily limited to keys for encryption, authentication, and session resumption, enabling authorized parties to a session to communicate securely.
+- Cryptographic context: a set of cryptographic parameters, including but not necessarily limited to keys
+for encryption, authentication, and session resumption, enabling authorized parties to a session to communicate securely.
 
 - Connection: the shared state of two or more endpoints that persists across messages that are transmitted
 between these endpoints. A connection is a transient participant of a session, and a session generally lasts
 between connection instances.
-
-- Connection Mobility: a property of a connection that allows it to be multihomed or resilient across network
-interface or address changes, e.g., NAT rebindings that occur without an endpoint's knowledge. Mobility allows
-cryptographic key material and other state information to be reused in the event of a connection change.
 
 - Peer: an endpoint application party to a session.
 
@@ -257,19 +255,14 @@ cryptographic key material and other state information to be reused in the event
 # Security Features
 
 In this section, we enumerate Security Features exposed by protocols discussed in the
-remainder of this document. Security Features extend the set of Transport Features
-described in {{!RFC8095}} and provided by Transport Services implementations.
-Protocol security properties that are unrelated to the API surface
-exposed by such protocols, such as client or server identity hiding, are not listed
-here as features.
+remainder of this document. Protocol security (and privacy) properties that are unrelated to
+the API surface exposed by such protocols, such as client or server identity hiding, are
+not listed here as features.
 
 - Forward-secure key establishment: Cryptographic key establishment with forward secure properties.
 
 - Cryptographic algorithm negotiation: Negotiate support of protocol algorithms, including: encryption,
 hash, MAC (PRF), and digital signature algorithms.
-
-- Stateful and stateless cross-connection session resumption: Connection establishment without needing
-to complete an entirely new handshake.
 
 - Session caching and management: Manage session state cache used for subsequent connections
 aimed towards amortizing connection establishment costs.
@@ -295,8 +288,9 @@ to in-network retransmissions.
 - Early data support (starting with TLS 1.3): Transmission of application data prior to connection
 (handshake) establishment.
 
-- Connection mobility: Connection continuation in the presence of 5-tuple changes beneath the
-secure transport protocol, e.g., due to NAT rebindings.
+- Connection mobility: a property of a connection that allows it to be multihomed or resilient across network
+interface or address changes, e.g., NAT rebindings that occur without an endpoint's knowledge. Mobility allows
+cryptographic key material and other state information to be reused in the event of a connection change.
 
 - Application-layer feature negotiation: Securely negotiate application-specific functionality,
 including those necessary for connection handling and management, e.g., the TLS parent connection
@@ -309,8 +303,6 @@ extensions are a primary example of this feature.
 
 - Source validation (cookie or puzzle based): Peer source validation and DoS mitigation via explicit proof
 of origin (cookie) or work mechanisms (puzzles).
-
-- Connection re-keying: In-band cryptographic handshake re-keying.
 
 - Length-hiding padding: Protocol-drive record padding aimed at hiding plaintext message length
 and mitigating amplification attack vectors.
@@ -695,7 +687,6 @@ application-level endpoint authentication either in-band or out-of-band.
 - Record (channel) confidentiality and integrity.
 - Stateful cross-connection session resumption.
 - Session caching and management.
-- Connection re-keying.
 - Application authentication delegation.
 
 ### Protocol Dependencies
@@ -775,7 +766,7 @@ that multiplexes multiple connections between the same hosts. All connections in
 same transport state machine and encryption. Each tunnel has a dedicated control connection
 used to configure and manage the tunnel over time. Moreover, since tunnels are independent of
 the network address information, they may be reused as both ends of the tunnel move about the network.
-This does however imply that the connection establishment and packet encryption mechanisms are coupled.
+This does however imply that connection establishment and packet encryption mechanisms are coupled.
 
 Before a client connects to a remote service, it must first establish a tunnel to the host
 providing or offering the service. Tunnels are established in 1-RTT using an ephemeral key
@@ -789,7 +780,8 @@ request and derive a shared secret. Within a tunnel, new connections to services
 - DoS mitigation (puzzle-based).
 - Connection mobility (based on tunnel identifiers).
 
-Additional (orthogonal) transport features include: connection multiplexing between hosts across shared tunnels, and congestion control state is shared across connections between the same host pairs.
+Additional (orthogonal) transport features include: connection multiplexing between hosts across
+shared tunnels, and congestion control state is shared across connections between the same host pairs.
 
 ### Protocol Dependencies
 
@@ -815,7 +807,7 @@ ephemeral key C', cookie, and an encryption of C', the server's domain name, and
 and the encrypted payload and, if valid, proceeds to send data in return. At this point, the connection is established and the two
 parties can communicate.
 
-The use of only public-key encryption and authentication, or "boxing", is done to simplify problems that come with symmetric key management
+The use of public-key encryption and authentication, or "boxing", is done to simplify problems that come with symmetric key management
 and synchronization. For example, it allows the sender of a message to be in complete control of each message's nonce. It does not require
 either end to share secret keying material.
 Furthermore, it allows connections (or sessions) to be associated with unique ephemeral public keys as a mechanism for enabling forward secrecy given the risk of long-term private key compromise.
@@ -861,15 +853,14 @@ Optional features by contrast may vary from implementation to implementation, an
 an application cannot simply assume they are available. Applications learn of and use optional features by
 querying for their presence and support. Optional features may not be implemented, or may be disabled if
 their presence impacts transport services or if a necessary transport service or application dependency
-is unavailable. In this context, a transport dependency is one required from a transport
-service the feature to work. Similarly, an application dependency is one required from an application in
-order to function correctly.
+is unavailable. In this context, an application dependency is one required from an application in
+order to function.
 
 ## Mandatory Features
 
 Mandatory features must be supported regardless of transport and application services available.
 
-- Segment or datagram encryption and authentication.
+- Record or datagram confidentiality and integrity.
 - Forward-secure key establishment.
 - Public-key certificate based authentication.
 - Unilateral responder authentication.
@@ -881,54 +872,49 @@ peers.
 
 ## Optional Features
 
+In this section we list optional features along with their necessary application dependencies, if any.
+
 - Pre-shared key support (PSK):
-  - Transport dependency: none
   - Application dependency: Application provisioning and distribution of pre-shared keys.
 
 - Cryptographic algorithm negotiation (AN):
-  - Transport dependency: None.
   - Application dependency: Application awareness of supported or desired algorithms.
 
 - Application authentication delegation (AD):
-  - Transport dependency: None.
-  - Application dependency: Application opt-in and policy for endpoint authentication
+  - Application dependency: Application opt-in and policy for endpoint authentication.
 
 - Mutual authentication (MA):
-  - Transport dependency: None.
-  - Application dependency: Mutual authentication required for application support.
+  - Application dependency: Mutual authentication credentials required for application support.
 
 - DoS mitigation (DM):
-  - Transport dependency: None.
   - Application dependency: None.
 
 - Connection mobility (CM):
-  - Transport dependency: Connections are unreliable or can change due to unpredictable network events, e.g.,
-  NAT re-bindings.
   - Application dependency: None.
 
 - Source validation (SV):
-  - Transport dependency: Packets may arrive as datagrams instead of streams from unauthenticated sources.
   - Application dependency: None.
 
 - Application-layer feature negotiation (AFN):
-  - Transport dependency: None.
   - Application dependency: Specification of application-layer features or functionality.
 
 - Configuration extensions (CX):
-  - Transport dependency: None.
   - Application dependency: Specification of application-specific extensions.
 
 - Session caching and management (SC):
-  - Transport dependency: None.
   - Application dependency: None.
 
+- Length-hiding padding (LHP):
+  - Application dependency: Knowledge of desired padding policies.
+
 - Early data support (ED):
-  - Transport dependency: None.
   - Application dependency: Anti-replay protections or hints of data idempotency.
 
-- Length-hiding padding (LHP):
-  - Transport dependency: None.
-  - Application dependency: Knowledge of desired padding policies.
+- Record replay prevention (RP):
+  - Application dependency: None.
+
+- Out-of-order receipt record (OO):
+  - Application dependency: None.
 
 ## Optional Feature Availability
 
@@ -938,17 +924,17 @@ and cannot be disabled. "Supported" indicates that the feature is optionally pro
 or through a (standardized, where applicable) extension.
 
 |---
-| Protocol  | PSK | AN | AD | MA | DM | CM | SV | AFN | CX | SC | LHP | ED |
-|:----------|:---:|:--:|:--:|:--:|:--:|:--:|:--:|:---:|:--:|:--:|:---:|:---:|
-| TLS       | S   | S  | S  | S  | S  | U\* | M | S   | S  | S  | S | S |
-| DTLS      | S   | S  | S  | S  | S  | S  | M  | S   | S  | S  | S | U |
-| IETF QUIC | S   | S  | S  | S  | S  | S  | M  | S   | S  | S  | S | S |
-| IKEv2+ESP | S   | S  | S  | M  | S  | S  | M  | S   | S  | S  | S | U |
-| SRTP+DTLS | S   | S  | S  | S  | S  | U  | M  | S   | S  | S  | U | U |
-| tcpcrypt  | ?   | S  | M  | U  | U\*\* | U\* | M | U | U | S  | U | U |
-| WireGuard | S   | U  | S  | M  | S  | U  | M  | U   | U  | U  | S+ | U |
-| MinimalT  | ?   | U  | U  | M  | S  | M  | M  | U   | U  | U  | S | U |
-| CurveCP   | U   | U  | U  | S  | S  | M  | M  | U   | U  | U  | S | U |
+| Protocol  | PSK | AN | AD | MA | DM | CM | SV | AFN | CX | SC | LHP | ED | RP | OO |
+|:----------|:---:|:--:|:--:|:--:|:--:|:--:|:--:|:---:|:--:|:--:|:---:|:--:|:--:|:--:|
+| TLS       | S   | S  | S  | S  | S  | U\* | M | S   | S  | S  | S   | S  | U  | U  |
+| DTLS      | S   | S  | S  | S  | S  | S  | M  | S   | S  | S  | S   | U  | M  | M  |
+| IETF QUIC | S   | S  | S  | S  | S  | S  | M  | S   | S  | S  | S   | S  | M  | M  |
+| IKEv2+ESP | S   | S  | S  | M  | S  | S  | M  | S   | S  | S  | S   | U  | M  | M  |
+| SRTP+DTLS | S   | S  | S  | S  | S  | U  | M  | S   | S  | S  | U   | U  | M  | M  |
+| tcpcrypt  | ?   | S  | M  | U  | U\*\* | U\* | M | U | U | S  | U   | U  | U  | U  |
+| WireGuard | S   | U  | S  | M  | S  | U  | M  | U   | U  | U  | S+  | U  | M  | M  |
+| MinimalT  | ?   | U  | U  | M  | S  | M  | M  | U   | U  | U  | S   | U  | ?  | ?  |
+| CurveCP   | U   | U  | U  | S  | S  | M  | M  | U   | U  | U  | S   | U  | M  | M  |
 |---
 
 M=Mandatory
@@ -970,7 +956,7 @@ conventions in {{!I-D.ietf-taps-interface}} and {{!I-D.ietf-taps-arch}}.
 Configuration interfaces are used to configure the security protocols before a
 handshake begins or the keys are negotiated.
 
-- Identity and Private Keys
+- Identities and Private Keys
 The application can provide its identities (certificates) and private keys, or
 mechanisms to access these, to the security protocol to use during handshakes.
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP
@@ -979,6 +965,11 @@ Protocols: TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP
 The application can choose the algorithms that are supported for key exchange,
 signatures, and ciphersuites.
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2, SRTP
+
+- Extensions (Application-Layer Protocol Negotiation):
+The application enables or configures extensions that are to be negotiated by
+the security protocol, such as ALPN {{RFC7301}}.
+Protocols: TLS, DTLS, QUIC + TLS
 
 - Session Cache Management
 The application provides the ability to save and retrieve session state (such as tickets,
@@ -991,7 +982,11 @@ using EAP for example.
 Protocols: IKEv2, SRTP
 
 - Pre-Shared Key Import
-Either the handshake protocol or the application directly can supply pre-shared keys for the record protocol use for encryption/decryption and authentication. If the application can supply keys directly, this is considered explicit import; if the handshake protocol traditionally provides the keys directly, it is considered direct import; if the keys can only be shared by the handshake, they are considered non-importable.
+Either the handshake protocol or the application directly can supply pre-shared keys for the
+record protocol use for encryption/decryption and authentication. If the application can supply
+keys directly, this is considered explicit import; if the handshake protocol traditionally
+provides the keys directly, it is considered direct import; if the keys can only be shared by
+the handshake, they are considered non-importable.
   - Explict import: QUIC, ESP
   - Direct import: TLS, DTLS, MinimalT, tcpcrypt, WireGuard
   - Non-importable: CurveCP
@@ -1014,26 +1009,31 @@ Protocols: QUIC + TLS, DTLS, WireGuard
 - Connection Termination
 The security protocol may be instructed to tear down its connection and session information.
 This is needed by some protocols to prevent application data truncation attacks.
-Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
+Protocols: TLS, DTLS, QUIC, MinimalT, tcpcrypt, IKEv2
 
 - Key Update
 The handshake protocol may be instructed to update its keying material, either
 by the application directly or by the record protocol sending a key expiration event.
-Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2
+Protocols: TLS, DTLS, QUIC, MinimalT, tcpcrypt, IKEv2
 
 - Pre-Shared Key Export
-The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication. These may be explicitly exportable to the application, traditionally limited to direct export to the record protocol, or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.
+The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication.
+These may be explicitly exportable to the application, traditionally limited to direct export to the record protocol,
+or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.
   - Explicit export: TLS (for QUIC), tcpcrypt, IKEv2, DTLS (for SRTP)
   - Direct export: TLS, DTLS, MinimalT
   - Non-exportable: CurveCP
 
 - Key Expiration
-The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling between the record layer and the handshake layer.
+The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based
+deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling
+between the record layer and the handshake layer.
 Protocols: ESP ((Editor's note: One may consider TLS/DTLS to also have this interface))
 
-- Connection mobility
+- Mobility Events
 The record protocol can be signaled that it is being migrated to another transport or interface due to
-connection mobility, which may reset address and state validation.
+connection mobility, which may reset address and state validation and induce state changes such
+as use of a new Connection Identifier (CID).
 Protocols: QUIC, MinimalT, CurveCP, ESP, WireGuard (roaming)
 
 # IANA Considerations
@@ -1055,3 +1055,4 @@ protocol implementation.
 The authors would like to thank Mirja Kühlewind, Brian Trammell, Yannick Sierra,
 Frederic Jacobs, and Bob Bradley for their input and feedback on earlier versions
 of this draft.
+
