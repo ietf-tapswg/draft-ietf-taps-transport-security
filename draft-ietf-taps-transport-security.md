@@ -931,9 +931,9 @@ or through a (standardized, where applicable) extension.
 | IETF QUIC | S   | S  | S  | S  | S  | S  | M  | S   | S  | S  | S   | S  | M  | M  |
 | IKEv2+ESP | S   | S  | S  | M  | S  | S  | M  | S   | S  | S  | S   | U  | M  | M  |
 | SRTP+DTLS | S   | S  | S  | S  | S  | U  | M  | S   | S  | S  | U   | U  | M  | M  |
-| tcpcrypt  | ?   | S  | M  | U  | U\*\* | U\* | M | U | U | S  | U   | U  | U  | U  |
+| tcpcrypt  | U   | S  | M  | U  | U\*\* | U\* | M | U | U | S  | U   | U  | U  | U  |
 | WireGuard | S   | U  | S  | M  | S  | U  | M  | U   | U  | U  | S+  | U  | M  | M  |
-| MinimalT  | ?   | U  | U  | M  | S  | M  | M  | U   | U  | U  | S   | U  | ?  | ?  |
+| MinimalT  | U   | U  | U  | M  | S  | M  | M  | U   | U  | U  | S   | U  | U  | U  |
 | CurveCP   | U   | U  | U  | S  | S  | M  | M  | U   | U  | U  | S   | U  | M  | M  |
 |---
 
