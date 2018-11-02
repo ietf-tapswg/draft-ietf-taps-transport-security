@@ -1045,7 +1045,7 @@ All security protocols surveyed generally improve privacy by reducing informatio
 encryption. However, varying amounts of metadata remain in the clear across each
 protocol. For example, client and server certificates are sent in cleartext in TLS
 1.2 {{RFC5246}}, whereas they are encrypted in TLS 1.3 {{RFC8446}}. A survey of privacy
-features, or lackthereof, for various security protocols could be addressed in a
+features, or lack thereof, for various security protocols could be addressed in a
 separate document.
 
 # Acknowledgments
