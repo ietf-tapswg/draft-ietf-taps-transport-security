@@ -1040,8 +1040,8 @@ protocol implementation.
 
 # Privacy Considerations
 
-Privacy enhancing (or offending) features are intentionally omitted from this survey.
-All protocols surveyed generally improve privacy by reducing information leakage via
+Analysis of how features improve or degrade privacy is intentionally omitted from this survey.
+All security protocols surveyed generally improve privacy by reducing information leakage via
 encryption. However, varying amounts of metadata remain in the clear across each
 protocol. For example, client and server certificates are sent in cleartext in TLS
 1.2 {{RFC5246}}, whereas they are encrypted in TLS 1.3 {{RFC8446}}. A survey of privacy
