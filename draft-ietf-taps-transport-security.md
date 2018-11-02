@@ -856,22 +856,34 @@ There exists a common set of features shared across the transport protocols surv
 Mandatory features constitute a baseline of functionality that an application may assume for any TAPS
 implementation. They were selected on the basis that they are either (a) required for any secure
 transport protocol or (b) nearly ubiquitous amongst common secure transport protocols.
+
 Optional features by contrast may vary from implementation to implementation, and so
 an application cannot simply assume they are available. Applications learn of and use optional features by
 querying for their presence and support. Optional features may not be implemented, or may be disabled if
-their presence impacts transport services or if a necessary transport service is unavailable.
+their presence impacts transport services or if a necessary transport service or application dependency
+is unavailable. In this context, a transport dependency is one required from a transport
+service the feature to work. Similarly, an application dependency is one required from an application in
+order to function correctly.
 
 ## Mandatory Features
 
-- Segment or datagram encryption and authentication: Protect transit data with an authenticated
-encryption algorithm.
+Mandatory features must be supported regardless of transport and application services available.
 
+- Segment or datagram encryption and authentication.
 - Forward-secure key establishment.
-- Public-key (raw or certificate) based authentication.
+- Public-key certificate based authentication.
 - Unilateral responder authentication.
-- Pre-shared key support.
+
+Note that most systems provide defailt trust stores used to authenticate peers based on certificates.
+In such systems, applications need not provide any trust information. Applications running on systems
+without such a feature must necessary depend on applications for this information so as to authenticate
+peers.
 
 ## Optional Features
+
+- Pre-shared key support (PSK):
+  - Transport dependency: none
+  - Application dependency: Application provisioning and distribution of pre-shared keys.
 
 - Cryptographic algorithm negotiation (AN):
   - Transport dependency: None.
@@ -926,17 +938,17 @@ and cannot be disabled. "Supported" indicates that the feature is optionally pro
 or through a (standardized, where applicable) extension.
 
 |---
-| Protocol  | AN | AD | MA | DM | CM | SV | AFN | CX | SC | LHP | ED |
-|:----------|:--:|:--:|:--:|:--:|:--:|:--:|:---:|:--:|:--:|:---:|:---:|
-| TLS       | S  | S  | S  | S  | U\* | M | S   | S  | S  | S | S |
-| DTLS      | S  | S  | S  | S  | S  | M  | S   | S  | S  | S | U |
-| IETF QUIC | S  | S  | S  | S  | S  | M  | S   | S  | S  | S | S |
-| IKEv2+ESP | S  | S  | M  | S  | S  | M  | S   | S  | S  | S | U |
-| SRTP+DTLS | S  | S  | S  | S  | U  | M  | S   | S  | S  | U | U |
-| tcpcrypt  | S  | M  | U  | U\*\* | U\* | M | U | U | S  | U | U |
-| WireGuard | U  | S  | M  | S  | U  | M  | U   | U  | U  | S+ | U |
-| MinimalT  | U  | U  | M  | S  | M  | M  | U   | U  | U  | S | U |
-| CurveCP   | U  | U  | S  | S  | M  | M  | U   | U  | U  | S | U |
+| Protocol  | PSK | AN | AD | MA | DM | CM | SV | AFN | CX | SC | LHP | ED |
+|:----------|:---:|:--:|:--:|:--:|:--:|:--:|:--:|:---:|:--:|:--:|:---:|:---:|
+| TLS       | S   | S  | S  | S  | S  | U\* | M | S   | S  | S  | S | S |
+| DTLS      | S   | S  | S  | S  | S  | S  | M  | S   | S  | S  | S | U |
+| IETF QUIC | S   | S  | S  | S  | S  | S  | M  | S   | S  | S  | S | S |
+| IKEv2+ESP | S   | S  | S  | M  | S  | S  | M  | S   | S  | S  | S | U |
+| SRTP+DTLS | S   | S  | S  | S  | S  | U  | M  | S   | S  | S  | U | U |
+| tcpcrypt  | ?   | S  | M  | U  | U\*\* | U\* | M | U | U | S  | U | U |
+| WireGuard | S   | U  | S  | M  | S  | U  | M  | U   | U  | U  | S+ | U |
+| MinimalT  | ?   | U  | U  | M  | S  | M  | M  | U   | U  | U  | S | U |
+| CurveCP   | U   | U  | U  | S  | S  | M  | M  | U   | U  | U  | S | U |
 |---
 
 M=Mandatory
