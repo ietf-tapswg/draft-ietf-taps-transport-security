@@ -810,7 +810,8 @@ parties can communicate.
 The use of public-key encryption and authentication, or "boxing", is done to simplify problems that come with symmetric key management
 and synchronization. For example, it allows the sender of a message to be in complete control of each message's nonce. It does not require
 either end to share secret keying material.
-Furthermore, it allows connections (or sessions) to be associated with unique ephemeral public keys as a mechanism for enabling forward secrecy given the risk of long-term private key compromise.
+Furthermore, it allows connections (or sessions) to be associated with unique ephemeral public keys as a mechanism for
+enabling forward secrecy given the risk of long-term private key compromise.
 
 The client and server do not perform a standard key exchange. Instead, in the initial exchange of packets, each party provides its
 own ephemeral key to the other end. The client can choose a new ephemeral key for every new connection. However, the server must rotate
@@ -1050,9 +1051,19 @@ analysis may compromise any protocol discussed in this survey. Applications usin
 Security Interfaces SHOULD take such limitations into consideration when using a particular
 protocol implementation.
 
+# Privacy Considerations
+
+Analysis of how features improve or degrade privacy is intentionally omitted from this survey.
+All security protocols surveyed generally improve privacy by reducing information leakage via
+encryption. However, varying amounts of metadata remain in the clear across each
+protocol. For example, client and server certificates are sent in cleartext in TLS
+1.2 {{RFC5246}}, whereas they are encrypted in TLS 1.3 {{RFC8446}}. A survey of privacy
+features, or lack thereof, for various security protocols could be addressed in a
+separate document.
+
 # Acknowledgments
 
-The authors would like to thank Mirja Kühlewind, Brian Trammell, Yannick Sierra,
-Frederic Jacobs, and Bob Bradley for their input and feedback on earlier versions
+The authors would like to thank Bob Bradley, Theresa Enghardt, Frederic Jacobs, Mirja Kühlewind,
+Yannick Sierra, and Brian Trammell for their input and feedback on earlier versions
 of this draft.
 
