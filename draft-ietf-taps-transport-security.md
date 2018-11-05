@@ -72,6 +72,7 @@ normative:
     RFC7539:
     RFC8095:
     RFC8229:
+    RFC8446:
     I-D.ietf-tls-dtls13:
     I-D.ietf-tls-dtls-connection-id:
     I-D.ietf-rtcweb-security-arch:
