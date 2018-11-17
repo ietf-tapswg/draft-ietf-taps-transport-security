@@ -844,7 +844,7 @@ and the per-message nonce in the clear. Everything else is encrypted.
 
 - An unreliable transport protocol such as UDP.
 
-# Security Features and Transport Dependencies
+# Security Features and Application Dependencies
 
 There exists a common set of features shared across the transport protocols surveyed in this document.
 Mandatory features constitute a baseline of functionality that an application may assume for any TAPS
@@ -855,22 +855,28 @@ Optional features by contrast may vary from implementation to implementation, an
 an application cannot simply assume they are available. Applications learn of and use optional features by
 querying for their presence and support. Optional features may not be implemented, or may be disabled if
 their presence impacts transport services or if a necessary transport service or application dependency
-is unavailable. In this context, an application dependency is one required from an application in
-order to function.
+is unavailable.
+
+In this context, an application dependency is an aspect of
+the security feature which can be exposed to the application.
+An application dependency may be required for the security feature to function, or it may provide additional information and control to the application.
+For example, an application may need to provide information such as keying material or authentication credentials, or it may want to restrict which cryptographic algorithms to allow for negotiation.
 
 ## Mandatory Features
 
 Mandatory features must be supported regardless of transport and application services available.
 
 - Record or datagram confidentiality and integrity.
-- Forward-secure key establishment.
-- Public-key certificate based authentication.
-- Unilateral responder authentication.
+  - Application dependency: None.
 
-Note that most systems provide defailt trust stores used to authenticate peers based on certificates.
-In such systems, applications need not provide any trust information. Applications running on systems
-without such a feature must necessary depend on applications for this information so as to authenticate
-peers.
+- Forward-secure key establishment.
+  - Application dependency: None.
+
+- Public-key certificate based authentication.
+  - Application dependency: Application providing trust information. Note that most systems provide default trust stores used to authenticate peers based on certificates. In such systems, applications need not provide any trust information.
+
+- Unilateral responder authentication.
+  - Application dependency: Application providing trust information, see above.
 
 ## Optional Features
 
