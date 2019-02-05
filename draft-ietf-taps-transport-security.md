@@ -170,6 +170,12 @@ normative:
     OpenVPN:
       title: OpenVPN cryptographic layer
       url: https://openvpn.net/community-resources/openvpn-cryptographic-layer/
+    BlowFish:
+      title: The Blowfish Encryption Algorithm
+      url: https://www.schneier.com/academic/blowfish/
+      authors:
+        -
+          ins: B. Schneier
 
 --- abstract
 
@@ -857,8 +863,8 @@ and the per-message nonce in the clear. Everything else is encrypted.
 
 ## OpenVPN
 
-OpenVPN {{OpenVPN}} is a commonly used protocol designed to replace IPsec. A
-major goal of this protocol is to provide an easy-to-use VPN. OpenVPN
+OpenVPN {{OpenVPN}} is a commonly used protocol designed as an alternative to
+IPsec. A major goal of this protocol is to provide an easy-to-use VPN. OpenVPN
 encapsulates either IP packets or Ethernet frames within a secure tunnel and
 can run over UDP or TCP.
 
@@ -866,7 +872,7 @@ can run over UDP or TCP.
 
 OpenVPN facilitates authentication using either a pre-shared static key or
 using X.509 certificates and TLS. In pre-shared key mode, OpenVPN derives
-keys for encryption and authentication directly from one or multiple static
+keys for encryption and authentication directly from one or multiple symmetric
 keys. In TLS mode, OpenVPN encapsulates a TLS handshake, in which both peers
 must present a certificate for authentication. After the handshake, both sides
 contribute random source material to derive keys for encryption and
@@ -876,20 +882,20 @@ pre-shared key or passphrase. Furthermore, it supports rekeying using TLS.
 
 After authentication and key exchange, OpenVPN encrypts payload data, i.e., IP
 packets or Ethernet frames, and signs the payload using an HMAC function. The
-default cipher is BlowFish and the default message digest algorithm is SHA1,
-but an application can select an arbitrary cipher, key size, and message digest
-algorithm for the HMAC. OpenVPN peers may also support cipher negotiation
-(NCP). If both hosts allow, they can upgrade the cipher to AES-256-GCM.
-Blocks are padded to an even multiple of block size.
+default cipher is BlowFish {{BlowFish}} and the default message digest
+algorithm is SHA1, but an application can select an arbitrary cipher, key size,
+and message digest algorithm for the HMAC. OpenVPN peers support cipher
+negotiation (NCP) since version 2.4, in which case they will upgrade the cipher
+to AES-256-GCM by default.
 
 OpenVPN can run over TCP or UDP. When running over UDP, OpenVPN provides a
 simple reliability layer for control packets such as the TLS handshake and key
 exchange. It assigns sequence numbers to packets, acknowledges packets it
-receives, and retransmits packets it deems lost. This reliability layer is not
-used for data packets, which prevents the problem of two reliability mechanisms
-being encapsulated within each other. When running over TCP, OpenVPN includes
-the packet length in the header, which allows the peer to deframe the TCP
-stream into messages.
+receives, and retransmits packets it deems lost. Similar to DTLS, this
+reliability layer is not used for data packets, which prevents the problem of
+two reliability mechanisms being encapsulated within each other. When running
+over TCP, OpenVPN includes the packet length in the header, which allows the
+peer to deframe the TCP stream into messages.
 
 For replay protection, OpenVPN assigns an identifier to each outgoing packet,
 which is unique for the packet and the currently used key. In pre-shared key
@@ -901,17 +907,17 @@ each key, as it can trigger rekeying if needed.
 
 OpenVPN supports connection mobility by allowing a peer to change its IP
 address during an ongoing session. When configured accordingly, a host will
-accept packets for a session from any IP address, as long as the packets are
-correctly authenticated.
+accept packets for a session from any IP address, as long as the packets pass
+all authentication checks.
 
 
 ### Protocol Features
 
-- Peer authentication using certificates or pre-shared key
+- Peer authentication using certificates or pre-shared key.
 - Mandatory mutual authentication.
-- Connection mobility
-- Out-of-order record receipt
-- Length-hiding padding
+- Connection mobility.
+- Out-of-order record receipt.
+- Length-hiding padding.
 
 See also the properties of TLS.
 
