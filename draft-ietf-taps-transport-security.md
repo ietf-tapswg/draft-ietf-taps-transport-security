@@ -166,8 +166,8 @@ This document provides a survey of commonly used or notable network security pro
 on how they interact and integrate with applications and transport protocols. Its goal is to supplement
 efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to
 add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS),
-Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange
-with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and WireGuard. This survey is not
+Quick UDP Internet Connections with TLS (QUIC + TLS), tcpcrypt, Internet Key Exchange
+with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP, MinimalT. This survey is not
 limited to protocols developed within the scope or context of the IETF, and those included represent a superset
 of features a TAPS system may need to support.
 
@@ -179,9 +179,9 @@ This document provides a survey of commonly used or notable network security pro
 on how they interact and integrate with applications and transport protocols.  Its goal is to supplement
 efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to
 add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer
-Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt,
-Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and
-WireGuard. For each protocol, this document provides a brief description, the security features it
+Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), tcpcrypt, Internet Key Exchange
+with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP,
+and MinimalT. For each protocol, this document provides a brief description, the security features it
 provides, and the dependencies it has on the underlying transport. This is followed by defining the
 set of transport security features shared by these protocols. Finally, we distill the application and
 transport interfaces provided by the transport security protocols.
@@ -485,8 +485,8 @@ but this document considers them together, since that is the most common pattern
 
 #### IKEv2
 
-IKEv2 is a control protocol that runs on UDP port 500 or TCP port 4500. (IKEv2 cannot run over
-UDP on any other port.) Its primary goal is to generate keys for Security Associations (SAs).
+IKEv2 is a control protocol that runs on UDP ports 500 or 4500 and TCP port 4500.
+Its primary goal is to generate keys for Security Associations (SAs).
 An SA contains shared (cryptographic) information used for establishing other SAs or keying ESP;
 See {{ESP}}. IKEv2 first uses a Diffie-Hellman key exchange to generate keys for the "IKE SA",
 which is a set of keys used to encrypt further IKEv2 messages. IKE then performs a phase of
@@ -496,7 +496,7 @@ keys on demand, which together with traffic policies are referred to as the "Chi
 Child SA keys are used by ESP.
 
 IKEv2 negotiates which protocols are acceptable to each peer for both the IKE and Child SAs using
-"Proposals". Each proposal contains an encryption with authentication algorithm or an AEAD algorithm,
+"Proposals". Each proposal specifies an encryption and authentication algorithm, or an AEAD algorithm,
 a Diffie-Hellman group, and (for IKE SAs only) a pseudorandom function algorithm. Each peer may
 support multiple proposals, and the most preferred mutually supported proposal is chosen during
 the handshake.
