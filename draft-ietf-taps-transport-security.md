@@ -166,8 +166,8 @@ This document provides a survey of commonly used or notable network security pro
 on how they interact and integrate with applications and transport protocols. Its goal is to supplement
 efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to
 add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS),
-Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt, Internet Key Exchange
-with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and WireGuard. This survey is not
+Quick UDP Internet Connections with TLS (QUIC + TLS), tcpcrypt, Internet Key Exchange
+with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP, MinimalT. This survey is not
 limited to protocols developed within the scope or context of the IETF, and those included represent a superset
 of features a TAPS system may need to support.
 
@@ -179,9 +179,9 @@ This document provides a survey of commonly used or notable network security pro
 on how they interact and integrate with applications and transport protocols.  Its goal is to supplement
 efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to
 add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer
-Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), MinimalT, CurveCP, tcpcrypt,
-Internet Key Exchange with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), and
-WireGuard. For each protocol, this document provides a brief description, the security features it
+Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), tcpcrypt, Internet Key Exchange
+with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP,
+and MinimalT. For each protocol, this document provides a brief description, the security features it
 provides, and the dependencies it has on the underlying transport. This is followed by defining the
 set of transport security features shared by these protocols. Finally, we distill the application and
 transport interfaces provided by the transport security protocols.
@@ -260,7 +260,7 @@ remainder of this document. Protocol security (and privacy) properties that are 
 the API surface exposed by such protocols, such as client or server identity hiding, are
 not listed here as features.
 
-- Forward-secure key establishment: Cryptographic key establishment with forward secure properties.
+- Forward-secure session key establishment: Cryptographic key establishment with forward secure properties.
 
 - Cryptographic algorithm negotiation: Negotiate support of protocol algorithms, including: encryption,
 hash, MAC (PRF), and digital signature algorithms.
@@ -271,9 +271,11 @@ aimed towards amortizing connection establishment costs.
 - Peer authentication (certificate, raw public key, pre-shared key, or EAP-based): Peer authentication using
 select or protocol-specific mechanisms.
 
+- Unilateral responder authentication: Required authentication for the responder of a connection.
+
 - Mutual authentication: Connection establishment wherein both endpoints are authenticated.
 
-- Application-layer authentication delegation: Out-of-band peer authentication performed by
+- Application authentication delegation: Out-of-band peer authentication performed by
 applications outside of the connection establishment.
 
 - Record (channel or datagram) confidentiality and integrity: Encryption and authentication of
@@ -358,12 +360,13 @@ by the server. It is assumed that the client must always store some state inform
 
 ### Security Features
 
-- Forward-secure key establishment.
+- Forward-secure session key establishment.
 - Cryptographic algorithm negotiation.
 - Stateful and stateless cross-connection session resumption.
 - Session caching and management.
 - Peer authentication (Certificate, raw public key, and pre-shared key).
-- Mandatory server authentication, optional client authentication.
+- Unilateral responder authentication.
+- Mutual authentication.
 - Application authentication delegation.
 - Record (channel) confidentiality and integrity.
 - Record replay prevention.
@@ -482,16 +485,19 @@ but this document considers them together, since that is the most common pattern
 
 #### IKEv2
 
-IKEv2 is a control protocol that runs on UDP port 500. Its primary goal is to generate keys for Security Associations (SAs).
-An SA contains shared (cryptographic) information used for establishing other SAs or keying ESP; See {{ESP}}.
-IKEv2 first uses a Diffie-Hellman key exchange to generate keys for the "IKE SA", which is a set of keys
-used to encrypt further IKEv2 messages. It then goes through a phase of authentication in which both peers
-present blobs signed by a shared secret or private key, after which another set of keys is derived, referred
-to as the "Child SA". These Child SA keys are used by ESP.
+IKEv2 is a control protocol that runs on UDP ports 500 or 4500 and TCP port 4500.
+Its primary goal is to generate keys for Security Associations (SAs).
+An SA contains shared (cryptographic) information used for establishing other SAs or keying ESP;
+See {{ESP}}. IKEv2 first uses a Diffie-Hellman key exchange to generate keys for the "IKE SA",
+which is a set of keys used to encrypt further IKEv2 messages. IKE then performs a phase of
+authentication in which both peers present blobs signed by a shared secret or private key that
+authenticates the entire IKE exchange and the IKE identities. IKE then derives further sets of
+keys on demand, which together with traffic policies are referred to as the "Child SA". These
+Child SA keys are used by ESP.
 
 IKEv2 negotiates which protocols are acceptable to each peer for both the IKE and Child SAs using
-"Proposals". Each proposal may contain an encryption algorithm, an authentication algorithm, a
-Diffie-Hellman group, and (for IKE SAs only) a pseudorandom function algorithm. Each peer may
+"Proposals". Each proposal specifies an encryption and authentication algorithm, or an AEAD algorithm,
+a Diffie-Hellman group, and (for IKE SAs only) a pseudorandom function algorithm. Each peer may
 support multiple proposals, and the most preferred mutually supported proposal is chosen during
 the handshake.
 
@@ -499,13 +505,13 @@ The authentication phase of IKEv2 may use Shared Secrets, Certificates, Digital 
 EAP (Extensible Authentication Protocol) method. At a minimum, IKEv2 takes two round trips to set
 up both an IKE SA and a Child SA. If EAP is used, this exchange may be expanded.
 
-Any SA used by IKEv2 can be rekeyed upon expiration, which is usually based either on time or
+Any SA used by IKEv2 can be rekeyed before expiration, which is usually based either on time or
 number of bytes encrypted.
 
 There is an extension to IKEv2 that allows session resumption {{RFC5723}}.
 
 MOBIKE is a Mobility and Multihoming extension to IKEv2 that allows a set of Security Associations
-to migrate over different addresses and interfaces {{RFC4555}}.
+to migrate over different outer IP addresses and interfaces {{RFC4555}}.
 
 When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP {{RFC8229}}.
 
@@ -533,9 +539,10 @@ is present or when a firewall blocks such packets) they may be encapsulated in U
 
 #### IKEv2
 
-- Forward-secure key establishment.
+- Forward-secure session key establishment.
 - Cryptographic algorithm negotiation.
-- Peer authentication (Certificate, raw public key, pre-shared key, and EAP).
+- Peer authentication (certificate, raw public key, pre-shared key, and EAP).
+- Unilateral responder authentication.
 - Mutual authentication.
 - Record (datagram) confidentiality and integrity.
 - Session resumption.
@@ -613,7 +620,7 @@ complete system security.
 
 ### Security Features
 
-- Forward-secure key establishment.
+- Forward-secure session key establishment.
 - Cryptographic algorithm negotiation.
 - Mutual authentication.
 - Partial datagram confidentiality. (Packet headers are not encrypted.)
@@ -650,8 +657,9 @@ gives key continuity properties analogous to the secure shell (ssh)
 
 ## tcpcrypt
 
-Tcpcrypt is a lightweight extension to the TCP protocol to enable opportunistic encryption with hooks
-available to the application layer for implementation of endpoint authentication.
+Tcpcrypt is a lightweight extension to the TCP protocol for opportunistic encryption. Applications may
+use tcpcrypt's unique session ID for further application-level authentication. Absent this authentication,
+tcpcrypt is vulnerable to active attacks.
 
 ### Protocol Description
 
@@ -679,12 +687,9 @@ of state on the server, and so successful resumption across a pool of servers im
 Owing to middlebox ossification issues, tcpcrypt only protects the payload portion of a TCP packet.
 It does not encrypt any header information, such as the TCP sequence number.
 
-Tcpcrypt exposes a universally-unique connection-specific session ID to the application, suitable for
-application-level endpoint authentication either in-band or out-of-band.
-
 ### Security Features
 
-- Forward-secure key establishment.
+- Forward-secure session key establishment.
 - Record (channel) confidentiality and integrity.
 - Stateful cross-connection session resumption.
 - Session caching and management.
@@ -697,7 +702,7 @@ application-level endpoint authentication either in-band or out-of-band.
 
 ## WireGuard
 
-WireGuard is a layer 3 protocol designed to complement or replace IPsec {{WireGuard}}
+WireGuard is a layer 3 protocol designed as an alternative to IPsec {{WireGuard}}
 for certain use cases. It uses UDP to encapsulate IP datagrams between peers.
 Unlike most transport security protocols, which rely on PKI for peer authentication,
 WireGuard authenticates peers using pre-shared public keys delivered out-of-band, each
@@ -734,8 +739,8 @@ to packets coming from non-spoofed addresses.
 
 ### Security Features
 
-- Forward-secure key establishment.
-- Peer authentication (Public-key and PSK).
+- Forward-secure session key establishment.
+- Peer authentication (public-key and PSK).
 - Mutual authentication.
 - Record replay prevention (Stateful, timestamp-based).
 - DoS mitigation (cookie-based).
@@ -744,6 +749,69 @@ to packets coming from non-spoofed addresses.
 
 - Datagram transport.
 - Out-of-band key distribution and management.
+
+## CurveCP
+
+CurveCP {{CurveCP}} is a UDP-based transport security protocol from Daniel J. Bernstein.
+Unlike other transport security protocols, it is based entirely upon highly efficient public
+key algorithms. This removes many pitfalls associated with nonce reuse and key synchronization.
+
+### Protocol Description
+
+CurveCP is a UDP-based transport security protocol. It is built on three principal features: exclusive
+use of public key authenticated encryption of packets, server-chosen cookies to prohibit memory
+and computation DoS at the server, and connection mobility with a client-chosen ephemeral identifier.
+
+There are two rounds in CurveCP. In the first round, the client sends its first initialization
+packet to the server, carrying its (possibly fresh) ephemeral public key C', with zero-padding
+encrypted under the server's long-term public key. The server replies with a cookie and its own ephemeral
+key S' and a cookie that is to be used by the client. Upon receipt, the client then generates
+its second initialization packet carrying: the ephemeral key C', cookie, and an encryption of C',
+the server's domain name, and, optionally, some message data. The server verifies the cookie
+and the encrypted payload and, if valid, proceeds to send data in return. At this point, the
+connection is established and the two parties can communicate.
+
+The use of public-key encryption and authentication, or "boxing", simplifies problems that come
+with symmetric key management and nonce synchronization. For example, it allows the sender
+of a message to be in complete control of each message's nonce. It does not require either end
+to share secret keying material. Furthermore, it allows connections (or sessions) to be associated
+with unique ephemeral public keys as a mechanism for enabling forward secrecy given the risk of
+long-term private key compromise.
+
+The client and server do not perform a standard key exchange. Instead, in the initial exchange of
+packets, each party provides its own ephemeral key to the other end. The client can choose a new
+ephemeral key for every new connection. However, the server must rotate these keys on a slower
+basis. Otherwise, it would be trivial for an attacker to force the server to create and store
+ephemeral keys with a fake client initialization packet.
+
+Servers use cookies for source validation. After receiving a client's initial packet,
+encrypted under the server's long-term public key, a server generates and returns a stateless cookie
+that must be echoed back in the client's following message. This cookie is encrypted under the client's
+ephemeral public key. This stateless technique prevents attackers from hijacking client initialization
+packets to obtain cookie values to flood clients. (A client would detect the duplicate cookies and reject
+the flooded packets.) Similarly, replaying the client's second packet, carrying the cookie, will be
+detected by the server.
+
+CurveCP supports client authentication by allowing clients to send their long-term public keys in
+the second initialization packet. A server can verify this public key and, if untrusted, drop the
+connection and subsequent data.
+
+Unlike some other protocols, CurveCP data packets leave only the ephemeral public key,
+connection ID, and per-message nonce in the clear. All other data is encrypted.
+
+### Protocol Features
+
+- Datagram confidentiality and integrity (via public key encryption).
+- Peer authentication (public-key).
+- Unilateral responder authentication.
+- Mutual authentication.
+- Connection mobility (based on a client-chosen ephemeral identifier).
+- Optional length-hiding and anti-amplification padding.
+- Source validation (cookie-based)
+
+### Protocol Dependencies
+
+- An unreliable transport protocol such as UDP.
 
 ## MinimalT
 
@@ -757,7 +825,7 @@ congestion control algorithm.
 
 MinimalT is a secure transport protocol built on top of a widespread directory service.
 Clients and servers interact with local directory services to (a) resolve server information
-and (b) public ephemeral state information, respectively. Clients connect to a local
+and (b) publish ephemeral state information, respectively. Clients connect to a local
 resolver once at boot time. Through this resolver they recover the IP address(es) and
 public key(s) of each server to which they want to connect.
 
@@ -775,74 +843,24 @@ obtained from the directory service. Tunnel initiators provide their own ephemer
 DoS puzzle solution such that the recipient (server) can verify the authenticity of the
 request and derive a shared secret. Within a tunnel, new connections to services may be established.
 
-### Protocol Features
-
-- Forward-secure key establishment.
-- DoS mitigation (puzzle-based).
-- Connection mobility (based on tunnel identifiers).
-
 Additional (orthogonal) transport features include: connection multiplexing between hosts across
 shared tunnels, and congestion control state is shared across connections between the same host pairs.
 
-### Protocol Dependencies
-
-- A DNS-like resolution service to obtain location information (an IP address) and ephemeral keys.
-- A PKI trust store for certificate validation.
-
-## CurveCP
-
-CurveCP {{CurveCP}} is a UDP-based transport security protocol from Daniel J. Bernstein.
-Unlike other transport security protocols, it is based entirely upon highly efficient public
-key algorithms. This removes many pitfalls associated with nonce reuse and key synchronization.
-
-### Protocol Description
-
-CurveCP is a UDP-based transport security protocol. It is built on three principal features: exclusive use of public key authenticated
-encryption of packets, server-chosen cookies to prohibit memory and computation DoS at the server, and connection mobility with a
-client-chosen ephemeral identifier.
-
-There are two rounds in CurveCP. In the first round, the client sends its first initialization packet to the server, carrying its (possibly fresh)
-ephemeral public key C', with zero-padding encrypted under the server's long-term public key. The server replies with a cookie and its own ephemeral
-key S' and a cookie that is to be used by the client. Upon receipt, the client then generates its second initialization packet carrying: the
-ephemeral key C', cookie, and an encryption of C', the server's domain name, and, optionally, some message data. The server verifies the cookie
-and the encrypted payload and, if valid, proceeds to send data in return. At this point, the connection is established and the two
-parties can communicate.
-
-The use of public-key encryption and authentication, or "boxing", is done to simplify problems that come with symmetric key management
-and synchronization. For example, it allows the sender of a message to be in complete control of each message's nonce. It does not require
-either end to share secret keying material.
-Furthermore, it allows connections (or sessions) to be associated with unique ephemeral public keys as a mechanism for
-enabling forward secrecy given the risk of long-term private key compromise.
-
-The client and server do not perform a standard key exchange. Instead, in the initial exchange of packets, each party provides its
-own ephemeral key to the other end. The client can choose a new ephemeral key for every new connection. However, the server must rotate
-these keys on a slower basis. Otherwise, it would be trivial for an attacker to force the server to create and store ephemeral keys
-with a fake client initialization packet.
-
-Servers use cookies for source validation. After receiving a client's initial packet,
-encrypted under the server's long-term public key, a server generates and returns a stateless cookie
-that must be echoed back in the client's following message. This cookie is encrypted under the client's
-ephemeral public key. This stateless technique prevents attackers from hijacking client initialization
-packets to obtain cookie values to flood clients. (A client would detect the duplicate cookies and reject
-the flooded packets.) Similarly, replaying the client's second packet, carrying the cookie, will be
-detected by the server.
-
-CurveCP supports a weak form of client authentication. Clients are permitted to send their long-term
-public keys in the second initialization packet. A server can verify this public key and, if untrusted,
-drop the connection and subsequent data.
-
-Unlike some other protocols, CurveCP data packets leave only the ephemeral public key, the connection ID,
-and the per-message nonce in the clear. Everything else is encrypted.
-
 ### Protocol Features
 
-- Datagram confidentiality and integrity (via public key encryption).
-- Connection mobility (based on a client-chosen ephemeral identifier).
-- Optional length-hiding and anti-amplification padding.
+- Record or datagram confidentiality and integrity.
+- Forward-secure session key establishment.
+- Peer authentication (public-key).
+- Unilateral responder authentication.
+- DoS mitigation (puzzle-based).
+- Out-of-order receipt record.
+- Connection mobility (based on tunnel identifiers).
 
 ### Protocol Dependencies
 
 - An unreliable transport protocol such as UDP.
+- A DNS-like resolution service to obtain location information (an IP address) and ephemeral keys.
+- A PKI trust store for certificate validation.
 
 # Security Features and Application Dependencies
 
@@ -857,26 +875,26 @@ querying for their presence and support. Optional features may not be implemente
 their presence impacts transport services or if a necessary transport service or application dependency
 is unavailable.
 
-In this context, an application dependency is an aspect of
-the security feature which can be exposed to the application.
-An application dependency may be required for the security feature to function, or it may provide additional information and control to the application.
-For example, an application may need to provide information such as keying material or authentication credentials, or it may want to restrict which cryptographic algorithms to allow for negotiation.
+In this context, an application dependency is an aspect of the security feature which can be exposed
+to the application. An application dependency may be required for the security feature to function,
+or it may provide additional information and control to the application. For example, an application
+may need to provide information such as keying material or authentication credentials, or it may want
+to restrict which cryptographic algorithms to allow for negotiation.
 
 ## Mandatory Features
 
-Mandatory features must be supported regardless of transport and application services available.
+Mandatory features must be supported regardless of transport and application services available. Note that not
+all mandatory features are provided by each surveyed protocol above. For example, tcpcrypt does not provide
+responder authentication and CurveCP does not provide forward-secure session key establishment.
 
 - Record or datagram confidentiality and integrity.
   - Application dependency: None.
 
-- Forward-secure key establishment.
+- Forward-secure session key establishment.
   - Application dependency: None.
 
-- Public-key certificate based authentication.
-  - Application dependency: Application providing trust information. Note that most systems provide default trust stores used to authenticate peers based on certificates. In such systems, applications need not provide any trust information.
-
 - Unilateral responder authentication.
-  - Application dependency: Application providing trust information, see above.
+  - (Optional) Application dependency: Application-provided trust information. System trust stores may also be used to authenticate responders.
 
 ## Optional Features
 
@@ -885,14 +903,14 @@ In this section we list optional features along with their necessary application
 - Pre-shared key support (PSK):
   - Application dependency: Application provisioning and distribution of pre-shared keys.
 
+- Mutual authentication (MA):
+  - Application dependency: Mutual authentication credentials required.
+
 - Cryptographic algorithm negotiation (AN):
   - Application dependency: Application awareness of supported or desired algorithms.
 
 - Application authentication delegation (AD):
   - Application dependency: Application opt-in and policy for endpoint authentication.
-
-- Mutual authentication (MA):
-  - Application dependency: Mutual authentication credentials required for application support.
 
 - DoS mitigation (DM):
   - Application dependency: None.
@@ -913,7 +931,7 @@ In this section we list optional features along with their necessary application
   - Application dependency: None.
 
 - Length-hiding padding (LHP):
-  - Application dependency: Knowledge of desired padding policies.
+  (Optional) Application dependency: Knowledge of desired padding policies. Some protocols, such as IKE, can negotiate application-agnostic padding policies.
 
 - Early data support (ED):
   - Application dependency: Anti-replay protections or hints of data idempotency.
@@ -1017,12 +1035,12 @@ Protocols: QUIC + TLS, DTLS, WireGuard
 - Connection Termination
 The security protocol may be instructed to tear down its connection and session information.
 This is needed by some protocols to prevent application data truncation attacks.
-Protocols: TLS, DTLS, QUIC, MinimalT, tcpcrypt, IKEv2
+Protocols: TLS, DTLS, QUIC, tcpcrypt, IKEv2, MinimalT
 
 - Key Update
 The handshake protocol may be instructed to update its keying material, either
 by the application directly or by the record protocol sending a key expiration event.
-Protocols: TLS, DTLS, QUIC, MinimalT, tcpcrypt, IKEv2
+Protocols: TLS, DTLS, QUIC, tcpcrypt, IKEv2, MinimalT
 
 - Pre-Shared Key Export
 The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication.
@@ -1073,4 +1091,6 @@ separate document.
 The authors would like to thank Bob Bradley, Theresa Enghardt, Frederic Jacobs, Mirja Kühlewind,
 Yannick Sierra, and Brian Trammell for their input and feedback on earlier versions
 of this draft.
+
+--- back
 
