@@ -13,6 +13,14 @@ pi: [toc, sortrefs, symrefs]
 
 author:
   -
+    ins: T. Enghardt
+    name: Theresa Enghardt
+    org: TU Berlin
+    street: Marchstr. 23
+    city: 10587 Berlin
+    country: Germany
+    email: theresa@inet.tu-berlin.de
+  -
     ins: T. Pauly
     name: Tommy Pauly
     org: Apple Inc.
@@ -44,14 +52,6 @@ author:
     city: Cupertino, California 95014
     country: United States of America
     email: cawood@apple.com
-  -
-    ins: T. Enghardt
-    name: Theresa Enghardt
-    org: TU Berlin
-    street: Marchstr. 23
-    city: 10587 Berlin
-    country: Germany
-    email: theresa@inet.tu-berlin.de
 
 normative:
     RFC2385:
@@ -434,10 +434,12 @@ See also the features from TLS.
 
 ### Protocol Dependencies
 
+- DTLS relies on UDP.
 - The DTLS record protocol explicitly encodes record lengths, so although it runs over a datagram transport, it does not rely on the transport protocol's framing beyond requiring transport-level reconstruction of datagrams fragmented over packets.
 (Note: DTLS 1.3 short header records omit the explicit length field.)
 - UDP 4-tuple uniqueness, or the connection identifier extension, for demultiplexing.
 - Path MTU discovery.
+- For the handshake: Reliable, in-order transport. DTLS provides its own reliability.
 
 ## (IETF) QUIC with TLS
 
@@ -478,6 +480,7 @@ See also the properties of TLS.
 
 - QUIC transport relies on UDP.
 - QUIC transport relies on TLS 1.3 for key exchange, peer authentication, and shared secret derivation.
+- For the handshake: Reliable, in-order transport. QUIC provides its own reliability.
 
 ### Variant: Google QUIC {#section-gquic}
 
@@ -640,6 +643,7 @@ complete system security.
 
 ### Protocol Dependencies
 
+- Secure RTP can run over UDP or TCP.
 - External key derivation and management protocol, e.g., DTLS {{RFC5763}}.
 - External identity management protocol, e.g., SIP Authenticated Identity Management
   {{RFC4474}}, WebRTC Security Architecture {{I-D.ietf-rtcweb-security-arch}}.
@@ -803,6 +807,7 @@ shared tunnels, and congestion control state is shared across connections betwee
 
 ### Protocol Dependencies
 
+- MinimalT relies on UDP.
 - A DNS-like resolution service to obtain location information (an IP address) and ephemeral keys.
 - A PKI trust store for certificate validation.
 
@@ -864,9 +869,10 @@ and the per-message nonce in the clear. Everything else is encrypted.
 ## OpenVPN
 
 OpenVPN {{OpenVPN}} is a commonly used protocol designed as an alternative to
-IPsec. A major goal of this protocol is to provide an easy-to-use VPN. OpenVPN
-encapsulates either IP packets or Ethernet frames within a secure tunnel and
-can run over UDP or TCP.
+IPsec. A major goal of this protocol is to provide a VPN that is simple to
+configure and works over a variety of transports. OpenVPN encapsulates either
+IP packets or Ethernet frames within a secure tunnel and can run over UDP or
+TCP.
 
 ### Protocol Description
 
@@ -907,8 +913,7 @@ each key, as it can trigger rekeying if needed.
 
 OpenVPN supports connection mobility by allowing a peer to change its IP
 address during an ongoing session. When configured accordingly, a host will
-accept packets for a session from any IP address, as long as the packets pass
-all authentication checks.
+accept authenticated packets for a session from any IP address.
 
 
 ### Protocol Features
@@ -923,7 +928,7 @@ See also the properties of TLS.
 
 ### Protocol Dependencies
 
-- For control packets such as handshake and key exchange: Reliable transport. Reliability is provided either by TCP, or by OpenVPN's own reliability layer when using UDP.
+- For control packets such as handshake and key exchange: Reliable, in-order transport. Reliability is provided either by TCP, or by OpenVPN's own reliability layer when using UDP.
 
 # Security Features and Application Dependencies
 
