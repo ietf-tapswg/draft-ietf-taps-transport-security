@@ -13,6 +13,15 @@ pi: [toc, sortrefs, symrefs]
 
 author:
   -
+    ins: C. A. Wood
+    name: Christopher A. Wood
+    role: editor
+    org: Apple Inc.
+    street: One Apple Park Way
+    city: Cupertino, California 95014
+    country: United States of America
+    email: cawood@apple.com
+  -
     ins: T. Enghardt
     name: Theresa Enghardt
     org: TU Berlin
@@ -44,14 +53,6 @@ author:
     city: Cambridge, MA 02144
     country: United States of America
     email: krose@krose.org
-  -
-    ins: C. A. Wood
-    name: Christopher A. Wood
-    org: Apple Inc.
-    street: One Apple Park Way
-    city: Cupertino, California 95014
-    country: United States of America
-    email: cawood@apple.com
 
 normative:
     RFC2385:
