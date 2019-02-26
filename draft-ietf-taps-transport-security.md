@@ -13,6 +13,23 @@ pi: [toc, sortrefs, symrefs]
 
 author:
   -
+    ins: C. A. Wood
+    name: Christopher A. Wood
+    role: editor
+    org: Apple Inc.
+    street: One Apple Park Way
+    city: Cupertino, California 95014
+    country: United States of America
+    email: cawood@apple.com
+  -
+    ins: T. Enghardt
+    name: Theresa Enghardt
+    org: TU Berlin
+    street: Marchstr. 23
+    city: 10587 Berlin
+    country: Germany
+    email: theresa@inet.tu-berlin.de
+  -
     ins: T. Pauly
     name: Tommy Pauly
     org: Apple Inc.
@@ -36,14 +53,6 @@ author:
     city: Cambridge, MA 02144
     country: United States of America
     email: krose@krose.org
-  -
-    ins: C. A. Wood
-    name: Christopher A. Wood
-    org: Apple Inc.
-    street: One Apple Park Way
-    city: Cupertino, California 95014
-    country: United States of America
-    email: cawood@apple.com
 
 normative:
     RFC2385:
@@ -159,6 +168,15 @@ normative:
         -
           ins: Tanja Lange
           org: TU Eindhoven, Eindhoven, Netherlands
+    OpenVPN:
+      title: OpenVPN cryptographic layer
+      url: https://openvpn.net/community-resources/openvpn-cryptographic-layer/
+    BlowFish:
+      title: The Blowfish Encryption Algorithm
+      url: https://www.schneier.com/academic/blowfish/
+      authors:
+        -
+          ins: B. Schneier
 
 --- abstract
 
@@ -420,10 +438,12 @@ See also the features from TLS.
 
 ### Protocol Dependencies
 
+- DTLS relies on UDP.
 - The DTLS record protocol explicitly encodes record lengths, so although it runs over a datagram transport, it does not rely on the transport protocol's framing beyond requiring transport-level reconstruction of datagrams fragmented over packets.
 (Note: DTLS 1.3 short header records omit the explicit length field.)
 - UDP 4-tuple uniqueness, or the connection identifier extension, for demultiplexing.
 - Path MTU discovery.
+- For the handshake: Reliable, in-order transport. DTLS provides its own reliability.
 
 ## (IETF) QUIC with TLS
 
@@ -464,6 +484,7 @@ See also the properties of TLS.
 
 - QUIC transport relies on UDP.
 - QUIC transport relies on TLS 1.3 for key exchange, peer authentication, and shared secret derivation.
+- For the handshake: Reliable, in-order transport. QUIC provides its own reliability.
 
 ### Variant: Google QUIC {#section-gquic}
 
@@ -630,6 +651,7 @@ complete system security.
 
 ### Protocol Dependencies
 
+- Secure RTP can run over UDP or TCP.
 - External key derivation and management protocol, e.g., DTLS {{RFC5763}}.
 - External identity management protocol, e.g., SIP Authenticated Identity Management
   {{RFC4474}}, WebRTC Security Architecture {{I-D.ietf-rtcweb-security-arch}}.
@@ -861,6 +883,70 @@ shared tunnels, and congestion control state is shared across connections betwee
 - An unreliable transport protocol such as UDP.
 - A DNS-like resolution service to obtain location information (an IP address) and ephemeral keys.
 - A PKI trust store for certificate validation.
+
+## OpenVPN
+
+OpenVPN {{OpenVPN}} is a commonly used protocol designed as an alternative to
+IPsec. A major goal of this protocol is to provide a VPN that is simple to
+configure and works over a variety of transports. OpenVPN encapsulates either
+IP packets or Ethernet frames within a secure tunnel and can run over UDP or
+TCP.
+
+### Protocol Description
+
+OpenVPN facilitates authentication using either a pre-shared static key or
+using X.509 certificates and TLS. In pre-shared key mode, OpenVPN derives
+keys for encryption and authentication directly from one or multiple symmetric
+keys. In TLS mode, OpenVPN encapsulates a TLS handshake, in which both peers
+must present a certificate for authentication. After the handshake, both sides
+contribute random source material to derive keys for encryption and
+authentication using the TLS pseudo random function (PRF). OpenVPN provides the
+possibility to authenticate and encrypt the TLS handshake itself using a
+pre-shared key or passphrase. Furthermore, it supports rekeying using TLS.
+
+After authentication and key exchange, OpenVPN encrypts payload data, i.e., IP
+packets or Ethernet frames, and signs the payload using an HMAC function. The
+default cipher is BlowFish {{BlowFish}} and the default message digest
+algorithm is SHA1, but an application can select an arbitrary cipher, key size,
+and message digest algorithm for the HMAC. OpenVPN peers support cipher
+negotiation (NCP) since version 2.4, in which case they will upgrade the cipher
+to AES-256-GCM by default.
+
+OpenVPN can run over TCP or UDP. When running over UDP, OpenVPN provides a
+simple reliability layer for control packets such as the TLS handshake and key
+exchange. It assigns sequence numbers to packets, acknowledges packets it
+receives, and retransmits packets it deems lost. Similar to DTLS, this
+reliability layer is not used for data packets, which prevents the problem of
+two reliability mechanisms being encapsulated within each other. When running
+over TCP, OpenVPN includes the packet length in the header, which allows the
+peer to deframe the TCP stream into messages.
+
+For replay protection, OpenVPN assigns an identifier to each outgoing packet,
+which is unique for the packet and the currently used key. In pre-shared key
+mode or with a CFB or OFB mode cipher, OpenVPN combines a timestamp with an
+incrementing sequence number into a 64-bit identifier. In TLS mode with CBC
+cipher mode, OpenVPN omits the timestamp, so identifiers are only 32-bit. This
+is sufficient since OpenVPN can guarantee the uniqueness of this identifier for
+each key, as it can trigger rekeying if needed.
+
+OpenVPN supports connection mobility by allowing a peer to change its IP
+address during an ongoing session. When configured accordingly, a host will
+accept authenticated packets for a session from any IP address.
+
+
+### Protocol Features
+
+- Peer authentication using certificates or pre-shared key.
+- Mandatory mutual authentication.
+- Connection mobility.
+- Out-of-order record receipt.
+- Length-hiding padding.
+
+See also the properties of TLS.
+
+### Protocol Dependencies
+
+- For control packets such as handshake and key exchange: Reliable, in-order transport. Reliability is provided either by TCP, or by OpenVPN's own reliability layer when using UDP.
 
 # Security Features and Application Dependencies
 
