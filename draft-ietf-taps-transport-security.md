@@ -171,12 +171,6 @@ normative:
     OpenVPN:
       title: OpenVPN cryptographic layer
       url: https://openvpn.net/community-resources/openvpn-cryptographic-layer/
-    BlowFish:
-      title: The Blowfish Encryption Algorithm
-      url: https://www.schneier.com/academic/blowfish/
-      authors:
-        -
-          ins: B. Schneier
 
 --- abstract
 
@@ -753,11 +747,10 @@ WireGuard comes with a fixed set of cryptographic algorithms:
 There is no cryptographic agility. If weaknesses are found in any of
 these algorithms, new message types using new algorithms must be introduced.
 
-WireGuard is designed to be entirely stateless, modulo the CryptoKey routing table, which has size
-linear with the number of trusted peers. If a WireGuard receiver is under heavy load and cannot process
-a packet, e.g., cannot spare CPU cycles for point multiplication, it can reply with a cookie similar
-to DTLS and IKEv2. This cookie only proves IP address ownership. Any rate limiting scheme can be applied
-to packets coming from non-spoofed addresses.
+If a WireGuard receiver is under heavy load and cannot process a packet, e.g., cannot spare CPU
+cycles for expensive public key cryptographic operations, it can reply with a cookie similar
+to DTLS and IKEv2. This cookie only proves IP address ownership. Any rate limiting scheme can
+be applied to packets coming from non-spoofed addresses.
 
 ### Security Features
 
@@ -765,6 +758,7 @@ to packets coming from non-spoofed addresses.
 - Peer authentication (public-key and PSK).
 - Mutual authentication.
 - Record replay prevention (Stateful, timestamp-based).
+- Connection mobility.
 - DoS mitigation (cookie-based).
 
 ### Protocol Dependencies
@@ -905,12 +899,11 @@ possibility to authenticate and encrypt the TLS handshake itself using a
 pre-shared key or passphrase. Furthermore, it supports rekeying using TLS.
 
 After authentication and key exchange, OpenVPN encrypts payload data, i.e., IP
-packets or Ethernet frames, and signs the payload using an HMAC function. The
-default cipher is BlowFish {{BlowFish}} and the default message digest
-algorithm is SHA1, but an application can select an arbitrary cipher, key size,
-and message digest algorithm for the HMAC. OpenVPN peers support cipher
-negotiation (NCP) since version 2.4, in which case they will upgrade the cipher
-to AES-256-GCM by default.
+packets or Ethernet frames, and authenticates the payload using HMAC.
+Applications can select an arbitrary encryption algorithm (cipher) and key
+size, as well hash function for HMAC. The default cipher and hash functions
+are AES-GCM and SHA1, respectively. Recent versions of the protocol support
+cipher negotiation.
 
 OpenVPN can run over TCP or UDP. When running over UDP, OpenVPN provides a
 simple reliability layer for control packets such as the TLS handshake and key
