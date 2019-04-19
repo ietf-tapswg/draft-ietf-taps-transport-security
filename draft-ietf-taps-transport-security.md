@@ -198,7 +198,7 @@ provides, and the dependencies it has on the underlying transport. This is follo
 set of transport security features shared by these protocols. Finally, we distill the application and
 transport interfaces provided by the transport security protocols.
 
-Selected protocols represent a superset of functionality and features a TAPS system may
+The protocols discussed in this document represent a superset of functionality and features a TAPS system may
 need to support, both internally and externally -- via an API -- for applications {{I-D.ietf-taps-arch}}. Ubiquitous
 IETF protocols such as (D)TLS, as well as non-standard protocols such as Google QUIC,
 are both included despite overlapping features. As such, this survey is not limited to protocols
@@ -319,7 +319,7 @@ extensions are a primary example of this feature.
 - Source validation (cookie or puzzle based): Peer source validation and DoS mitigation via explicit proof
 of origin (cookie) or work mechanisms (puzzles).
 
-- Length-hiding padding: Protocol-drive record padding aimed at hiding plaintext message length
+- Length-hiding padding: Protocol-driven record padding aimed at hiding plaintext message length
 and mitigating amplification attack vectors.
 
 # Transport Security Protocol Descriptions
@@ -463,10 +463,9 @@ sent in special INITIAL and CRYPTO frames {{I-D.ietf-quic-transport}}, types of 
 are encrypted using different keys. INITIAL frames are encrypted using "fixed" keys derived
 from the QUIC version and public packet information (Connection ID). CRYPTO frames are
 encrypted using TLS handshake secrets. Once TLS completes, QUIC uses the resultant traffic
-secrets to for the QUIC connection to protect the rest of the streams. QUIC supports
-0-RTT (early) data using previously negotiated connection secrets. Early data is sent
-in 0-RTT packets, which may be included in the same datagram as the Initial and
-Handshake packets.
+secrets to protect the rest of the streams. QUIC supports
+0-RTT (early) data using previously negotiated connection secrets. (AF: please confirm the following changes are correct.) Early data is sent
+in 0-RTT packets, which may be included in the same datagram as the INITIAL and CRYPTO frames.
 
 ### Security Features
 
@@ -490,7 +489,7 @@ was originally designed with tightly-integrated security and application data tr
 
 ## IKEv2 with ESP
 
-IKEv2 {{RFC7296}} and ESP {{RFC4303}} together form the modern IPsec protocol suite that encrypts
+IKEv2 (Internet Key Exchange Protocol Version 2) {{RFC7296}} and ESP (IP Encapsulating Security Payload) {{RFC4303}} together form the modern IPsec protocol suite that encrypts
 and authenticates IP packets, either for creating tunnels (tunnel-mode) or for direct transport
 connections (transport-mode). This suite of protocols separates out the key generation protocol
 (IKEv2) from the transport encryption protocol (ESP). Each protocol can be used independently,
@@ -782,7 +781,7 @@ There are two rounds in CurveCP. In the first round, the client sends its first 
 packet to the server, carrying its (possibly fresh) ephemeral public key C', with zero-padding
 encrypted under the server's long-term public key. The server replies with a cookie and its own ephemeral
 key S' and a cookie that is to be used by the client. Upon receipt, the client then generates
-its second initialization packet carrying: the ephemeral key C', cookie, and an encryption of C',
+its second initialization packet carrying: the ephemeral key C', the cookie, and an encryption of C',
 the server's domain name, and, optionally, some message data. The server verifies the cookie
 and the encrypted payload and, if valid, proceeds to send data in return. At this point, the
 connection is established and the two parties can communicate.
@@ -1010,7 +1009,7 @@ In this section we list optional features along with their necessary application
   - Application dependency: None.
 
 - Length-hiding padding (LHP):
-  (Optional) Application dependency: Knowledge of desired padding policies. Some protocols, such as IKE, can negotiate application-agnostic padding policies.
+  - (Optional) Application dependency: Knowledge of desired padding policies. Some protocols, such as IKE, can negotiate application-agnostic padding policies.
 
 - Early data support (ED):
   - Application dependency: Anti-replay protections or hints of data idempotency.
@@ -1062,36 +1061,48 @@ Configuration interfaces are used to configure the security protocols before a
 handshake begins or the keys are negotiated.
 
 - Identities and Private Keys
+
 The application can provide its identities (certificates) and private keys, or
 mechanisms to access these, to the security protocol to use during handshakes.
+
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP
 
 - Supported Algorithms (Key Exchange, Signatures, and Ciphersuites)
+
 The application can choose the algorithms that are supported for key exchange,
 signatures, and ciphersuites.
+
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2, SRTP
 
-- Extensions (Application-Layer Protocol Negotiation):
+- Extensions (Application-Layer Protocol Negotiation)
+
 The application enables or configures extensions that are to be negotiated by
 the security protocol, such as ALPN {{RFC7301}}.
+
 Protocols: TLS, DTLS, QUIC + TLS
 
 - Session Cache Management
+
 The application provides the ability to save and retrieve session state (such as tickets,
 keying material, and server parameters) that may be used to resume the security session.
+
 Protocols: TLS, DTLS, QUIC + TLS, MinimalT
 
 - Authentication Delegation
+
 The application provides access to a separate module that will provide authentication,
 using EAP for example.
+
 Protocols: IKEv2, SRTP
 
 - Pre-Shared Key Import
+
 Either the handshake protocol or the application directly can supply pre-shared keys for the
 record protocol use for encryption/decryption and authentication. If the application can supply
 keys directly, this is considered explicit import; if the handshake protocol traditionally
 provides the keys directly, it is considered direct import; if the keys can only be shared by
 the handshake, they are considered non-importable.
+
   - Explict import: QUIC, ESP
   - Direct import: TLS, DTLS, MinimalT, tcpcrypt, WireGuard
   - Non-importable: CurveCP
@@ -1099,46 +1110,60 @@ the handshake, they are considered non-importable.
 ## Connection Interfaces
 
 - Identity Validation
+
 During a handshake, the security protocol will conduct identity validation of the peer.
 This can call into the application to offload validation.
+
 Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP (DTLS))
 
 - Source Address Validation
+
 The handshake protocol may delegate validation of the remote peer that has sent
 data to the transport protocol or application. This involves sending a cookie
 exchange to avoid DoS attacks.
+
 Protocols: QUIC + TLS, DTLS, WireGuard
 
 ## Post-Connection Interfaces
 
 - Connection Termination
+
 The security protocol may be instructed to tear down its connection and session information.
 This is needed by some protocols to prevent application data truncation attacks.
+
 Protocols: TLS, DTLS, QUIC, tcpcrypt, IKEv2, MinimalT
 
 - Key Update
+
 The handshake protocol may be instructed to update its keying material, either
 by the application directly or by the record protocol sending a key expiration event.
+
 Protocols: TLS, DTLS, QUIC, tcpcrypt, IKEv2, MinimalT
 
 - Pre-Shared Key Export
+
 The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication.
 These may be explicitly exportable to the application, traditionally limited to direct export to the record protocol,
 or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.
+
   - Explicit export: TLS (for QUIC), tcpcrypt, IKEv2, DTLS (for SRTP)
   - Direct export: TLS, DTLS, MinimalT
   - Non-exportable: CurveCP
 
 - Key Expiration
+
 The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based
 deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling
 between the record layer and the handshake layer.
+
 Protocols: ESP ((Editor's note: One may consider TLS/DTLS to also have this interface))
 
 - Mobility Events
+
 The record protocol can be signaled that it is being migrated to another transport or interface due to
 connection mobility, which may reset address and state validation and induce state changes such
 as use of a new Connection Identifier (CID).
+
 Protocols: QUIC, MinimalT, CurveCP, ESP, WireGuard (roaming)
 
 # IANA Considerations
