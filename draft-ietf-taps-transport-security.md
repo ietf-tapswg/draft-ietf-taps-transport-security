@@ -492,9 +492,7 @@ connections (transport-mode). This suite of protocols separates out the key gene
 (IKEv2) from the transport encryption protocol (ESP). Each protocol can be used independently,
 but this document considers them together, since that is the most common pattern.
 
-### Protocol descriptions
-
-#### IKEv2
+### IKEv2 Protocol Description
 
 IKEv2 is a control protocol that runs on UDP ports 500 or 4500 and TCP port 4500.
 Its primary goal is to generate keys for Security Associations (SAs).
@@ -526,7 +524,7 @@ to migrate over different outer IP addresses and interfaces {{RFC4555}}.
 
 When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP {{RFC8229}}.
 
-#### ESP {#ESP}
+### ESP Protocol Description {#ESP}
 
 ESP is a protocol that encrypts and authenticates IPv4 and IPv6 packets. The keys used for both
 encryption and authentication can be derived from an IKEv2 exchange. ESP Security Associations come
@@ -546,9 +544,7 @@ This means it requires little or no change from transports in order to provide s
 ESP packets may be sent directly over IP, but where network conditions warrant (e.g., when a NAT
 is present or when a firewall blocks such packets) they may be encapsulated in UDP {{RFC3948}} or TCP {{RFC8229}}.
 
-### Security Features
-
-#### IKEv2
+### IKEv2 Security Features
 
 - Forward-secure session key establishment.
 - Cryptographic algorithm negotiation.
@@ -560,20 +556,18 @@ is present or when a firewall blocks such packets) they may be encapsulated in U
 - Connection mobility.
 - DoS mitigation (cookie-based).
 
-#### ESP
+### ESP Security Features
 
 - Record confidentiality and integrity.
 - Record replay protection.
 
-### Protocol Dependencies
-
-#### IKEv2
+### IKEv2 Protocol Dependencies
 
 - Availability of UDP to negotiate, or implementation support for TCP-encapsulation.
 - Some EAP authentication types require accessing a hardware device, such as a SIM
 card; or interacting with a user, such as password prompting.
 
-#### ESP
+### ESP Protocol Dependencies
 
 - Since ESP is below transport protocols, it does not have any dependencies on the
 transports themselves, other than on UDP or TCP where encapsulation is employed.
@@ -709,7 +703,7 @@ It does not encrypt any header information, such as the TCP sequence number.
 
 ### Protocol Dependencies
 
-- TCP.
+- TCP for in-order, reliable transport.
 - TCP Encryption Negotiation Option (ENO).
 
 ## WireGuard
