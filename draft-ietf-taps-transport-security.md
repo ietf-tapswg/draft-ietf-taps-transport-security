@@ -1142,7 +1142,7 @@ It does not propose changes to or recommend usage of reference protocols. Moreov
 no claims of security and privacy properties beyond those guaranteed by the protocols
 discussed are made. For example, metadata leakage via timing side channels and traffic
 analysis may compromise any protocol discussed in this survey. Applications using
-Security Interfaces SHOULD take such limitations into consideration when using a particular
+Security Interfaces should take such limitations into consideration when using a particular
 protocol implementation.
 
 # Privacy Considerations
