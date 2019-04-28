@@ -435,7 +435,7 @@ See also the features from TLS.
 - Path MTU discovery.
 - For the handshake: Reliable, in-order transport. DTLS provides its own reliability.
 
-## (IETF) QUIC with TLS
+## QUIC with TLS
 
 QUIC is a new standards-track transport protocol that runs over UDP, loosely based on Google's
 original proprietary gQUIC protocol {{I-D.ietf-quic-transport}} (See {{section-gquic}} for more details).
@@ -1029,7 +1029,7 @@ or through a (standardized, where applicable) extension.
 |:----------|:---:|:--:|:--:|:--:|:--:|:--:|:--:|:---:|:--:|:--:|:---:|:--:|:--:|:--:|
 | TLS       | S   | S  | S  | S  | S  | U\* | M | S   | S  | S  | S   | S  | U  | U  |
 | DTLS      | S   | S  | S  | S  | S  | S  | M  | S   | S  | S  | S   | U  | M  | M  |
-| IETF QUIC | S   | S  | S  | S  | S  | S  | M  | S   | S  | S  | S   | S  | M  | M  |
+| QUIC | S   | S  | S  | S  | S  | S  | M  | S   | S  | S  | S   | S  | M  | M  |
 | IKEv2+ESP | S   | S  | S  | M  | S  | S  | M  | S   | S  | S  | S   | U  | M  | M  |
 | SRTP+DTLS | S   | S  | S  | S  | S  | U  | M  | S   | S  | S  | U   | U  | M  | M  |
 | tcpcrypt  | U   | S  | M  | U  | U\*\* | U\* | M | U | U | S  | U   | U  | U  | U  |
