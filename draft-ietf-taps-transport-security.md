@@ -438,11 +438,11 @@ See also the features from TLS.
 
 ## (IETF) QUIC with TLS
 
-QUIC (Quick UDP Internet Connections) is a new standards-track transport protocol that runs over
-UDP, loosely based on Google's original proprietary gQUIC protocol {{I-D.ietf-quic-transport}}.
-(See {{section-gquic}} for more details.) The QUIC transport layer itself provides support for data
-confidentiality and integrity. This requires keys to be derived with a separate handshake protocol.
-A mapping for QUIC over TLS 1.3 {{I-D.ietf-quic-tls}} has been specified to provide this handshake.
+QUIC is a new standards-track transport protocol that runs over UDP, loosely based on Google's
+original proprietary gQUIC protocol {{I-D.ietf-quic-transport}} (See {{section-gquic}} for more details).
+The QUIC transport layer itself provides support for data confidentiality and integrity. This requires
+keys to be derived with a separate handshake protocol. A mapping for QUIC of TLS 1.3 {{I-D.ietf-quic-tls}}
+has been specified to provide this handshake.
 
 ### Protocol Description
 
