@@ -89,7 +89,6 @@ normative:
     I-D.ietf-tcpinc-tcpeno:
     I-D.ietf-quic-transport:
     I-D.ietf-quic-tls:
-    I-D.ietf-tls-tls13:
     I-D.ietf-taps-arch:
     BLAKE2:
       title: BLAKE2 -- simpler, smaller, fast as MD5
@@ -337,7 +336,7 @@ peer to the other. This data may contain handshake messages or raw application d
 
 ### Protocol Description
 
-TLS is the composition of a handshake and record protocol {{I-D.ietf-tls-tls13}}.
+TLS is the composition of a handshake and record protocol {{RFC8446}}.
 The record protocol is designed to marshal an arbitrary, in-order stream of bytes from one endpoint to the other.
 It handles segmenting, compressing (when enabled), and encrypting data into discrete records. When configured
 to use an authenticated encryption with associated data (AEAD) algorithm, it also handles nonce
