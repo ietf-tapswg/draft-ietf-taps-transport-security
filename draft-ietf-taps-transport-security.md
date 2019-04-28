@@ -177,29 +177,26 @@ normative:
 This document provides a survey of commonly used or notable network security protocols, with a focus
 on how they interact and integrate with applications and transport protocols. Its goal is to supplement
 efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to
-add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS),
-Quick UDP Internet Connections with TLS (QUIC + TLS), tcpcrypt, Internet Key Exchange
-with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP, MinimalT. This survey is not
-limited to protocols developed within the scope or context of the IETF, and those included represent a superset
-of features a TAPS system may need to support.
+add security protocols. This survey is not limited to protocols developed within the scope or context of
+the IETF, and those included represent a superset of features a Transport Services system may need to support.
 
 --- middle
 
 # Introduction
 
-This document provides a survey of commonly used or notable network security protocols, with a focus
-on how they interact and integrate with applications and transport protocols.  Its goal is to supplement
-efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to
-add security protocols. It examines Transport Layer Security (TLS), Datagram Transport Layer
-Security (DTLS), Quick UDP Internet Connections with TLS (QUIC + TLS), tcpcrypt, Internet Key Exchange
+Services and features provided by transport protocols have been cataloged in {{RFC8095}}. This document
+supplements that work by surveying commonly used and notable network security protocols, and
+identifying the services and features a Transport Services system (a system that provides a transport API)
+needs to provide in order to add transport security. It examines Transport Layer Security (TLS),
+Datagram Transport Layer Security (DTLS), QUIC + TLS, tcpcrypt, Internet Key Exchange
 with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP,
 and MinimalT. For each protocol, this document provides a brief description, the security features it
 provides, and the dependencies it has on the underlying transport. This is followed by defining the
-set of transport security features shared by these protocols. Finally, we distill the application and
+set of transport security features shared by these protocols. Finally, the document distills the application and
 transport interfaces provided by the transport security protocols.
 
-Selected protocols represent a superset of functionality and features a TAPS system may
-need to support, both internally and externally -- via an API -- for applications {{I-D.ietf-taps-arch}}. Ubiquitous
+Selected protocols represent a superset of functionality and features a Transport Services system may
+need to support, both internally and externally (via an API) for applications {{I-D.ietf-taps-arch}}. Ubiquitous
 IETF protocols such as (D)TLS, as well as non-standard protocols such as Google QUIC,
 are both included despite overlapping features. As such, this survey is not limited to protocols
 developed within the scope or context of the IETF. Outside of this candidate set, protocols
@@ -208,14 +205,14 @@ unique design choices that have important implications on applications, such as 
 best configure peer public keys and to delegate algorithm selection to the system. In contrast,
 protocols such as ALTS {{ALTS}} are omitted since they do not represent features deemed unique.
 
-Also, authentication-only protocols such as TCP-AO {{RFC5925}} and IPsec AH {{RFC4302}} are excluded
+Authentication-only protocols such as TCP-AO {{RFC5925}} and IPsec AH {{RFC4302}} are excluded
 from this survey. TCP-AO adds authenticity protections to long-lived TCP connections, e.g., replay
 protection  with per-packet Message Authentication Codes. (This protocol obsoletes TCP MD5 "signature"
 options specified in {{RFC2385}}.) One prime use case of TCP-AO is for protecting BGP connections.
 Similarly, AH adds per-datagram authenticity and adds similar replay protection. Despite these
 improvements, neither protocol sees general use and both lack critical properties important for emergent
-transport security protocols: confidentiality, privacy protections, and agility. Thus, we omit
-these and related protocols from our survey.
+transport security protocols: confidentiality, privacy protections, and agility. Such protocols are thus
+omitted from this survey.
 
 # Terminology
 
@@ -272,55 +269,55 @@ remainder of this document. Protocol security (and privacy) properties that are 
 the API surface exposed by such protocols, such as client or server identity hiding, are
 not listed here as features.
 
-- Forward-secure session key establishment: Cryptographic key establishment with forward secure properties.
+- Forward-secure session key establishment: Establishing cryptographic keys with forward-secure properties.
 
-- Cryptographic algorithm negotiation: Negotiate support of protocol algorithms, including: encryption,
-hash, MAC (PRF), and digital signature algorithms.
+- Cryptographic algorithm negotiation: Negotiating support of protocol algorithms, including algorithms for
+encryption, hashing, MAC (PRF), and digital signatures.
 
-- Session caching and management: Manage session state cache used for subsequent connections
-aimed towards amortizing connection establishment costs.
+- Session caching and management: Managing session state caches used for subsequent connections,
+with the aim of amortizing connection establishment costs.
 
-- Peer authentication (certificate, raw public key, pre-shared key, or EAP-based): Peer authentication using
-select or protocol-specific mechanisms.
+- Peer authentication: Authenticating peers using generic or protocol-specific mechanisms, such as
+certificates, raw public keys, pre-shared keys, or EAP methods.
 
-- Unilateral responder authentication: Required authentication for the responder of a connection.
+- Unilateral responder authentication: Requiring authentication for the responder of a connection.
 
-- Mutual authentication: Connection establishment wherein both endpoints are authenticated.
+- Mutual authentication: Establishing connections in which both endpoints are authenticated.
 
-- Application authentication delegation: Out-of-band peer authentication performed by
-applications outside of the connection establishment.
+- Application authentication delegation: Delegating to applications out-of-band to perform
+peer authentication.
 
-- Record (channel or datagram) confidentiality and integrity: Encryption and authentication of
+- Record (channel or datagram) confidentiality and integrity: Encrypting and authenticating
 application plaintext bytes sent between peers over a channel or in individual datagrams.
 
-- Partial record confidentiality: Encryption of some portion of records.
+- Partial record confidentiality: Encrypting some portion of records.
 
-- Optional record integrity: Optional authentication of certain records.
+- Optional record integrity: Optionally authenticating certain records.
 
-- Record replay prevention: Protocol detection and defense against record replays, e.g., due
+- Record replay prevention: Detecting and defending against record replays, which can be due
 to in-network retransmissions.
 
-- Early data support (starting with TLS 1.3): Transmission of application data prior to connection
-(handshake) establishment.
+- Early data support: Transmitting application data prior to secure connection
+establishment via a handshake. For TLS, this support begins with TLS 1.3.
 
-- Connection mobility: a property of a connection that allows it to be multihomed or resilient across network
-interface or address changes, e.g., NAT rebindings that occur without an endpoint's knowledge. Mobility allows
+- Connection mobility: Allowing a connection to be multihomed or resilient across network
+interface or address changes, such as NAT rebindings that occur without an endpoint's knowledge. Mobility allows
 cryptographic key material and other state information to be reused in the event of a connection change.
 
-- Application-layer feature negotiation: Securely negotiate application-specific functionality,
-including those necessary for connection handling and management, e.g., the TLS parent connection
+- Application-layer feature negotiation: Securely negotiating application-specific functionality.
+Such features may be necessary for further application processing, such as the TLS parent connection
 protocol type via ALPN {{RFC7301}} or desired application identity via SNI {{RFC6066}}.
 
-- Configuration extensions: Add protocol features via extensions or configuration options. TLS
+- Configuration extensions: Adding protocol features via extensions or configuration options. TLS
 extensions are a primary example of this feature.
 
 - Out-of-order record receipt: Processing of records received out-of-order.
 
-- Source validation (cookie or puzzle based): Peer source validation and DoS mitigation via explicit proof
-of origin (cookie) or work mechanisms (puzzles).
+- Source validation (cookie or puzzle based): Validating peers and mitigating denial-of-service (DoS) attacks
+via explicit proof of origin (cookies) or work mechanisms (puzzles).
 
-- Length-hiding padding: Protocol-drive record padding aimed at hiding plaintext message length
-and mitigating amplification attack vectors.
+- Length-hiding padding: Adding padding to records in order to hide plaintext message length
+and mitigate amplification attack vectors.
 
 # Transport Security Protocol Descriptions
 
@@ -944,8 +941,8 @@ See also the properties of TLS.
 # Security Features and Application Dependencies
 
 There exists a common set of features shared across the transport protocols surveyed in this document.
-Mandatory features constitute a baseline of functionality that an application may assume for any TAPS
-implementation. They were selected on the basis that they are either (a) required for any secure
+Mandatory features constitute a baseline of functionality that an application may assume for any
+Transport Services implementation. They were selected on the basis that they are either (a) required for any secure
 transport protocol or (b) nearly ubiquitous amongst common secure transport protocols.
 
 Optional features by contrast may vary from implementation to implementation, and so
