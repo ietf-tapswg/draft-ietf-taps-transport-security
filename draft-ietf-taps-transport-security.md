@@ -455,13 +455,12 @@ between its security and transport functions:
 
 The QUIC transport layer support multiple streams over a single connection. QUIC implements
 a record protocol for TLS handshake messages to establish a connection. These messages are
-sent in special INITIAL and CRYPTO frames {{I-D.ietf-quic-transport}}, types of which
-are encrypted using different keys. INITIAL frames are encrypted using "fixed" keys derived
-from the QUIC version and public packet information (Connection ID). CRYPTO frames are
-encrypted using TLS handshake secrets. Once TLS completes, QUIC uses the resultant traffic
-secrets to for the QUIC connection to protect the rest of the streams. QUIC supports
-0-RTT (early) data using previously negotiated connection secrets. Early data is sent
-in 0-RTT packets, which may be included in the same datagram as the Initial and
+sent in CRYPTO frames {{I-D.ietf-quic-transport}} in Initial and Handshake packets.
+Initial packets are encrypted using fixed keys derived from the QUIC version and public packet
+information (Connection ID). Handshake packets are encrypted using TLS handshake secrets.
+Once TLS completes, QUIC uses the resulting traffic secrets to for the QUIC connection to protect
+the rest of the frames. QUIC supports 0-RTT data using previously negotiated connection secrets
+Early data is sent in 0-RTT packets, which may be included in the same datagram as the Initial and
 Handshake packets.
 
 ### Security Features
