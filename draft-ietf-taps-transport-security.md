@@ -385,16 +385,16 @@ by the server. It is assumed that the client must always store some state inform
 
 ### Protocol Dependencies
 
-- TCP for in-order, reliable transport.
+- In-order, reliable bytestream transport.
 - (Optionally) A PKI trust store for certificate validation.
 
 ## DTLS
 
 DTLS (Datagram Transport Layer Security) {{RFC6347}} is based on TLS, but differs in that
-it is designed to run over UDP instead of TCP. Since UDP does not guarantee datagram
-ordering or reliability, DTLS modifies the protocol to make sure it can still provide
-the same security guarantees as TLS. DTLS was designed to be as close to TLS as possible,
-so this document will assume that all properties from TLS are carried over except where specified.
+it is designed to run over unrelaible datagram protocols like UDP instead of TCP. 
+DTLS modifies the protocol to make sure it can still provide the same security guarantees as TLS
+even without reliability from the transport. DTLS was designed to be as similar to TLS as possible,
+so this document assumes that all properties from TLS are carried over except where specified.
 
 ### Protocol Description
 
@@ -409,10 +409,11 @@ As the DTLS handshake protocol runs atop the record protocol, to account for lon
 that cannot fit within a single record, DTLS supports fragmentation and subsequent reconstruction of
 handshake messages across records. The receiver must reassemble records before processing.
 
-DTLS relies on unique UDP 4-tuples to identify connections. Since all application-layer data is encrypted,
-demultiplexing over the same 4-tuple requires the use of a connection identifier extension {{I-D.ietf-tls-dtls-connection-id}}
-to permit identification of the correct connection-specific cryptographic context without the use of trial decryption.
-(Note that this extension is only supported in DTLS 1.2 and 1.3 {{I-D.ietf-tls-dtls13}.)
+DTLS relies on unique UDP 4-tuples to identify connections, or a similar mechanism in other datagram transports.
+Since all application-layer data is encrypted, demultiplexing over the same 4-tuple requires the use of a connection
+identifier extension {{I-D.ietf-tls-dtls-connection-id}} to permit identification of the correct connection-specific
+cryptographic context without the use of trial decryption. (Note that this extension is only supported in DTLS 1.2
+and 1.3 {{I-D.ietf-tls-dtls13}.)
 
 Since datagrams can be replayed, DTLS provides optional anti-replay detection based on a window
 of acceptable sequence numbers {{RFC6347}}.
@@ -428,10 +429,10 @@ See also the features from TLS.
 
 ### Protocol Dependencies
 
-- DTLS relies on UDP.
+- DTLS relies on an unreliable datagram transport.
 - The DTLS record protocol explicitly encodes record lengths, so although it runs over a datagram transport, it does not rely on the transport protocol's framing beyond requiring transport-level reconstruction of datagrams fragmented over packets.
 (Note: DTLS 1.3 short header records omit the explicit length field.)
-- UDP 4-tuple uniqueness, or the connection identifier extension, for demultiplexing.
+- Uniqueness of the session within the transport flow (only one DTLS connection on a UDP 4-tuple, for example); or else support for the connection identifier extension to enable demultiplexing.
 - Path MTU discovery.
 - For the handshake: Reliable, in-order transport. DTLS provides its own reliability.
 
