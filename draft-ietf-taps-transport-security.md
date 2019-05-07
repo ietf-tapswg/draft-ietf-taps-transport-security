@@ -54,42 +54,7 @@ author:
     country: United States of America
     email: krose@krose.org
 
-normative:
-    RFC2385:
-    RFC2508:
-    RFC3261:
-    RFC3545:
-    RFC3711:
-    RFC3948:
-    RFC4253:
-    RFC4302:
-    RFC4303:
-    RFC4474:
-    RFC4555:
-    RFC5246:
-    RFC5723:
-    RFC5763:
-    RFC5764:
-    RFC5869:
-    RFC5925:
-    RFC6066:
-    RFC6189:
-    RFC6347:
-    RFC7250:
-    RFC7296:
-    RFC7301:
-    RFC7539:
-    RFC8095:
-    RFC8229:
-    RFC8446:
-    I-D.ietf-tls-dtls13:
-    I-D.ietf-tls-dtls-connection-id:
-    I-D.ietf-rtcweb-security-arch:
-    I-D.ietf-tcpinc-tcpcrypt:
-    I-D.ietf-tcpinc-tcpeno:
-    I-D.ietf-quic-transport:
-    I-D.ietf-quic-tls:
-    I-D.ietf-taps-arch:
+informative:
     BLAKE2:
       title: BLAKE2 -- simpler, smaller, fast as MD5
       url: https://blake2.net/blake2.pdf
@@ -175,7 +140,7 @@ normative:
 
 This document provides a survey of commonly used or notable network security protocols, with a focus
 on how they interact and integrate with applications and transport protocols. Its goal is to supplement
-efforts to define and catalog transport services {{RFC8095}} by describing the interfaces required to
+efforts to define and catalog transport services by describing the interfaces required to
 add security protocols. This survey is not limited to protocols developed within the scope or context of
 the IETF, and those included represent a superset of features a Transport Services system may need to support.
 
@@ -183,7 +148,7 @@ the IETF, and those included represent a superset of features a Transport Servic
 
 # Introduction
 
-Services and features provided by transport protocols have been cataloged in {{RFC8095}}. This document
+Services and features provided by transport protocols have been cataloged in {{?RFC8095}}. This document
 supplements that work by surveying commonly used and notable network security protocols, and
 identifying the services and features a Transport Services system (a system that provides a transport API)
 needs to provide in order to add transport security. It examines Transport Layer Security (TLS),
@@ -195,7 +160,7 @@ set of transport security features shared by these protocols. Finally, the docum
 transport interfaces provided by the transport security protocols.
 
 Selected protocols represent a superset of functionality and features a Transport Services system may
-need to support, both internally and externally (via an API) for applications {{I-D.ietf-taps-arch}}. Ubiquitous
+need to support, both internally and externally (via an API) for applications {{?I-D.ietf-taps-arch}}. Ubiquitous
 IETF protocols such as (D)TLS, as well as non-standard protocols such as Google QUIC,
 are both included despite overlapping features. As such, this survey is not limited to protocols
 developed within the scope or context of the IETF. Outside of this candidate set, protocols
@@ -204,10 +169,10 @@ unique design choices that have important implications on applications, such as 
 best configure peer public keys and to delegate algorithm selection to the system. In contrast,
 protocols such as ALTS {{ALTS}} are omitted since they do not represent features deemed unique.
 
-Authentication-only protocols such as TCP-AO {{RFC5925}} and IPsec AH {{RFC4302}} are excluded
+Authentication-only protocols such as TCP-AO {{?RFC5925}} and IPsec AH {{?RFC4302}} are excluded
 from this survey. TCP-AO adds authenticity protections to long-lived TCP connections, e.g., replay
 protection  with per-packet Message Authentication Codes. (This protocol obsoletes TCP MD5 "signature"
-options specified in {{RFC2385}}.) One prime use case of TCP-AO is for protecting BGP connections.
+options specified in {{?RFC2385}}.) One prime use case of TCP-AO is for protecting BGP connections.
 Similarly, AH adds per-datagram authenticity and adds similar replay protection. Despite these
 improvements, neither protocol sees general use and both lack critical properties important for emergent
 transport security protocols: confidentiality, privacy protections, and agility. Such protocols are thus
@@ -232,7 +197,7 @@ This may also be an upper layer protocol or tunnel encapsulation.
 - Security Feature: a feature that a network security layer provides to applications. Examples
 include authentication, encryption, key generation, session resumption, and privacy. Features may be
 Mandatory or Optional for an application's implementation. Security Features extend the set of
-Transport Features described in {{!RFC8095}} and provided by Transport Services implementations.
+Transport Features described in {{?RFC8095}} and provided by Transport Services implementations.
 
 - Security Protocol: a defined network protocol that implements one or more security features. Security
 protocols may be used alongside transport protocols, and in combination with other security protocols when
@@ -305,7 +270,7 @@ cryptographic key material and other state information to be reused in the event
 
 - Application-layer feature negotiation: Securely negotiating application-specific functionality.
 Such features may be necessary for further application processing, such as the TLS parent connection
-protocol type via ALPN {{RFC7301}} or desired application identity via SNI {{RFC6066}}.
+protocol type via ALPN {{?RFC7301}} or desired application identity via SNI {{?RFC6066}}.
 
 - Configuration extensions: Adding protocol features via extensions or configuration options. TLS
 extensions are a primary example of this feature.
@@ -327,7 +292,7 @@ For each protocol, we describe its provided features and dependencies on other p
 
 ## TLS
 
-TLS (Transport Layer Security) {{RFC5246}} is a common protocol used to establish a secure session between two endpoints. Communication
+TLS (Transport Layer Security) {{?RFC5246}} is a common protocol used to establish a secure session between two endpoints. Communication
 over this session "prevents eavesdropping, tampering, and message forgery." TLS consists
 of a tightly coupled handshake and record protocol. The handshake protocol is used to authenticate peers,
 negotiate protocol options, such as cryptographic algorithms, and derive session-specific
@@ -336,7 +301,7 @@ peer to the other. This data may contain handshake messages or raw application d
 
 ### Protocol Description
 
-TLS is the composition of a handshake and record protocol {{RFC8446}}.
+TLS is the composition of a handshake and record protocol {{?RFC8446}}.
 The record protocol is designed to marshal an arbitrary, in-order stream of bytes from one endpoint to the other.
 It handles segmenting, compressing (when enabled), and encrypting data into discrete records. When configured
 to use an authenticated encryption with associated data (AEAD) algorithm, it also handles nonce
@@ -346,14 +311,14 @@ bytestream-oriented API.
 The handshake protocol serves several purposes, including: peer authentication, protocol option (key exchange
 algorithm and ciphersuite) negotiation, and key derivation. Peer authentication may be mutual; however, commonly,
 only the server is authenticated. X.509 certificates are commonly used in this authentication step, though
-other mechanisms, such as raw public keys {{RFC7250}}, exist. The client is not authenticated unless explicitly
+other mechanisms, such as raw public keys {{?RFC7250}}, exist. The client is not authenticated unless explicitly
 requested by the server.
 
 The handshake protocol is also extensible. It allows for a variety of extensions to be included by either the client
 or server. These extensions are used to specify client preferences, e.g., the application-layer protocol to be driven
-with the TLS connection {{RFC7301}}, or signals to the server to aid operation, e.g., Server Name Indication
-(SNI) {{RFC6066}}. Various extensions also exist to tune the parameters of the record protocol, e.g., the
-maximum fragment length {{RFC6066}} and record size limit {{!I-D.ietf-tls-record-limit}}.
+with the TLS connection {{?RFC7301}}, or signals to the server to aid operation, e.g., Server Name Indication
+(SNI) {{?RFC6066}}. Various extensions also exist to tune the parameters of the record protocol, e.g., the
+maximum fragment length {{?RFC6066}} and record size limit {{?I-D.ietf-tls-record-limit}}.
 
 Alerts are used to convey errors and other atypical events to the endpoints. There are two classes of alerts: closure
 and error alerts. A closure alert is used to signal to the other peer that the sender wishes to terminate the connection.
@@ -390,7 +355,7 @@ by the server. It is assumed that the client must always store some state inform
 
 ## DTLS
 
-DTLS (Datagram Transport Layer Security) {{RFC6347}} is based on TLS, but differs in that
+DTLS (Datagram Transport Layer Security) {{?RFC6347}} is based on TLS, but differs in that
 it is designed to run over unrelaible datagram protocols like UDP instead of TCP. 
 DTLS modifies the protocol to make sure it can still provide the same security guarantees as TLS
 even without reliability from the transport. DTLS was designed to be as similar to TLS as possible,
@@ -411,12 +376,12 @@ handshake messages across records. The receiver must reassemble records before p
 
 DTLS relies on unique UDP 4-tuples to identify connections, or a similar mechanism in other datagram transports.
 Since all application-layer data is encrypted, demultiplexing over the same 4-tuple requires the use of a connection
-identifier extension {{I-D.ietf-tls-dtls-connection-id}} to permit identification of the correct connection-specific
+identifier extension {{?I-D.ietf-tls-dtls-connection-id}} to permit identification of the correct connection-specific
 cryptographic context without the use of trial decryption. (Note that this extension is only supported in DTLS 1.2
-and 1.3 {{I-D.ietf-tls-dtls13}.)
+and 1.3 {{?I-D.ietf-tls-dtls13}.)
 
 Since datagrams can be replayed, DTLS provides optional anti-replay detection based on a window
-of acceptable sequence numbers {{RFC6347}}.
+of acceptable sequence numbers {{?RFC6347}}.
 
 ### Security Features
 
@@ -439,9 +404,9 @@ See also the features from TLS.
 ## QUIC with TLS
 
 QUIC is a new standards-track transport protocol that runs over UDP, loosely based on Google's
-original proprietary gQUIC protocol {{I-D.ietf-quic-transport}} (See {{section-gquic}} for more details).
+original proprietary gQUIC protocol {{?I-D.ietf-quic-transport}} (See {{section-gquic}} for more details).
 The QUIC transport layer itself provides support for data confidentiality and integrity. This requires
-keys to be derived with a separate handshake protocol. A mapping for QUIC of TLS 1.3 {{I-D.ietf-quic-tls}}
+keys to be derived with a separate handshake protocol. A mapping for QUIC of TLS 1.3 {{?I-D.ietf-quic-tls}}
 has been specified to provide this handshake.
 
 ### Protocol Description
@@ -456,7 +421,7 @@ between its security and transport functions:
 
 The QUIC transport layer support multiple streams over a single connection. QUIC implements
 a record protocol for TLS handshake messages to establish a connection. These messages are
-sent in CRYPTO frames {{I-D.ietf-quic-transport}} in Initial and Handshake packets.
+sent in CRYPTO frames {{?I-D.ietf-quic-transport}} in Initial and Handshake packets.
 Initial packets are encrypted using fixed keys derived from the QUIC version and public packet
 information (Connection ID). Handshake packets are encrypted using TLS handshake secrets.
 Once TLS completes, QUIC uses the resulting traffic secrets to for the QUIC connection to protect
@@ -486,7 +451,7 @@ was originally designed with tightly-integrated security and application data tr
 
 ## IKEv2 with ESP
 
-IKEv2 {{RFC7296}} and ESP {{RFC4303}} together form the modern IPsec protocol suite that encrypts
+IKEv2 {{?RFC7296}} and ESP {{?RFC4303}} together form the modern IPsec protocol suite that encrypts
 and authenticates IP packets, either for creating tunnels (tunnel-mode) or for direct transport
 connections (transport-mode). This suite of protocols separates out the key generation protocol
 (IKEv2) from the transport encryption protocol (ESP). Each protocol can be used independently,
@@ -517,12 +482,12 @@ up both an IKE SA and a Child SA. If EAP is used, this exchange may be expanded.
 Any SA used by IKEv2 can be rekeyed before expiration, which is usually based either on time or
 number of bytes encrypted.
 
-There is an extension to IKEv2 that allows session resumption {{RFC5723}}.
+There is an extension to IKEv2 that allows session resumption {{?RFC5723}}.
 
 MOBIKE is a Mobility and Multihoming extension to IKEv2 that allows a set of Security Associations
-to migrate over different outer IP addresses and interfaces {{RFC4555}}.
+to migrate over different outer IP addresses and interfaces {{?RFC4555}}.
 
-When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP {{RFC8229}}.
+When UDP is not available or well-supported on a network, IKEv2 may be encapsulated in TCP {{?RFC8229}}.
 
 ### ESP Protocol Description {#ESP}
 
@@ -534,7 +499,7 @@ Index (SPI), which is marked on each encrypted ESP packet.
 ESP packets include the SPI, a sequence number, an optional Initialization Vector (IV), payload
 data, padding, a length and next header field, and an Integrity Check Value.
 
-From {{RFC4303}}, "ESP is used to provide confidentiality, data origin authentication, connectionless
+From {{?RFC4303}}, "ESP is used to provide confidentiality, data origin authentication, connectionless
 integrity, an anti-replay service (a form of partial sequence integrity), and limited traffic
 flow confidentiality."
 
@@ -542,7 +507,7 @@ Since ESP operates on IP packets, it is not directly tied to the transport proto
 This means it requires little or no change from transports in order to provide security.
 
 ESP packets may be sent directly over IP, but where network conditions warrant (e.g., when a NAT
-is present or when a firewall blocks such packets) they may be encapsulated in UDP {{RFC3948}} or TCP {{RFC8229}}.
+is present or when a firewall blocks such packets) they may be encapsulated in UDP {{?RFC3948}} or TCP {{?RFC8229}}.
 
 ### IKEv2 Security Features
 
@@ -576,7 +541,7 @@ transports themselves, other than on UDP or TCP where encapsulation is employed.
 
 Secure RTP (SRTP) is a profile for RTP that provides confidentiality, message
 authentication, and replay protection for RTP data packets and RTP control
-protocol (RTCP) packets {{RFC3711}}.
+protocol (RTCP) packets {{?RFC3711}}.
 
 ### Protocol description
 
@@ -585,7 +550,7 @@ and adds confidentially and mandatory integrity protection to RTCP packets.
 For RTP data packets, this is done by encrypting the payload section of the packet
 and optionally appending an authentication tag (MAC) as a packet trailer, with the RTP
 header authenticated but not encrypted (the RTP header was left unencrypted
-to enable RTP header compression {{RFC2508}} {{RFC3545}}). For RTCP packets, the first packet
+to enable RTP header compression {{?RFC2508}} {{?RFC3545}}). For RTCP packets, the first packet
 in the compound RTCP packet is partially encrypted, leaving the first eight octets of
 the header as clear-text to allow identification of the packet as RTCP, while the remainder
 of the compound packet is fully encrypted. The entire RTCP packet is then authenticated
@@ -606,8 +571,8 @@ the RTP SSRC (synchronization source), packet index, and session "salting key".
 SRTP offers replay detection by keeping a replay list of already seen and processed packet indices.
 If a packet arrives with an index that matches one in the replay list, it is silently discarded.
 
-DTLS {{RFC5764}} is commonly used to perform mutual authentication and key
-agreement for SRTP {{RFC5763}}.
+DTLS {{?RFC5764}} is commonly used to perform mutual authentication and key
+agreement for SRTP {{?RFC5763}}.
 Peers use DTLS to perform mutual certificate-based authentication on the
 media path, and to generate the SRTP master key.
 Peer certificates can be issued and signed by a certificate authority.
@@ -619,8 +584,8 @@ The combination of a mutually authenticated DTLS key exchange on the media
 path and a fingerprint sent in the signalling channel protects against
 active attacks on the media, provided the signalling can be trusted.
 Signalling needs to be protected as described in, for example, SIP
-{{RFC3261}} Authenticated Identity Management {{RFC4474}} or the WebRTC
-security architecture {{I-D.ietf-rtcweb-security-arch}}, to provide
+{{?RFC3261}} Authenticated Identity Management {{?RFC4474}} or the WebRTC
+security architecture {{?I-D.ietf-rtcweb-security-arch}}, to provide
 complete system security.
 
 ### Security Features
@@ -636,13 +601,13 @@ complete system security.
 ### Protocol Dependencies
 
 - Secure RTP can run over UDP or TCP.
-- External key derivation and management protocol, e.g., DTLS {{RFC5763}}.
+- External key derivation and management protocol, e.g., DTLS {{?RFC5763}}.
 - External identity management protocol, e.g., SIP Authenticated Identity Management
-  {{RFC4474}}, WebRTC Security Architecture {{I-D.ietf-rtcweb-security-arch}}.
+  {{?RFC4474}}, WebRTC Security Architecture {{?I-D.ietf-rtcweb-security-arch}}.
 
 ### Variant: ZRTP for Media Path Key Agreement
 
-ZRTP {{RFC6189}} is an alternative key agreement protocol for SRTP.
+ZRTP {{?RFC6189}} is an alternative key agreement protocol for SRTP.
 It uses standard SRTP to protect RTP data packets and RTCP packets, but
 provides alternative key agreement and identity management protocols.
 
@@ -659,7 +624,7 @@ Endpoints cache some key material after the first call to use in subsequent
 calls; this is mixed in with the Diffie-Hellman shared secret, so the short
 authentication string need only be checked once for a given user.  This
 gives key continuity properties analogous to the secure shell (ssh)
-{{RFC4253}}.
+{{?RFC4253}}.
 
 ## tcpcrypt
 
@@ -669,10 +634,10 @@ tcpcrypt is vulnerable to active attacks.
 
 ### Protocol Description
 
-Tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection {{I-D.ietf-tcpinc-tcpcrypt}}.
+Tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection {{?I-D.ietf-tcpinc-tcpcrypt}}.
 It is a family of TCP encryption protocols (TEP), distinguished by key exchange algorithm.
 The use of a TEP is negotiated with a TCP option during the initial TCP handshake via the mechanism
-described by TCP Encryption Negotiation Option (ENO) {{I-D.ietf-tcpinc-tcpeno}}.
+described by TCP Encryption Negotiation Option (ENO) {{?I-D.ietf-tcpinc-tcpeno}}.
 In the case of initial session establishment, once a tcpcrypt TEP has been negotiated the key exchange
 occurs within the data segments of the first few packets exchanged after the handshake completes. The
 initiator of a connection sends a list of supported AEAD algorithms, a random nonce, and an ephemeral public key share.
@@ -730,8 +695,8 @@ WireGuard builds on Noise {{Noise}} for 1-RTT key exchange with identity hiding.
 hides peer identities as per the SIGMA construction {{SIGMA}}. As a consequence of using Noise,
 WireGuard comes with a fixed set of cryptographic algorithms:
 
-- x25519 {{Curve25519}} and HKDF {{RFC5869}} for ECDH and key derivation.
-- ChaCha20+Poly1305 {{RFC7539}} for packet authenticated encryption.
+- x25519 {{Curve25519}} and HKDF {{?RFC5869}} for ECDH and key derivation.
+- ChaCha20+Poly1305 {{?RFC7539}} for packet authenticated encryption.
 - BLAKE2s {{BLAKE2}} for hashing.
 
 There is no cryptographic agility. If weaknesses are found in any of
@@ -1044,7 +1009,7 @@ U=Unsupported
 This section describes the interface surface exposed by the security protocols described above.
 Note that not all protocols support each interface. We partition these interfaces into
 pre-connection (configuration), connection, and post-connection interfaces, following
-conventions in {{!I-D.ietf-taps-interface}} and {{!I-D.ietf-taps-arch}}.
+conventions in {{?I-D.ietf-taps-interface}} and {{?I-D.ietf-taps-arch}}.
 
 ## Pre-Connection Interfaces
 
@@ -1063,7 +1028,7 @@ Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2, SRTP
 
 - Extensions (Application-Layer Protocol Negotiation):
 The application enables or configures extensions that are to be negotiated by
-the security protocol, such as ALPN {{RFC7301}}.
+the security protocol, such as ALPN {{?RFC7301}}.
 Protocols: TLS, DTLS, QUIC + TLS
 
 - Session Cache Management
@@ -1151,13 +1116,13 @@ Analysis of how features improve or degrade privacy is intentionally omitted fro
 All security protocols surveyed generally improve privacy by reducing information leakage via
 encryption. However, varying amounts of metadata remain in the clear across each
 protocol. For example, client and server certificates are sent in cleartext in TLS
-1.2 {{RFC5246}}, whereas they are encrypted in TLS 1.3 {{RFC8446}}. A survey of privacy
+1.2 {{?RFC5246}}, whereas they are encrypted in TLS 1.3 {{?RFC8446}}. A survey of privacy
 features, or lack thereof, for various security protocols could be addressed in a
 separate document.
 
 # Acknowledgments
 
-The authors would like to thank Bob Bradley, Theresa Enghardt, Frederic Jacobs, Mirja Kühlewind,
+The authors would like to thank Bob Bradley, Frederic Jacobs, Mirja Kühlewind,
 Yannick Sierra, and Brian Trammell for their input and feedback on earlier versions
 of this draft.
 
