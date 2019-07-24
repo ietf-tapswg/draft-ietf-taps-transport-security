@@ -1,7 +1,7 @@
 ---
 title: A Survey of Transport Security Protocols
 abbrev: transport security survey
-docname: draft-ietf-taps-transport-security-latest
+docname: draft-ietf-taps-transport-security-07
 date:
 category: info
 
@@ -318,7 +318,7 @@ The handshake protocol is also extensible. It allows for a variety of extensions
 or server. These extensions are used to specify client preferences, e.g., the application-layer protocol to be driven
 with the TLS connection {{?RFC7301}}, or signals to the server to aid operation, e.g., Server Name Indication
 (SNI) {{?RFC6066}}. Various extensions also exist to tune the parameters of the record protocol, e.g., the
-maximum fragment length {{?RFC6066}} and record size limit {{?I-D.ietf-tls-record-limit}}.
+maximum fragment length {{?RFC6066}} and record size limit {{?RFC8449}}.
 
 Alerts are used to convey errors and other atypical events to the endpoints. There are two classes of alerts: closure
 and error alerts. A closure alert is used to signal to the other peer that the sender wishes to terminate the connection.
@@ -356,7 +356,7 @@ by the server. It is assumed that the client must always store some state inform
 ## DTLS
 
 DTLS (Datagram Transport Layer Security) {{?RFC6347}} is based on TLS, but differs in that
-it is designed to run over unrelaible datagram protocols like UDP instead of TCP. 
+it is designed to run over unrelaible datagram protocols like UDP instead of TCP.
 DTLS modifies the protocol to make sure it can still provide the same security guarantees as TLS
 even without reliability from the transport. DTLS was designed to be as similar to TLS as possible,
 so this document assumes that all properties from TLS are carried over except where specified.
@@ -634,10 +634,10 @@ tcpcrypt is vulnerable to active attacks.
 
 ### Protocol Description
 
-Tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection {{?I-D.ietf-tcpinc-tcpcrypt}}.
+Tcpcrypt extends TCP to enable opportunistic encryption between the two ends of a TCP connection {{?RFC8548}}.
 It is a family of TCP encryption protocols (TEP), distinguished by key exchange algorithm.
 The use of a TEP is negotiated with a TCP option during the initial TCP handshake via the mechanism
-described by TCP Encryption Negotiation Option (ENO) {{?I-D.ietf-tcpinc-tcpeno}}.
+described by TCP Encryption Negotiation Option (ENO) {{?RFC8547}}.
 In the case of initial session establishment, once a tcpcrypt TEP has been negotiated the key exchange
 occurs within the data segments of the first few packets exchanged after the handshake completes. The
 initiator of a connection sends a list of supported AEAD algorithms, a random nonce, and an ephemeral public key share.
