@@ -143,6 +143,7 @@ on how they interact and integrate with applications and transport protocols. It
 efforts to define and catalog transport services by describing the interfaces required to
 add security protocols. This survey is not limited to protocols developed within the scope or context of
 the IETF, and those included represent a superset of features a Transport Services system may need to support.
+Moreover, this document defines a minimal set of security features that a secure transport system should provide.
 
 --- middle
 
@@ -156,7 +157,10 @@ Datagram Transport Layer Security (DTLS), QUIC + TLS, tcpcrypt, Internet Key Exc
 with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP,
 and MinimalT. For each protocol, this document provides a brief description, the security features it
 provides, and the dependencies it has on the underlying transport. This is followed by defining the
-set of transport security features shared by these protocols. Finally, the document distills the application and
+set of transport security features shared by these protocols. The document groups these security features
+into a minimal set of mandatory features, which every secure transport system should provide in addition to
+the transport features described in {{?I-D.ietf-taps-minset}}, and optional features, which may not be
+available in every secure transport system. Finally, the document distills the application and
 transport interfaces provided by the transport security protocols.
 
 Selected protocols represent a superset of functionality and features a Transport Services system may
