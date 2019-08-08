@@ -588,7 +588,7 @@ The combination of a mutually authenticated DTLS key exchange on the media
 path and a fingerprint sent in the signalling channel protects against
 active attacks on the media, provided the signalling can be trusted.
 Signalling needs to be protected as described in, for example, SIP
-{{?RFC3261}} Authenticated Identity Management {{?RFC4474}} or the WebRTC
+{{?RFC3261}} Authenticated Identity Management {{?RFC8224}} or the WebRTC
 security architecture {{?I-D.ietf-rtcweb-security-arch}}, to provide
 complete system security.
 
@@ -607,7 +607,7 @@ complete system security.
 - Secure RTP can run over UDP or TCP.
 - External key derivation and management protocol, e.g., DTLS {{?RFC5763}}.
 - External identity management protocol, e.g., SIP Authenticated Identity Management
-  {{?RFC4474}}, WebRTC Security Architecture {{?I-D.ietf-rtcweb-security-arch}}.
+  {{?RFC8224}}, WebRTC Security Architecture {{?I-D.ietf-rtcweb-security-arch}}.
 
 ### Variant: ZRTP for Media Path Key Agreement
 
@@ -700,7 +700,7 @@ hides peer identities as per the SIGMA construction {{SIGMA}}. As a consequence 
 WireGuard comes with a fixed set of cryptographic algorithms:
 
 - x25519 {{Curve25519}} and HKDF {{?RFC5869}} for ECDH and key derivation.
-- ChaCha20+Poly1305 {{?RFC7539}} for packet authenticated encryption.
+- ChaCha20+Poly1305 {{?RFC8439}} for packet authenticated encryption.
 - BLAKE2s {{BLAKE2}} for hashing.
 
 There is no cryptographic agility. If weaknesses are found in any of
