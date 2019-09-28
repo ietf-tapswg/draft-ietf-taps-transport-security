@@ -57,32 +57,36 @@ author:
 informative:
     BLAKE2:
       title: BLAKE2 -- simpler, smaller, fast as MD5
-      url: https://blake2.net/blake2.pdf
-      authors:
+      target: https://blake2.net/blake2.pdf
+      date: {DATE}
+      author:
         -
-          ins: Jean-Philippe Aumasson
+          ins: J. Aumasson
         -
-          ins: Samuel Neves
+          ins: S. Neves
         -
-          ins: Zooko Wilcox-O’Hearn
+          ins: Z. Wilcox-O’Hearn
         -
-          ins: Christian Winnerlein
+          ins: C. Winnerlein
     Noise:
       title: The Noise Protocol Framework
-      url: http://noiseprotocol.org/noise.pdf
-      authors:
+      target: http://noiseprotocol.org/noise.pdf
+      date: {DATE}
+      author:
         -
-          ins: Trevor Perrin
+          ins: T. Perrin
     WireGuard:
       title: WireGuard -- Next Generation Kernel Network Tunnel
-      url: https://www.wireguard.com/papers/wireguard.pdf
-      authors:
+      target: https://www.wireguard.com/papers/wireguard.pdf
+      date: {DATE}
+      author:
         -
-          ins: Jason A. Donenfeld
+          ins: J. A. Donenfeld
     ALTS:
       title: Application Layer Transport Security
-      url: https://cloud.google.com/security/encryption-in-transit/application-layer-transport-security/
-      authors:
+      target: https://cloud.google.com/security/encryption-in-transit/application-layer-transport-security/
+      date: {DATE}
+      author:
         -
           ins: C. Ghali
         -
@@ -97,44 +101,49 @@ informative:
           ins: J. Boeuf
     SIGMA:
       title: SIGMA -- The ‘SIGn-and-MAc’ Approach to Authenticated Diffie-Hellman and Its Use in the IKE-Protocols
-      url: http://www.iacr.org/cryptodb/archive/2003/CRYPTO/1495/1495.pdf
-      authors:
+      target: http://www.iacr.org/cryptodb/archive/2003/CRYPTO/1495/1495.pdf
+      date: {DATE}
+      author:
         -
           ins: H. Krawczyk
     CurveCP:
       title: CurveCP -- Usable security for the Internet
-      url: http://curvecp.org
-      authors:
+      target: http://curvecp.org
+      date: {DATE}
+      author:
         -
           ins: D. J. Bernstein
     Curve25519:
       title: Curve25519 - new Diffie-Hellman speed records
-      url: https://cr.yp.to/ecdh/curve25519-20060209.pdf
-      authors:
+      target: https://cr.yp.to/ecdh/curve25519-20060209.pdf
+      date: {DATE}
+      author:
         -
           ins: D. J. Bernstein
     MinimalT:
       title: MinimaLT -- Minimal-latency Networking Through Better Security
-      url: http://dl.acm.org/citation.cfm?id=2516737
-      authors:
+      target: http://dl.acm.org/citation.cfm?id=2516737
+      date: {DATE}
+      author:
         -
-          ins: W. Michael Petullo
+          ins: W. M. Petullo
           org: United States Military Academy, West Point, NY, USA
         -
-          ins: Xu Zhang
+          ins: X. Zhang
           org: University of Illinois at Chicago, Chicago, IL, USA
         -
-          ins: Jon A. Solworth
+          ins: J. A. Solworth
           org: University of Illinois at Chicago, Chicago, IL, USA
         -
-          ins: Daniel J. Bernstein
+          ins: D. J. Bernstein
           org: University of Illinois at Chicago, Chicago, IL, USA
         -
-          ins: Tanja Lange
+          ins: T. Lange
           org: TU Eindhoven, Eindhoven, Netherlands
     OpenVPN:
       title: OpenVPN cryptographic layer
-      url: https://openvpn.net/community-resources/openvpn-cryptographic-layer/
+      date: {DATE}
+      target: https://openvpn.net/community-resources/openvpn-cryptographic-layer/
 
 --- abstract
 
@@ -296,7 +305,7 @@ For each protocol, we describe its provided features and dependencies on other p
 
 ## TLS
 
-TLS (Transport Layer Security) {{?RFC5246}} is a common protocol used to establish a secure session between two endpoints. Communication
+TLS (Transport Layer Security) {{?RFC8446}} is a common protocol used to establish a secure session between two endpoints. Communication
 over this session "prevents eavesdropping, tampering, and message forgery." TLS consists
 of a tightly coupled handshake and record protocol. The handshake protocol is used to authenticate peers,
 negotiate protocol options, such as cryptographic algorithms, and derive session-specific
@@ -360,7 +369,7 @@ by the server. It is assumed that the client must always store some state inform
 ## DTLS
 
 DTLS (Datagram Transport Layer Security) {{?RFC6347}} is based on TLS, but differs in that
-it is designed to run over unrelaible datagram protocols like UDP instead of TCP.
+it is designed to run over unreliable datagram protocols like UDP instead of TCP.
 DTLS modifies the protocol to make sure it can still provide the same security guarantees as TLS
 even without reliability from the transport. DTLS was designed to be as similar to TLS as possible,
 so this document assumes that all properties from TLS are carried over except where specified.
@@ -382,7 +391,7 @@ DTLS relies on unique UDP 4-tuples to identify connections, or a similar mechani
 Since all application-layer data is encrypted, demultiplexing over the same 4-tuple requires the use of a connection
 identifier extension {{?I-D.ietf-tls-dtls-connection-id}} to permit identification of the correct connection-specific
 cryptographic context without the use of trial decryption. (Note that this extension is only supported in DTLS 1.2
-and 1.3 {{?I-D.ietf-tls-dtls13}.)
+and 1.3 {{?I-D.ietf-tls-dtls13}}.)
 
 Since datagrams can be replayed, DTLS provides optional anti-replay detection based on a window
 of acceptable sequence numbers {{?RFC6347}}.
@@ -441,7 +450,7 @@ See also the properties of TLS.
 
 ### Protocol Dependencies
 
-- QUIC transport relies on UDP.
+- QUIC transport assumes an unreliable transport, e.g., UDP.
 - QUIC transport relies on TLS 1.3 for key exchange, peer authentication, and shared secret derivation.
 - For the handshake: Reliable, in-order transport. QUIC provides its own reliability.
 
@@ -483,7 +492,7 @@ The authentication phase of IKEv2 may use Shared Secrets, Certificates, Digital 
 EAP (Extensible Authentication Protocol) method. At a minimum, IKEv2 takes two round trips to set
 up both an IKE SA and a Child SA. If EAP is used, this exchange may be expanded.
 
-Any SA used by IKEv2 can be rekeyed before expiration, which is usually based either on time or
+Any SA used by IKEv2 can be re-keyed before expiration, which is usually based either on time or
 number of bytes encrypted.
 
 There is an extension to IKEv2 that allows session resumption {{?RFC5723}}.
@@ -581,13 +590,13 @@ Peers use DTLS to perform mutual certificate-based authentication on the
 media path, and to generate the SRTP master key.
 Peer certificates can be issued and signed by a certificate authority.
 Alternatively, certificates used in the DTLS exchange can be self-signed.
-If they are self-signed, certificate fingerprints are included in the signalling
+If they are self-signed, certificate fingerprints are included in the signaling
 exchange (e.g., in SIP or WebRTC), and used to bind the DTLS key exchange in
 the media plane to the signaling plane.
 The combination of a mutually authenticated DTLS key exchange on the media
-path and a fingerprint sent in the signalling channel protects against
-active attacks on the media, provided the signalling can be trusted.
-Signalling needs to be protected as described in, for example, SIP
+path and a fingerprint sent in the signaling channel protects against
+active attacks on the media, provided the signaling can be trusted.
+Signaling needs to be protected as described in, for example, SIP
 {{?RFC3261}} Authenticated Identity Management {{?RFC8224}} or the WebRTC
 security architecture {{?I-D.ietf-rtcweb-security-arch}}, to provide
 complete system security.
@@ -632,7 +641,7 @@ gives key continuity properties analogous to the secure shell (ssh)
 
 ## tcpcrypt
 
-Tcpcrypt is a lightweight extension to the TCP protocol for opportunistic encryption. Applications may
+Tcpcrypt {{?RFC8548}} is a lightweight extension to the TCP protocol for opportunistic encryption. Applications may
 use tcpcrypt's unique session ID for further application-level authentication. Absent this authentication,
 tcpcrypt is vulnerable to active attacks.
 
@@ -855,7 +864,7 @@ must present a certificate for authentication. After the handshake, both sides
 contribute random source material to derive keys for encryption and
 authentication using the TLS pseudo random function (PRF). OpenVPN provides the
 possibility to authenticate and encrypt the TLS handshake itself using a
-pre-shared key or passphrase. Furthermore, it supports rekeying using TLS.
+pre-shared key or passphrase. Furthermore, it supports re-keying using TLS.
 
 After authentication and key exchange, OpenVPN encrypts payload data, i.e., IP
 packets or Ethernet frames, and authenticates the payload using HMAC.
@@ -879,7 +888,7 @@ mode or with a CFB or OFB mode cipher, OpenVPN combines a timestamp with an
 incrementing sequence number into a 64-bit identifier. In TLS mode with CBC
 cipher mode, OpenVPN omits the timestamp, so identifiers are only 32-bit. This
 is sufficient since OpenVPN can guarantee the uniqueness of this identifier for
-each key, as it can trigger rekeying if needed.
+each key, as it can trigger re-keying if needed.
 
 OpenVPN supports connection mobility by allowing a peer to change its IP
 address during an ongoing session. When configured accordingly, a host will
@@ -1051,7 +1060,7 @@ record protocol use for encryption/decryption and authentication. If the applica
 keys directly, this is considered explicit import; if the handshake protocol traditionally
 provides the keys directly, it is considered direct import; if the keys can only be shared by
 the handshake, they are considered non-importable.
-  - Explict import: QUIC, ESP
+  - Explicit import: QUIC, ESP
   - Direct import: TLS, DTLS, MinimalT, tcpcrypt, WireGuard
   - Non-importable: CurveCP
 
@@ -1127,8 +1136,8 @@ separate document.
 # Acknowledgments
 
 The authors would like to thank Bob Bradley, Frederic Jacobs, Mirja Kühlewind,
-Yannick Sierra, and Brian Trammell for their input and feedback on earlier versions
-of this draft.
+Yannick Sierra, Brian Trammell, and Magnus Westerlund for their input and feedback 
+on this draft.
 
 --- back
 
