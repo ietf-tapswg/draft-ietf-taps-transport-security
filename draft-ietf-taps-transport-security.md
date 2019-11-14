@@ -267,7 +267,7 @@ transport. They do not specifically protect any headers used for transport-layer
 
 ### TLS
 
-TLS (Transport Layer Security) {{?RFC8446}} is a common protocol used to establish a securesession between two endpoints. Communication
+TLS (Transport Layer Security) {{?RFC8446}} is a common protocol used to establish a secure session between two endpoints. Communication
 over this session "prevents eavesdropping, tampering, and message forgery." TLS consists
 of a tightly coupled handshake and record protocol. The handshake protocol is used to authenticate peers,
 negotiate protocol options, such as cryptographic algorithms, and derive session-specific
