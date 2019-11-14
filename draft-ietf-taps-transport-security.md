@@ -1,6 +1,6 @@
 ---
-title: A Survey of Transport Security Protocols
-abbrev: transport security survey
+title: A Survey of the Interaction Between Security Protocols and Transport Services
+abbrev: Transport Security Survey
 docname: draft-ietf-taps-transport-security-latest
 date:
 category: info
@@ -152,7 +152,6 @@ on how they interact and integrate with applications and transport protocols. It
 efforts to define and catalog transport services by describing the interfaces required to
 add security protocols. This survey is not limited to protocols developed within the scope or context of
 the IETF, and those included represent a superset of features a Transport Services system may need to support.
-Moreover, this document defines a minimal set of security features that a secure transport system should provide.
 
 --- middle
 
@@ -164,13 +163,8 @@ identifying the services and features a Transport Services system (a system that
 needs to provide in order to add transport security. It examines Transport Layer Security (TLS),
 Datagram Transport Layer Security (DTLS), QUIC + TLS, tcpcrypt, Internet Key Exchange
 with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP,
-and MinimalT. For each protocol, this document provides a brief description, the security features it
-provides, and the dependencies it has on the underlying transport. This is followed by defining the
-set of transport security features shared by these protocols. The document groups these security features
-into a minimal set of features, which every secure transport system should provide in addition to
-the transport features described in {{?I-D.ietf-taps-minset}}, and additional optional features, which may not be
-available in every secure transport system. Finally, the document distills the application and
-transport interfaces provided by the transport security protocols.
+and MinimalT. For each protocol, this document provides a brief description, the dependencies it
+has on the underlying transports, and the interfaces provided to applications.
 
 Selected protocols represent a superset of functionality and features a Transport Services system may
 need to support, both internally and externally (via an API) for applications {{?I-D.ietf-taps-arch}}. Ubiquitous
@@ -178,9 +172,8 @@ IETF protocols such as (D)TLS, as well as non-standard protocols such as Google 
 are both included despite overlapping features. As such, this survey is not limited to protocols
 developed within the scope or context of the IETF. Outside of this candidate set, protocols
 that do not offer new features are omitted. For example, newer protocols such as WireGuard make
-unique design choices that have important implications on applications, such as how to
-best configure peer public keys and to delegate algorithm selection to the system. In contrast,
-protocols such as ALTS {{ALTS}} are omitted since they do not represent features deemed unique.
+unique design choices that have implications and limitations on application usage. In contrast,
+protocols such as ALTS {{ALTS}} are omitted since they do not provide interfaces deemed unique.
 
 Authentication-only protocols such as TCP-AO {{?RFC5925}} and IPsec AH {{?RFC4302}} are excluded
 from this survey. TCP-AO adds authenticity protections to long-lived TCP connections, e.g., replay
@@ -193,11 +186,31 @@ omitted from this survey.
 
 ## Goals
 
-[[TODO: writeme]]
+This survey is intended to help identify the most common interface surfaces between security protocols and
+transport protocols, and between security protocols and applications.
+
+One of the goals of Transport Services is to define a common interface for using transport protocols that allows
+software using transport protocols to easily adopt new protocols that provide similar feature-sets. The survey of
+the dependencies security protocols have upon transport protocols can guide implementations in determining
+which transport protocols are appropriate to be able to use beneath a given security protocol. For example,
+a security protocol that expects to run over a reliable stream of bytes, like TLS, restrict the set of transport
+protocols that can be used to those that offer a reliable stream of bytes.
+
+Defining the common interfaces that security protocols provide to applications also allows interfaces to be
+designed in a way that common functionality can use the same APIs. For example, many security protocols
+that provide authentication let the application be involved in peer identity validation. Any interface to use
+a secure transport protocol stack thus needs to allow applications to perform this action during connection
+establishment.
 
 ## Non-Goals
 
-[[TODO: writeme]]
+While this survey provides similar analysis to that which was performed for transport protocols in {{?RFC8095}},
+it is important to distinguish that the use of security protocols requires more consideration.
+
+It is not a goal to allow software implementations to automatically switch between different security protocols,
+even where their interfaces to transport and applications is equivalent. Even between versions, security
+protocols have subtly different guarantees and vulnerabilities. Thus, any implementation needs to only
+use the set of protocols and algorithms that are requested by applications or by a system policy.
 
 # Terminology
 
@@ -215,12 +228,8 @@ specific framing and header format on the wire. A Transport Protocol services an
 - Application: an entity that uses a transport protocol for end-to-end delivery of data across the network.
 This may also be an upper layer protocol or tunnel encapsulation.
 
-- Security Feature: a feature that a network security layer provides to applications. Examples
-include authentication, encryption, key generation, session resumption, and privacy. Features may be
-Mandatory or Optional for an application's implementation. Security Features extend the set of
-Transport Features described in {{?RFC8095}} and provided by Transport Services implementations.
-
-- Security Protocol: a defined network protocol that implements one or more security features. Security
+- Security Protocol: a defined network protocol that implements one or more security features, such as
+authentication, encryption, key generation, session resumption, and privacy. Security
 protocols may be used alongside transport protocols, and in combination with other security protocols when
 appropriate.
 
@@ -234,9 +243,6 @@ using shared cryptographic context.
 
 - Session: an ephemeral security association between applications.
 
-- Cryptographic context: a set of cryptographic parameters, including but not necessarily limited to keys
-for encryption, authentication, and session resumption, enabling authorized parties to a session to communicate securely.
-
 - Connection: the shared state of two or more endpoints that persists across messages that are transmitted
 between these endpoints. A connection is a transient participant of a session, and a session generally lasts
 between connection instances.
@@ -249,21 +255,26 @@ between connection instances.
 
 # Transport Security Protocol Descriptions
 
-This section contains descriptions of security protocols currently used to protect data
-being sent over a network.
+This section contains brief descriptions of the various security protocols currently used to protect data
+being sent over a network. The interfaces between these protocols and transports is described
+in {{transport-interface}}; the interfaces between these protocols and applications is described in
+{{application-interface}}.
 
-For each protocol, we describe its provided features and dependencies on other protocols.
+## Application Payload Security Protocols
 
-## TLS
+The following protocols provide security that protects application payloads sent over a
+transport. They do not specifically protect any headers used for transport-layer functionality.
 
-TLS (Transport Layer Security) {{?RFC8446}} is a common protocol used to establish a secure session between two endpoints. Communication
+### TLS
+
+TLS (Transport Layer Security) {{?RFC8446}} is a common protocol used to establish a securesession between two endpoints. Communication
 over this session "prevents eavesdropping, tampering, and message forgery." TLS consists
 of a tightly coupled handshake and record protocol. The handshake protocol is used to authenticate peers,
 negotiate protocol options, such as cryptographic algorithms, and derive session-specific
 keying material. The record protocol is used to marshal (possibly encrypted) data from one
 peer to the other. This data may contain handshake messages or raw application data.
 
-## DTLS
+### DTLS
 
 DTLS (Datagram Transport Layer Security) {{?RFC6347}} is based on TLS, but differs in that
 it is designed to run over unreliable datagram protocols like UDP instead of TCP.
@@ -271,7 +282,33 @@ DTLS modifies the protocol to make sure it can still provide the same security g
 even without reliability from the transport. DTLS was designed to be as similar to TLS as possible,
 so this document assumes that all properties from TLS are carried over except where specified.
 
-## QUIC with TLS
+## Application-Specific Security Protocols
+
+The following protocols provide application-specific security by protecting
+application payloads used for specific use-cases. Unlike the protocols above,
+these are not intended for generic application use.
+
+### Secure RTP
+
+Secure RTP (SRTP) is a profile for RTP that provides confidentiality,
+message authentication, and replay protection for RTP data packets
+and RTP control protocol (RTCP) packets [RFC3711].
+
+### ZRTP for Media Path Key Agreement
+
+ZRTP {{?RFC6189}} is an alternative key agreement protocol for SRTP.
+It uses standard SRTP to protect RTP data packets and RTCP packets, but
+provides alternative key agreement and identity management protocols.
+Key agreement is performed using a Diffie-Hellman key exchange that runs
+on the media path. This generates a shared secret that is then used to
+generate the master key and salt for SRTP.
+
+## Transport-Layer Security Protocols
+
+The following security protocols provide protection for both application payloads and
+headers that are used for transport services.
+
+### QUIC with TLS {#section-quic}
 
 QUIC is a new standards-track transport protocol that runs over UDP, loosely based on Google's
 original proprietary gQUIC protocol {{?I-D.ietf-quic-transport}} (See {{section-gquic}} for more details).
@@ -279,7 +316,7 @@ The QUIC transport layer itself provides support for data confidentiality and in
 keys to be derived with a separate handshake protocol. A mapping for QUIC of TLS 1.3 {{?I-D.ietf-quic-tls}}
 has been specified to provide this handshake.
 
-### Variant: Google QUIC {#section-gquic}
+### Google QUIC {#section-gquic}
 
 Google QUIC (gQUIC) is a UDP-based multiplexed streaming protocol designed and deployed by Google
 following experience from deploying SPDY, the proprietary predecessor to HTTP/2.
@@ -287,58 +324,13 @@ gQUIC was originally known as "QUIC": this document uses gQUIC to unambiguously 
 it from the standards-track IETF QUIC. The proprietary technical forebear of IETF QUIC, gQUIC
 was originally designed with tightly-integrated security and application data transport protocols.
 
-## IKEv2 with ESP
-
-IKEv2 {{?RFC7296}} and ESP {{?RFC4303}} together form the modern IPsec protocol suite that encrypts
-and authenticates IP packets, either for creating tunnels (tunnel-mode) or for direct transport
-connections (transport-mode). This suite of protocols separates out the key generation protocol
-(IKEv2) from the transport encryption protocol (ESP). Each protocol can be used independently,
-but this document considers them together, since that is the most common pattern.
-
-### Variant: ZRTP for Media Path Key Agreement
-
-ZRTP {{?RFC6189}} is an alternative key agreement protocol for SRTP.
-It uses standard SRTP to protect RTP data packets and RTCP packets, but
-provides alternative key agreement and identity management protocols.
-
-Key agreement is performed using a Diffie-Hellman key exchange that runs
-on the media path. This generates a shared secret that is then used to
-generate the master key and salt for SRTP.
-
-ZRTP does not rely on a PKI or external identity management system.
-Rather, it uses an ephemeral Diffie-Hellman key exchange with hash
-commitment to allow detection of man-in-the-middle attacks.
-This requires endpoints to display a short authentication string that the
-users must read and verbally compare to validate the hashes and ensure security.
-Endpoints cache some key material after the first call to use in subsequent
-calls; this is mixed in with the Diffie-Hellman shared secret, so the short
-authentication string need only be checked once for a given user.  This
-gives key continuity properties analogous to the secure shell (ssh)
-{{?RFC4253}}.
-
-## tcpcrypt
+### tcpcrypt
 
 Tcpcrypt {{?RFC8548}} is a lightweight extension to the TCP protocol for opportunistic encryption. Applications may
 use tcpcrypt's unique session ID for further application-level authentication. Absent this authentication,
 tcpcrypt is vulnerable to active attacks.
 
-## WireGuard
-
-WireGuard is a layer 3 protocol designed as an alternative to IPsec {{WireGuard}}
-for certain use cases. It uses UDP to encapsulate IP datagrams between peers.
-Unlike most transport security protocols, which rely on PKI for peer authentication,
-WireGuard authenticates peers using pre-shared public keys delivered out-of-band, each
-of which is bound to one or more IP addresses.
-Moreover, as a protocol suited for VPNs, WireGuard offers no extensibility, negotiation,
-or cryptographic agility.
-
-## CurveCP
-
-CurveCP {{CurveCP}} is a UDP-based transport security protocol from Daniel J. Bernstein.
-Unlike other transport security protocols, it is based entirely upon highly efficient public
-key algorithms. This removes many pitfalls associated with nonce reuse and key synchronization.
-
-## MinimalT
+### MinimalT
 
 MinimalT is a UDP-based transport security protocol designed to offer confidentiality,
 mutual authentication, DoS prevention, and connection mobility {{MinimalT}}. One major
@@ -346,26 +338,121 @@ goal of the protocol is to leverage existing protocols to obtain server-side con
 information used to more quickly bootstrap a connection. MinimalT uses a variant of TCP's
 congestion control algorithm.
 
-## OpenVPN
+### CurveCP
+
+CurveCP {{CurveCP}} is a UDP-based transport security protocol from Daniel J. Bernstein.
+Unlike other security protocols, it is based entirely upon highly efficient public
+key algorithms. This removes many pitfalls associated with nonce reuse and key synchronization.
+CurveCP provides its own reliability for application data as part of its protocol.
+
+## Packet Security Protocols
+
+The following protocols provide protection for IP packets. These are generally used as tunnels,
+such as for Virtual Private Networks (VPNs). Often, applications will not interact directly with these
+protocols. However, applications that implement tunnels will interact directly with these protocols.
+
+### IKEv2 with ESP
+
+IKEv2 {{?RFC7296}} and ESP {{?RFC4303}} together form the modern IPsec protocol suite that encrypts
+and authenticates IP packets, either for creating tunnels (tunnel-mode) or for direct transport
+connections (transport-mode). This suite of protocols separates out the key generation protocol
+(IKEv2) from the transport encryption protocol (ESP). Each protocol can be used independently,
+but this document considers them together, since that is the most common pattern.
+
+### WireGuard
+
+WireGuard is an IP-layer protocol designed as an alternative to IPsec {{WireGuard}}
+for certain use cases. It uses UDP to encapsulate IP datagrams between peers.
+Unlike most transport security protocols, which rely on PKI for peer authentication,
+WireGuard authenticates peers using pre-shared public keys delivered out-of-band, each
+of which is bound to one or more IP addresses.
+Moreover, as a protocol suited for VPNs, WireGuard offers no extensibility, negotiation,
+or cryptographic agility.
+
+### OpenVPN
 
 OpenVPN {{OpenVPN}} is a commonly used protocol designed as an alternative to
 IPsec. A major goal of this protocol is to provide a VPN that is simple to
 configure and works over a variety of transports. OpenVPN encapsulates either
-IP packets or Ethernet frames within a secure tunnel and can run over UDP or
-TCP.
+IP packets or Ethernet frames within a secure tunnel and can run over UDP or TCP.
 
-# Transport Dependencies
+# Transport Dependencies {#transport-interface}
 
-- Stream
-Protocols: TLS, OpenVPN, tcpcrypt
+Across the different security protocols listed above, the primary dependency on transport
+protocols is the presentation of data: either an unbounded stream of bytes, or framed
+messages. Within protocols that rely on the transport for message framing, most are
+built to run over transports that inherently provide framing, like UDP, but some also define
+how their messages can be framed over byte-stream transports.
 
-- Datagram message framing
-Protocols: QUIC, DTLS, SRTP, IKEv2 and ESP, WireGuard, MinimalT, CurveCP
+## Reliable Byte-Stream Transports
 
-- Protocol-specific needs
-Protocols: tcpcrypt (TCP-ENO)
+The following protocols all depend upon running on a transport protocol that provides
+a reliable, in-order stream of bytes. This is typically TCP.
 
-# Application Interface
+Application Payload Security Protocols:
+
+- TLS
+
+Transport-Layer Security Protocols:
+
+- tcpcrypt
+
+Packet Security Protocols:
+
+- OpenVPN
+
+## Unreliable Datagram Transports
+
+The following protocols all depend on the transport protocol to provide message framing
+to encapsulate their data. These protocols are built to run using UDP, and thus do not
+have any requirement for reliability. Running these protocols over a protocol that
+does provide reliability will not break functionality, but may lead to multiple layers
+of reliability if the security protocol is encapsulating other transport protocol traffic.
+
+Application Payload Security Protocols:
+
+- DTLS
+- SRTP
+- ZRTP
+
+Transport-Layer Security Protocols:
+
+- QUIC
+- MinimalT
+- CurveCP
+
+Packet Security Protocols:
+
+- IKEv2 and ESP
+- WireGuard
+
+### Datagram Protocols with Defined Byte-Stream Mappings
+
+Of the protocols listed above that depend on the transport for message framing, some
+do have well-defined mappings for sending their messages over byte-stream transports
+like TCP.
+
+Application Payload Security Protocols:
+
+- SRTP {{?RFC7201}}
+
+Packet Security Protocols:
+
+- IKEv2 and ESP {{?RFC8229}}
+
+## Transport-Specific Dependencies
+
+One protocol surveyed, tcpcrypt, has an direct dependency on a feature in the transport
+that is needed for its functionality. Specific, tcpcrypt is designed to run on top of TCP, and
+uses the TCP Encryption Negotiation Option (ENO) {{?I-D.ietf-tcpinc-tcpeno}} to negotiate its
+protocol support.
+
+QUIC, CurveCP, and MinimalT provide both transport functionality and security functionality. They have
+a dependencies on running over a framed protocol like UDP, but they add their own layers of
+reliability and other transport services. Thus, an application that uses one of these protocols
+cannot decouple the security from transport functionality.
+
+# Application Interface {#application-interface}
 
 This section describes the interface surface exposed by the security protocols described above.
 Note that not all protocols support each interface. We partition these interfaces into
@@ -377,85 +464,128 @@ conventions in {{?I-D.ietf-taps-interface}} and {{?I-D.ietf-taps-arch}}.
 Configuration interfaces are used to configure the security protocols before a
 handshake begins or the keys are negotiated.
 
-- Identities and Private Keys
-The application can provide its identities (certificates) and private keys, or
+- Identities and Private Keys: The application can provide its identities (certificates) and private keys, or
 mechanisms to access these, to the security protocol to use during handshakes.
-Protocols: TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP
+  - TLS
+  - DTLS
+  - SRTP
+  - QUIC
+  - MinimalT
+  - CurveCP
+  - IKEv2
+  - WireGuard
 
-- Supported Algorithms (Key Exchange, Signatures, and Ciphersuites)
+- Supported Algorithms (Key Exchange, Signatures, and Ciphersuites):
 The application can choose the algorithms that are supported for key exchange,
 signatures, and ciphersuites.
-Protocols: TLS, DTLS, QUIC + TLS, MinimalT, tcpcrypt, IKEv2, SRTP
+  - TLS
+  - DTLS
+  - SRTP
+  - QUIC
+  - tcpcrypt
+  - MinimalT
+  - IKEv2
 
 - Extensions (Application-Layer Protocol Negotiation):
 The application enables or configures extensions that are to be negotiated by
 the security protocol, such as ALPN {{?RFC7301}}.
-Protocols: TLS, DTLS, QUIC + TLS
-
-- Session Cache Management
+  - TLS
+  - DTLS
+  - QUIC
+  
+- Session Cache Management:
 The application provides the ability to save and retrieve session state (such as tickets,
 keying material, and server parameters) that may be used to resume the security session.
-Protocols: TLS, DTLS, QUIC + TLS, MinimalT
+  - TLS
+  - DTLS
+  - QUIC
+  - MinimalT
 
-- Authentication Delegation
+- Authentication Delegation:
 The application provides access to a separate module that will provide authentication,
 using EAP for example.
-Protocols: IKEv2, SRTP
+  - SRTP
+  - IKEv2
 
-- Pre-Shared Key Import
+- Pre-Shared Key Import:
 Either the handshake protocol or the application directly can supply pre-shared keys for the
 record protocol use for encryption/decryption and authentication. If the application can supply
 keys directly, this is considered explicit import; if the handshake protocol traditionally
 provides the keys directly, it is considered direct import; if the keys can only be shared by
 the handshake, they are considered non-importable.
   - Explicit import: QUIC, ESP
-  - Direct import: TLS, DTLS, MinimalT, tcpcrypt, WireGuard
+  - Direct import: TLS, DTLS, tcpcrypt, MinimalT, WireGuard
   - Non-importable: CurveCP
 
 ## Connection Interfaces
 
-- Identity Validation
+- Identity Validation:
 During a handshake, the security protocol will conduct identity validation of the peer.
 This can call into the application to offload validation.
-Protocols: All (TLS, DTLS, QUIC + TLS, MinimalT, CurveCP, IKEv2, WireGuard, SRTP (DTLS))
+  - TLS
+  - DTLS
+  - SRTP
+  - QUIC
+  - MinimalT
+  - CurveCP
+  - IKEv2
+  - WireGuard
+  - OpenVPN
 
-- Source Address Validation
+- Source Address Validation:
 The handshake protocol may delegate validation of the remote peer that has sent
 data to the transport protocol or application. This involves sending a cookie
 exchange to avoid DoS attacks.
 Protocols: QUIC + TLS, DTLS, WireGuard
+  - DTLS
+  - QUIC
+  - WireGuard
 
 ## Post-Connection Interfaces
 
-- Connection Termination
+- Connection Termination:
 The security protocol may be instructed to tear down its connection and session information.
 This is needed by some protocols to prevent application data truncation attacks.
-Protocols: TLS, DTLS, QUIC, tcpcrypt, IKEv2, MinimalT
+  - TLS
+  - DTLS
+  - QUIC
+  - tcpcrypt
+  - MinimalT
+  - IKEv2
 
-- Key Update
+- Key Update:
 The handshake protocol may be instructed to update its keying material, either
 by the application directly or by the record protocol sending a key expiration event.
-Protocols: TLS, DTLS, QUIC, tcpcrypt, IKEv2, MinimalT
+  - TLS
+  - DTLS
+  - QUIC
+  - tcpcrypt
+  - MinimalT
+  - IKEv2
 
-- Pre-Shared Key Export
+- Pre-Shared Key Export:
 The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication.
 These may be explicitly exportable to the application, traditionally limited to direct export to the record protocol,
 or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.
-  - Explicit export: TLS (for QUIC), tcpcrypt, IKEv2, DTLS (for SRTP)
+  - Explicit export: TLS (for QUIC), DTLS (for SRTP), tcpcrypt, IKEv2
   - Direct export: TLS, DTLS, MinimalT
   - Non-exportable: CurveCP
 
-- Key Expiration
+- Key Expiration:
 The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based
 deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling
 between the record layer and the handshake layer.
-Protocols: ESP ((Editor's note: One may consider TLS/DTLS to also have this interface))
+  - ESP
 
-- Mobility Events
+- Mobility Events:
 The record protocol can be signaled that it is being migrated to another transport or interface due to
 connection mobility, which may reset address and state validation and induce state changes such
 as use of a new Connection Identifier (CID).
-Protocols: QUIC, MinimalT, CurveCP, ESP, WireGuard (roaming)
+  - QUIC
+  - MinimalT
+  - CurveCP
+  - ESP
+  - WireGuard
 
 # IANA Considerations
 
