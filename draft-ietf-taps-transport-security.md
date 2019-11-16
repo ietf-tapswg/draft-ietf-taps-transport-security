@@ -208,7 +208,7 @@ While this survey provides similar analysis to that which was performed for tran
 it is important to distinguish that the use of security protocols requires more consideration.
 
 It is not a goal to allow software implementations to automatically switch between different security protocols,
-even where their interfaces to transport and applications is equivalent. Even between versions, security
+even where their interfaces to transport and applications are equivalent. Even between versions, security
 protocols have subtly different guarantees and vulnerabilities. Thus, any implementation needs to only
 use the set of protocols and algorithms that are requested by applications or by a system policy.
 
@@ -256,8 +256,8 @@ between connection instances.
 # Transport Security Protocol Descriptions
 
 This section contains brief descriptions of the various security protocols currently used to protect data
-being sent over a network. The interfaces between these protocols and transports is described
-in {{transport-interface}}; the interfaces between these protocols and applications is described in
+being sent over a network. The interfaces between these protocols and transports are described
+in {{transport-interface}}; the interfaces between these protocols and applications are described in
 {{application-interface}}.
 
 ## Application Payload Security Protocols
