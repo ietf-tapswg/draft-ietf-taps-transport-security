@@ -55,26 +55,6 @@ author:
     email: cawood@apple.com
 
 informative:
-    BLAKE2:
-      title: BLAKE2 -- simpler, smaller, fast as MD5
-      target: https://blake2.net/blake2.pdf
-      date: {DATE}
-      author:
-        -
-          ins: J. Aumasson
-        -
-          ins: S. Neves
-        -
-          ins: Z. Wilcox-O’Hearn
-        -
-          ins: C. Winnerlein
-    Noise:
-      title: The Noise Protocol Framework
-      target: http://noiseprotocol.org/noise.pdf
-      date: {DATE}
-      author:
-        -
-          ins: T. Perrin
     WireGuard:
       title: WireGuard -- Next Generation Kernel Network Tunnel
       target: https://www.wireguard.com/papers/wireguard.pdf
@@ -99,23 +79,9 @@ informative:
           ins: B. Schmidt
         -
           ins: J. Boeuf
-    SIGMA:
-      title: SIGMA -- The ‘SIGn-and-MAc’ Approach to Authenticated Diffie-Hellman and Its Use in the IKE-Protocols
-      target: http://www.iacr.org/cryptodb/archive/2003/CRYPTO/1495/1495.pdf
-      date: {DATE}
-      author:
-        -
-          ins: H. Krawczyk
     CurveCP:
       title: CurveCP -- Usable security for the Internet
       target: http://curvecp.org
-      date: {DATE}
-      author:
-        -
-          ins: D. J. Bernstein
-    Curve25519:
-      title: Curve25519 - new Diffie-Hellman speed records
-      target: https://cr.yp.to/ecdh/curve25519-20060209.pdf
       date: {DATE}
       author:
         -
@@ -444,7 +410,7 @@ Packet Security Protocols:
 
 One protocol surveyed, tcpcrypt, has an direct dependency on a feature in the transport
 that is needed for its functionality. Specific, tcpcrypt is designed to run on top of TCP, and
-uses the TCP Encryption Negotiation Option (ENO) {{?I-D.ietf-tcpinc-tcpeno}} to negotiate its
+uses the TCP Encryption Negotiation Option (ENO) {{?RFC8547}} to negotiate its
 protocol support.
 
 QUIC, CurveCP, and MinimalT provide both transport functionality and security functionality. They have
@@ -492,7 +458,7 @@ the security protocol, such as ALPN {{?RFC7301}}.
   - TLS
   - DTLS
   - QUIC
-  
+
 - Session Cache Management:
 The application provides the ability to save and retrieve session state (such as tickets,
 keying material, and server parameters) that may be used to resume the security session.
@@ -614,7 +580,7 @@ separate document.
 # Acknowledgments
 
 The authors would like to thank Bob Bradley, Frederic Jacobs, Mirja Kühlewind,
-Yannick Sierra, Brian Trammell, and Magnus Westerlund for their input and feedback 
+Yannick Sierra, Brian Trammell, and Magnus Westerlund for their input and feedback
 on this draft.
 
 --- back
