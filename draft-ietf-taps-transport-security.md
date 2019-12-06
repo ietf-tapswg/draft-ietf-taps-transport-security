@@ -123,18 +123,19 @@ the IETF, and those included represent a superset of features a Transport Servic
 
 # Introduction
 
-Services and features provided by transport protocols have been cataloged in {{?RFC8095}}. This document
-supplements that work by surveying commonly used and notable network security protocols, and
-identifying the services and features a Transport Services system (a system that provides a transport API)
-needs to provide in order to add transport security. It examines Transport Layer Security (TLS),
-Datagram Transport Layer Security (DTLS), QUIC + TLS, tcpcrypt, Internet Key Exchange
-with Encapsulating Security Protocol (IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP,
-and MinimalT. For each protocol, this document provides a brief description, the dependencies it
-has on the underlying transports, and the interfaces provided to applications.
+Services and features provided by transport protocols have been cataloged in {{?RFC8095}}. This
+document supplements that work by surveying commonly used and notable network security protocols,
+and identifying the interfaces between these protocols and both transport protocols and
+applications.  It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS),
+IETF QUIC, Google QUIC (gQUIC), tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol
+(IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP, and MinimalT. For each protocol, this document
+provides a brief description.  Then, it describes the interfaces between these protocols and
+transports in {{transport-interface}} and the interfaces between these protocols and applications in
+{{application-interface}}.
 
 Selected protocols represent a superset of functionality and features a Transport Services system may
 need to support, both internally and externally (via an API) for applications {{?I-D.ietf-taps-arch}}. Ubiquitous
-IETF protocols such as (D)TLS, as well as non-standard protocols such as Google QUIC,
+IETF protocols such as (D)TLS, as well as non-standard protocols such as gQUIC,
 are both included despite overlapping features. As such, this survey is not limited to protocols
 developed within the scope or context of the IETF. Outside of this candidate set, protocols
 that do not offer new features are omitted. For example, newer protocols such as WireGuard make
@@ -221,10 +222,28 @@ between connection instances.
 
 # Transport Security Protocol Descriptions
 
-This section contains brief descriptions of the various security protocols currently used to protect data
-being sent over a network. The interfaces between these protocols and transports are described
-in {{transport-interface}}; the interfaces between these protocols and applications are described in
-{{application-interface}}.
+This section contains brief descriptions of the various security protocols currently used to protect
+data being sent over a network.  These protocols are grouped based on where in the protocol stack
+they are implemented, which influences which parts of a packet they protect: Generic application
+payload, application payload for specific application-layer protocols, both application payload and
+transport headers, or entire IP packets.
+
+Note that not all security protocols can be easily categorized, e.g., as some protocols can be used
+in different ways or in combination with other protocols.
+One major reason for this is that channel security protocols often consist of two components:
+
+- A handshake protocol, which is responsible for negotiating parameters, authenticating the
+  endpoints, and establishing shared keys.
+- A record protocol, which is used to encrypt traffic using keys and parameters provided by the
+  handshake protocol.
+
+For some protocols, such as tcpcrypt, these two components are tightly integrated. In contrast, for
+IPsec, these components are implemented in separate protocols: AH and ESP are record protocols,
+which can use keys supplied by the handshake protocol IKEv2, by other handshake protocols, or by
+manual configuration. Moreover, some protocols can be used in different ways: While the base TLS protocol as
+defined in {{RFC8446}} has an integrated handshake and record protocol, TLS or DTLS can also be used
+to negotiate keys for other protocols, as in DTLS-SRTP, or the handshake protocol can be used with
+a separate record layer, as in QUIC.
 
 ## Application Payload Security Protocols
 
@@ -259,6 +278,7 @@ these are not intended for generic application use.
 Secure RTP (SRTP) is a profile for RTP that provides confidentiality,
 message authentication, and replay protection for RTP data packets
 and RTP control protocol (RTCP) packets {{?RFC3711}}.
+SRTP can use different handshake protocols, such as DTLS in DTLS-SRTP {{?RFC5764}}.
 
 ### ZRTP for Media Path Key Agreement
 
@@ -274,7 +294,7 @@ generate the master key and salt for SRTP.
 The following security protocols provide protection for both application payloads and
 headers that are used for transport services.
 
-### QUIC with TLS {#section-quic}
+### IETF QUIC {#section-quic}
 
 QUIC is a new standards-track transport protocol that runs over UDP, loosely based on Google's
 original proprietary gQUIC protocol {{?I-D.ietf-quic-transport}} (See {{section-gquic}} for more details).
@@ -341,6 +361,7 @@ OpenVPN {{OpenVPN}} is a commonly used protocol designed as an alternative to
 IPsec. A major goal of this protocol is to provide a VPN that is simple to
 configure and works over a variety of transports. OpenVPN encapsulates either
 IP packets or Ethernet frames within a secure tunnel and can run over UDP or TCP.
+For key establishment, OpenVPN can use TLS as a handshake protocol or pre-shared keys.
 
 # Transport Dependencies {#transport-interface}
 
