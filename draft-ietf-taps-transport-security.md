@@ -278,7 +278,8 @@ these are not intended for generic application use.
 Secure RTP (SRTP) is a profile for RTP that provides confidentiality,
 message authentication, and replay protection for RTP data packets
 and RTP control protocol (RTCP) packets {{?RFC3711}}.
-SRTP can use different handshake protocols, such as DTLS in DTLS-SRTP {{?RFC5764}}.
+SRTP can use different handshake protocols, such as DTLS in DTLS-SRTP {{?RFC5764}}
+or ZRTP {{?RFC6189}}.
 
 ### ZRTP for Media Path Key Agreement
 
