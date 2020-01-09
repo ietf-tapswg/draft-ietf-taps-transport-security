@@ -529,6 +529,7 @@ data to the transport protocol or application. This involves sending a cookie
 exchange to avoid DoS attacks.
   - DTLS
   - QUIC
+  - IKEv2
   - WireGuard
 
 ## Post-Connection Interfaces
@@ -591,7 +592,7 @@ The following table summarizes which protocol exposes which interface.
 | tcpcrypt  |     | x   |     |    |    | D    |    |     | x  | x  | E    |    |    |
 | MinimalT  | x   | x   |     | x  |    | D    | x  |     | x  | x  | D    |    | x  |
 | CurveCP   | x   |     |     |    |    | N    | x  |     |    |    | N    |    | x  |
-| IKEv2+ESP | x   | x   |     |    | x  | E    | x  |     | x  | x  | E    | x  | x  |
+| IKEv2+ESP | x   | x   |     |    | x  | E    | x  | x   | x  | x  | E    | x  | x  |
 | WireGuard | x   |     |     |    |    | D    | x  | x   |    |    |      |    | x  |
 | OpenVPN   |     |     |     |    |    |      | x  |     |    |    |      |    |    |
 |---
