@@ -571,7 +571,7 @@ as use of a new Connection Identifier (CID).
   - QUIC
   - MinimalT
   - CurveCP
-  - ESP
+  - IKEv2 {{?RFC4555}}
   - WireGuard
 
 # IANA Considerations
