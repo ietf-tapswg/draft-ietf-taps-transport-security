@@ -524,9 +524,9 @@ This can call into the application to offload validation.
 The handshake protocol may delegate validation of the remote peer that has sent
 data to the transport protocol or application. This involves sending a cookie
 exchange to avoid DoS attacks.
-Protocols: QUIC + TLS, DTLS, WireGuard
   - DTLS
   - QUIC
+  - IKEv2
   - WireGuard
 
 ## Post-Connection Interfaces
