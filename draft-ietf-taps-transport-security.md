@@ -328,8 +328,7 @@ congestion control algorithm.
 ### CurveCP
 
 CurveCP {{CurveCP}} is a UDP-based transport security protocol from Daniel J. Bernstein.
-Unlike other security protocols, it is based entirely upon highly efficient public
-key algorithms. This removes many pitfalls associated with nonce reuse and key synchronization.
+Unlike many other security protocols, it is based entirely upon public key algorithms.
 CurveCP provides its own reliability for application data as part of its protocol.
 
 ## Packet Security Protocols
@@ -350,9 +349,9 @@ but this document considers them together, since that is the most common pattern
 
 WireGuard is an IP-layer protocol designed as an alternative to IPsec {{WireGuard}}
 for certain use cases. It uses UDP to encapsulate IP datagrams between peers.
-Unlike most transport security protocols, which rely on PKI for peer authentication,
-WireGuard authenticates peers using pre-shared public keys delivered out-of-band, each
-of which is bound to one or more IP addresses.
+Unlike most transport security protocols, which rely on Public Key Infrastructure (PKI)
+for peer authentication, WireGuard authenticates peers using pre-shared public keys
+delivered out-of-band, each of which is bound to one or more IP addresses.
 Moreover, as a protocol suited for VPNs, WireGuard offers no extensibility, negotiation,
 or cryptographic agility.
 
