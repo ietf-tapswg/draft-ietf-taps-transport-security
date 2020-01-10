@@ -360,7 +360,7 @@ or cryptographic agility.
 OpenVPN {{OpenVPN}} is a commonly used protocol designed as an alternative to
 IPsec. A major goal of this protocol is to provide a VPN that is simple to
 configure and works over a variety of transports. OpenVPN encapsulates either
-IP packets or Ethernet frames within a secure tunnel and can run over UDP or TCP.
+IP packets or Ethernet frames within a secure tunnel and can run over either UDP or TCP.
 For key establishment, OpenVPN can use TLS as a handshake protocol or pre-shared keys.
 
 # Transport Dependencies {#transport-interface}
@@ -383,10 +383,6 @@ Application Payload Security Protocols:
 Transport-Layer Security Protocols:
 
 - tcpcrypt
-
-Packet Security Protocols:
-
-- OpenVPN
 
 ## Unreliable Datagram Transports
 
@@ -412,6 +408,7 @@ Packet Security Protocols:
 
 - IKEv2 and ESP
 - WireGuard
+- OpenVPN
 
 ### Datagram Protocols with Defined Byte-Stream Mappings
 
