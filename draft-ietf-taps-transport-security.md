@@ -449,6 +449,7 @@ conventions in {{?I-D.ietf-taps-interface}} and {{?I-D.ietf-taps-arch}}.
 
 Note that not all protocols support each interface.
 The table in {{interface-protocols-table}} summarizes which protocol exposes which of the interfaces.
+In the following sections, we provide abbreviations of the interface names to use in the summary table.
 
 ## Pre-Connection Interfaces
 
