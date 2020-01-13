@@ -483,6 +483,7 @@ keying material, and server parameters) that may be used to resume the security 
   - TLS
   - DTLS
   - QUIC
+  - tcpcrypt
   - MinimalT
 
 - Authentication Delegation:
@@ -490,6 +491,7 @@ The application provides access to a separate module that will provide authentic
 using EAP for example.
   - SRTP
   - IKEv2
+  - tcpcrypt
 
 - Pre-Shared Key Import:
 Either the handshake protocol or the application directly can supply pre-shared keys for the
