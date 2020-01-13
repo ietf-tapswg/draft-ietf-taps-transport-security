@@ -458,6 +458,7 @@ mechanisms to access these, to the security protocol to use during handshakes.
   - CurveCP
   - IKEv2
   - WireGuard
+  - OpenVPN
 
 - Supported Algorithms (Key Exchange, Signatures, and Ciphersuites):
 The application can choose the algorithms that are supported for key exchange,
@@ -469,6 +470,7 @@ signatures, and ciphersuites.
   - tcpcrypt
   - MinimalT
   - IKEv2
+  - OpenVPN
 
 - Extensions (Application-Layer Protocol Negotiation):
 The application enables or configures extensions that are to be negotiated by
@@ -499,7 +501,7 @@ record protocol use for encryption/decryption and authentication. If the applica
 keys directly, this is considered explicit import; if the handshake protocol traditionally
 provides the keys directly, it is considered direct import; if the keys can only be shared by
 the handshake, they are considered non-importable.
-  - Explicit import: QUIC, ESP
+  - Explicit import: QUIC, ESP, OpenVPN
   - Direct import: TLS, DTLS, tcpcrypt, MinimalT, WireGuard
   - Non-importable: CurveCP
 
@@ -538,6 +540,7 @@ This is needed by some protocols to prevent application data truncation attacks.
   - tcpcrypt
   - MinimalT
   - IKEv2
+  - OpenVPN
 
 - Key Update:
 The handshake protocol may be instructed to update its keying material, either
@@ -553,7 +556,7 @@ by the application directly or by the record protocol sending a key expiration e
 The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication.
 These may be explicitly exportable to the application, traditionally limited to direct export to the record protocol,
 or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.
-  - Explicit export: TLS (for QUIC), DTLS (for SRTP), tcpcrypt, IKEv2
+  - Explicit export: TLS (for QUIC), DTLS (for SRTP), tcpcrypt, IKEv2, OpenVPN
   - Direct export: TLS, DTLS, MinimalT
   - Non-exportable: CurveCP
 
