@@ -591,7 +591,7 @@ The following table summarizes which protocol exposes which interface.
 | DTLS      | x   | x   | x   | x  |    | D    | x  | x   | x  | x  | D    |    |    |
 | SRTP      | x   | x   |     |    | x  |      | x  |     |    |    | E    |    |    |
 | QUIC      | x   | x   | x   | x  |    | E    | x  | x   | x  | x  | E    |    | x  |
-| tcpcrypt  |     | x   |     |    |    | D    |    |     | x  | x  | E    |    |    |
+| tcpcrypt  |     | x   |     | x  | x  | D    |    |     | x  | x  | E    |    |    |
 | MinimalT  | x   | x   |     | x  |    | D    | x  |     | x  | x  | D    |    | x  |
 | CurveCP   | x   |     |     |    |    | N    | x  |     |    |    | N    |    | x  |
 | IKEv2     | x   | x   |     |    | x  |      | x  | x   | x  | x  | E    |    | x  |
