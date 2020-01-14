@@ -597,7 +597,7 @@ The following table summarizes which protocol exposes which interface.
 | IKEv2     | x   | x   |     |    | x  |      | x  | x   | x  | x  | E    |    | x  |
 | ESP       |     |     |     |    |    | E    |    |     |    |    |      | x  |    |
 | WireGuard | x   |     |     |    |    | D    | x  | x   |    |    |      |    | x  |
-| OpenVPN   |     |     |     |    |    |      | x  |     |    |    |      |    |    |
+| OpenVPN   | x   | x   |     |    |    | E    | x  |     | x  |    | E    |    |    |
 |---
 
 x=Interface is exposed  
