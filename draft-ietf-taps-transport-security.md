@@ -328,8 +328,7 @@ congestion control algorithm.
 ### CurveCP
 
 CurveCP {{CurveCP}} is a UDP-based transport security protocol from Daniel J. Bernstein.
-Unlike other security protocols, it is based entirely upon highly efficient public
-key algorithms. This removes many pitfalls associated with nonce reuse and key synchronization.
+Unlike many other security protocols, it is based entirely upon public key algorithms.
 CurveCP provides its own reliability for application data as part of its protocol.
 
 ## Packet Security Protocols
@@ -350,9 +349,9 @@ but this document considers them together, since that is the most common pattern
 
 WireGuard is an IP-layer protocol designed as an alternative to IPsec {{WireGuard}}
 for certain use cases. It uses UDP to encapsulate IP datagrams between peers.
-Unlike most transport security protocols, which rely on PKI for peer authentication,
-WireGuard authenticates peers using pre-shared public keys delivered out-of-band, each
-of which is bound to one or more IP addresses.
+Unlike most transport security protocols, which rely on Public Key Infrastructure (PKI)
+for peer authentication, WireGuard authenticates peers using pre-shared public keys
+delivered out-of-band, each of which is bound to one or more IP addresses.
 Moreover, as a protocol suited for VPNs, WireGuard offers no extensibility, negotiation,
 or cryptographic agility.
 
@@ -361,7 +360,7 @@ or cryptographic agility.
 OpenVPN {{OpenVPN}} is a commonly used protocol designed as an alternative to
 IPsec. A major goal of this protocol is to provide a VPN that is simple to
 configure and works over a variety of transports. OpenVPN encapsulates either
-IP packets or Ethernet frames within a secure tunnel and can run over UDP or TCP.
+IP packets or Ethernet frames within a secure tunnel and can run over either UDP or TCP.
 For key establishment, OpenVPN can use TLS as a handshake protocol or pre-shared keys.
 
 # Transport Dependencies {#transport-interface}
@@ -384,10 +383,6 @@ Application Payload Security Protocols:
 Transport-Layer Security Protocols:
 
 - tcpcrypt
-
-Packet Security Protocols:
-
-- OpenVPN
 
 ## Unreliable Datagram Transports
 
@@ -413,6 +408,7 @@ Packet Security Protocols:
 
 - IKEv2 and ESP
 - WireGuard
+- OpenVPN
 
 ### Datagram Protocols with Defined Byte-Stream Mappings
 
@@ -466,6 +462,7 @@ mechanisms to access these, to the security protocol to use during handshakes.
   - CurveCP
   - IKEv2
   - WireGuard
+  - OpenVPN
 
 - Supported Algorithms (Key Exchange, Signatures, and Ciphersuites) (ALG):
 The application can choose the algorithms that are supported for key exchange,
@@ -477,6 +474,7 @@ signatures, and ciphersuites.
   - tcpcrypt
   - MinimalT
   - IKEv2
+  - OpenVPN
 
 - Extensions (Application-Layer Protocol Negotiation) (EXT):
 The application enables or configures extensions that are to be negotiated by
@@ -491,6 +489,7 @@ keying material, and server parameters) that may be used to resume the security 
   - TLS
   - DTLS
   - QUIC
+  - tcpcrypt
   - MinimalT
 
 - Authentication Delegation (AD):
@@ -498,6 +497,7 @@ The application provides access to a separate module that will provide authentic
 using EAP for example.
   - SRTP
   - IKEv2
+  - tcpcrypt
 
 - Pre-Shared Key Import (PSKI):
 Either the handshake protocol or the application directly can supply pre-shared keys for the
@@ -505,7 +505,7 @@ record protocol use for encryption/decryption and authentication. If the applica
 keys directly, this is considered explicit import; if the handshake protocol traditionally
 provides the keys directly, it is considered direct import; if the keys can only be shared by
 the handshake, they are considered non-importable.
-  - Explicit import: QUIC, ESP
+  - Explicit import: QUIC, ESP, OpenVPN
   - Direct import: TLS, DTLS, tcpcrypt, MinimalT, WireGuard
   - Non-importable: CurveCP
 
@@ -544,6 +544,7 @@ This is needed by some protocols to prevent application data truncation attacks.
   - tcpcrypt
   - MinimalT
   - IKEv2
+  - OpenVPN
 
 - Key Update (KU):
 The handshake protocol may be instructed to update its keying material, either
@@ -559,7 +560,7 @@ by the application directly or by the record protocol sending a key expiration e
 The handshake protocol will generate one or more keys to be used for record encryption/decryption and authentication.
 These may be explicitly exportable to the application, traditionally limited to direct export to the record protocol,
 or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.
-  - Explicit export: TLS (for QUIC), DTLS (for SRTP), tcpcrypt, IKEv2
+  - Explicit export: TLS (for QUIC), DTLS (for SRTP), tcpcrypt, IKEv2, OpenVPN
   - Direct export: TLS, DTLS, MinimalT
   - Non-exportable: CurveCP
 
@@ -576,7 +577,7 @@ as use of a new Connection Identifier (CID).
   - QUIC
   - MinimalT
   - CurveCP
-  - ESP
+  - IKEv2 {{?RFC4555}}
   - WireGuard
 
 ## Summary of Interfaces Exposed by Protocols {#interface-protocols-table}
