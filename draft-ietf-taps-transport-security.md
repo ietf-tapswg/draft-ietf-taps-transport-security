@@ -533,7 +533,9 @@ exchange to avoid DoS attacks.
 
 - Connection Termination:
 The security protocol may be instructed to tear down its connection and session information.
-This is needed by some protocols to prevent application data truncation attacks.
+This is needed by some protocols, e.g., to prevent application data truncation attacks in 
+which an attacker terminates an underlying insecure connection-oriented protocol to terminate 
+the session.
   - TLS
   - DTLS
   - QUIC
