@@ -506,7 +506,7 @@ keys directly, this is considered explicit import; if the handshake protocol tra
 provides the keys directly, it is considered direct import; if the keys can only be shared by
 the handshake, they are considered non-importable.
   - Explicit import: QUIC, ESP, OpenVPN
-  - Direct import: TLS, DTLS, tcpcrypt, MinimalT, WireGuard
+  - Direct import: TLS, DTLS, tcpcrypt, MinimalT, WireGuard, IKEv2
   - Non-importable: CurveCP
 
 ## Connection Interfaces
@@ -562,7 +562,7 @@ These may be explicitly exportable to the application, traditionally limited to 
 or inherently non-exportable because the keys must be used directly in conjunction with the record protocol.
   - Explicit export: TLS (for QUIC), DTLS (for SRTP), tcpcrypt, IKEv2, OpenVPN
   - Direct export: TLS, DTLS, MinimalT
-  - Non-exportable: CurveCP
+  - Non-exportable: CurveCP, ESP, WireGuard
 
 - Key Expiration (KE):
 The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based
@@ -594,9 +594,9 @@ The following table summarizes which protocol exposes which interface.
 | tcpcrypt  |     | x   |     | x  | x  | D    |    |     | x  | x  | E    |    |    |
 | MinimalT  | x   | x   |     | x  |    | D    | x  |     | x  | x  | D    |    | x  |
 | CurveCP   | x   |     |     |    |    | N    | x  |     |    |    | N    |    | x  |
-| IKEv2     | x   | x   |     |    | x  |      | x  | x   | x  | x  | E    |    | x  |
-| ESP       |     |     |     |    |    | E    |    |     |    |    |      | x  |    |
-| WireGuard | x   |     |     |    |    | D    | x  | x   |    |    |      |    | x  |
+| IKEv2     | x   | x   |     |    | x  | D    | x  | x   | x  | x  | E    |    | x  |
+| ESP       |     |     |     |    |    | E    |    |     |    |    | N    | x  |    |
+| WireGuard | x   |     |     |    |    | D    | x  | x   |    |    | N    |    | x  |
 | OpenVPN   | x   | x   |     |    |    | E    | x  |     | x  |    | E    |    |    |
 |---
 
