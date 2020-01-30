@@ -535,8 +535,8 @@ exchange to avoid DoS attacks.
 
 - Connection Termination:
 The security protocol may be instructed to tear down its connection and session information.
-This is needed by some protocols, e.g., to prevent application data truncation attacks in
-which an attacker terminates an underlying insecure connection-oriented protocol to terminate
+This is needed by some protocols, e.g., to prevent application data truncation attacks in 
+which an attacker terminates an underlying insecure connection-oriented protocol to terminate 
 the session.
   - TLS
   - DTLS
@@ -558,7 +558,7 @@ by the application directly or by the record protocol sending a key expiration e
 
 - Shared Secret Export:
 The handshake protocol may provide an interface for producing shared secrets for application-specific uses.
-  - TLS
+  - TLS 
   - DTLS
   - tcpcrypt
   - IKEv2
