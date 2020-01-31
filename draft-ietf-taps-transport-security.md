@@ -497,7 +497,7 @@ using EAP for example.
 
 - Pre-Shared Key Import:
 Either the handshake protocol or the application directly can supply pre-shared keys for use
-in encrypting (and authenticating) connections to a peer.
+in encrypting (and authenticating) communication with a peer.
   - TLS
   - DTLS
   - QUIC
@@ -613,4 +613,3 @@ Yannick Sierra, Brian Trammell, and Magnus Westerlund for their input and feedba
 on this draft.
 
 --- back
-
