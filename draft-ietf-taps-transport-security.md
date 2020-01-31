@@ -587,24 +587,21 @@ The following table summarizes which protocol exposes which interface.
 |---
 | Protocol  | IPK | ALG | EXT | CM | AD | PSKI | IV | SAV | CT | KU | PSKE | KE | ME |
 |:----------|:---:|:---:|:---:|:--:|:--:|:----:|:--:|:---:|:--:|:--:|:----:|:--:|:--:|
-| TLS       | x   | x   | x   | x  |    | D    | x  |     | x  | x  | D    |    |    |
-| DTLS      | x   | x   | x   | x  |    | D    | x  | x   | x  | x  | D    |    |    |
-| SRTP      | x   | x   |     |    | x  |      | x  |     |    |    | E    |    |    |
-| QUIC      | x   | x   | x   | x  |    | E    | x  | x   | x  | x  | E    |    | x  |
-| tcpcrypt  |     | x   |     | x  | x  | D    |    |     | x  | x  | E    |    |    |
-| MinimalT  | x   | x   |     | x  |    | D    | x  |     | x  | x  | D    |    | x  |
-| CurveCP   | x   |     |     |    |    | N    | x  |     |    |    | N    |    | x  |
-| IKEv2     | x   | x   |     |    | x  | D    | x  | x   | x  | x  | E    |    | x  |
-| ESP       |     |     |     |    |    | E    |    |     |    |    | N    | x  |    |
-| WireGuard | x   |     |     |    |    | D    | x  | x   |    |    | N    |    | x  |
-| OpenVPN   | x   | x   |     |    |    | E    | x  |     | x  |    | E    |    |    |
+| TLS       | x   | x   | x   | x  |    | x    | x  |     | x  | x  | x    |    |    |
+| DTLS      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  | x    |    |    |
+| SRTP      | x   | x   |     |    | x  |      | x  |     |    |    |      |    |    |
+| QUIC      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  |      |    | x  |
+| tcpcrypt  |     | x   |     | x  | x  | x    |    |     | x  | x  | x    |    |    |
+| MinimalT  | x   | x   |     | x  |    | x    | x  |     | x  | x  | x    |    | x  |
+| CurveCP   | x   |     |     |    |    |      | x  |     |    |    |      |    | x  |
+| IKEv2     | x   | x   |     |    | x  | x    | x  | x   | x  | x  | x    |    | x  |
+| ESP       |     |     |     |    |    | x    |    |     |    |    |      | x  |    |
+| WireGuard | x   |     |     |    |    | x    | x  | x   |    |    |      |    | x  |
+| OpenVPN   | x   | x   |     |    |    | x    | x  |     | x  |    | x    |    |    |
 |---
 
 x=Interface is exposed  
 (blank)=Interface is not exposed  
-E=Interface is exposed (Explicit import/export)  
-D=Interface is exposed (Direct import/export)  
-N=Interface is not exposed (Non-importable/exportable)
 
 # IANA Considerations
 
