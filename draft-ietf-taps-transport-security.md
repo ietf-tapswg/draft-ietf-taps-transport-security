@@ -502,6 +502,7 @@ in encrypting (and authenticating) connections to a peer.
   - DTLS
   - QUIC
   - ESP
+  - IKEv2
   - OpenVPN
   - tcpcrypt
   - MinimalT
