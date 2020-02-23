@@ -439,20 +439,16 @@ cannot decouple the security from transport functionality.
 # Application Interface {#application-interface}
 
 This section describes the interface surface exposed by the security protocols described above.
-We partition these interfaces into
+Note that not all protocols support each interface. We partition these interfaces into
 pre-connection (configuration), connection, and post-connection interfaces, following
 conventions in {{?I-D.ietf-taps-interface}} and {{?I-D.ietf-taps-arch}}.
-
-Note that not all protocols support each interface.
-The table in {{interface-protocols-table}} summarizes which protocol exposes which of the interfaces.
-In the following sections, we provide abbreviations of the interface names to use in the summary table.
 
 ## Pre-Connection Interfaces
 
 Configuration interfaces are used to configure the security protocols before a
 handshake begins or the keys are negotiated.
 
-- Identities and Private Keys (IPK): The application can provide its identities (certificates) and private keys, or
+- Identities and Private Keys: The application can provide its identities (certificates) and private keys, or
 mechanisms to access these, to the security protocol to use during handshakes.
   - TLS
   - DTLS
@@ -464,7 +460,7 @@ mechanisms to access these, to the security protocol to use during handshakes.
   - WireGuard
   - OpenVPN
 
-- Supported Algorithms (Key Exchange, Signatures, and Ciphersuites) (ALG):
+- Supported Algorithms (Key Exchange, Signatures, and Ciphersuites):
 The application can choose the algorithms that are supported for key exchange,
 signatures, and ciphersuites.
   - TLS
@@ -476,14 +472,14 @@ signatures, and ciphersuites.
   - IKEv2
   - OpenVPN
 
-- Extensions (Application-Layer Protocol Negotiation) (EXT):
+- Extensions (Application-Layer Protocol Negotiation):
 The application enables or configures extensions that are to be negotiated by
 the security protocol, such as ALPN {{?RFC7301}}.
   - TLS
   - DTLS
   - QUIC
 
-- Session Cache Management (CM):
+- Session Cache Management:
 The application provides the ability to save and retrieve session state (such as tickets,
 keying material, and server parameters) that may be used to resume the security session.
   - TLS
@@ -492,21 +488,20 @@ keying material, and server parameters) that may be used to resume the security 
   - tcpcrypt
   - MinimalT
 
-- Authentication Delegation (AD):
+- Authentication Delegation:
 The application provides access to a separate module that will provide authentication,
 using EAP for example.
   - SRTP
   - IKEv2
   - tcpcrypt
 
-- Pre-Shared Key Import (PSKI):
+- Pre-Shared Key Import:
 Either the handshake protocol or the application directly can supply pre-shared keys for use
-in encrypting (and authenticating) communication with a peer.
+in encrypting (and authenticating) connections to a peer.
   - TLS
   - DTLS
   - QUIC
   - ESP
-  - IKEv2
   - OpenVPN
   - tcpcrypt
   - MinimalT
@@ -514,7 +509,7 @@ in encrypting (and authenticating) communication with a peer.
 
 ## Connection Interfaces
 
-- Identity Validation (IV):
+- Identity Validation:
 During a handshake, the security protocol will conduct identity validation of the peer.
 This can call into the application to offload validation.
   - TLS
@@ -527,7 +522,7 @@ This can call into the application to offload validation.
   - WireGuard
   - OpenVPN
 
-- Source Address Validation (SAV):
+- Source Address Validation:
 The handshake protocol may delegate validation of the remote peer that has sent
 data to the transport protocol or application. This involves sending a cookie
 exchange to avoid DoS attacks.
@@ -538,10 +533,10 @@ exchange to avoid DoS attacks.
 
 ## Post-Connection Interfaces
 
-- Connection Termination (CT):
+- Connection Termination:
 The security protocol may be instructed to tear down its connection and session information.
-This is needed by some protocols, e.g., to prevent application data truncation attacks in
-which an attacker terminates an underlying insecure connection-oriented protocol to terminate
+This is needed by some protocols, e.g., to prevent application data truncation attacks in 
+which an attacker terminates an underlying insecure connection-oriented protocol to terminate 
 the session.
   - TLS
   - DTLS
@@ -551,7 +546,7 @@ the session.
   - IKEv2
   - OpenVPN
 
-- Key Update (KU):
+- Key Update:
 The handshake protocol may be instructed to update its keying material, either
 by the application directly or by the record protocol sending a key expiration event.
   - TLS
@@ -561,22 +556,22 @@ by the application directly or by the record protocol sending a key expiration e
   - MinimalT
   - IKEv2
 
-- Shared Secret Export (PSKE):
+- Shared Secret Export:
 The handshake protocol may provide an interface for producing shared secrets for application-specific uses.
-  - TLS
+  - TLS 
   - DTLS
   - tcpcrypt
   - IKEv2
   - OpenVPN
   - MinimalT
 
-- Key Expiration (KE):
+- Key Expiration:
 The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based
 deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling
 between the record layer and the handshake layer.
   - ESP
 
-- Mobility Events (ME):
+- Mobility Events:
 The record protocol can be signaled that it is being migrated to another transport or interface due to
 connection mobility, which may reset address and state validation and induce state changes such
 as use of a new Connection Identifier (CID).
@@ -585,29 +580,6 @@ as use of a new Connection Identifier (CID).
   - CurveCP
   - IKEv2 {{?RFC4555}}
   - WireGuard
-
-## Summary of Interfaces Exposed by Protocols {#interface-protocols-table}
-
-The following table summarizes which protocol exposes which interface.
-
-|---
-| Protocol  | IPK | ALG | EXT | CM | AD | PSKI | IV | SAV | CT | KU | PSKE | KE | ME |
-|:----------|:---:|:---:|:---:|:--:|:--:|:----:|:--:|:---:|:--:|:--:|:----:|:--:|:--:|
-| TLS       | x   | x   | x   | x  |    | x    | x  |     | x  | x  | x    |    |    |
-| DTLS      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  | x    |    |    |
-| ZRTP      | x   | x   |     | x  |    | x    | x  |     | x  |    |      |    |    |
-| QUIC      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  |      |    | x  |
-| tcpcrypt  |     | x   |     | x  | x  | x    |    |     | x  | x  | x    |    |    |
-| MinimalT  | x   | x   |     | x  |    | x    | x  |     | x  | x  | x    |    | x  |
-| CurveCP   | x   |     |     |    |    |      | x  |     |    |    |      |    | x  |
-| IKEv2     | x   | x   |     |    | x  | x    | x  | x   | x  | x  | x    |    | x  |
-| ESP       |     |     |     |    |    | x    |    |     |    |    |      | x  |    |
-| WireGuard | x   |     |     |    |    | x    | x  | x   |    |    |      |    | x  |
-| OpenVPN   | x   | x   |     |    |    | x    | x  |     | x  |    | x    |    |    |
-|---
-
-x=Interface is exposed  
-(blank)=Interface is not exposed  
 
 # IANA Considerations
 
@@ -640,3 +612,4 @@ Yannick Sierra, Brian Trammell, and Magnus Westerlund for their input and feedba
 on this draft.
 
 --- back
+
