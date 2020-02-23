@@ -589,7 +589,7 @@ The following table summarizes which protocol exposes which interface.
 |:----------|:---:|:---:|:---:|:--:|:--:|:----:|:--:|:---:|:--:|:--:|:----:|:--:|:--:|
 | TLS       | x   | x   | x   | x  |    | x    | x  |     | x  | x  | x    |    |    |
 | DTLS      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  | x    |    |    |
-| SRTP      | x   | x   |     |    | x  |      | x  |     |    |    |      |    |    |
+| ZRTP      | x   | x   |     | x  |    | x    | x  |     | x  |    |      |    |    |
 | QUIC      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  |      |    | x  |
 | tcpcrypt  |     | x   |     | x  | x  | x    |    |     | x  | x  | x    |    |    |
 | MinimalT  | x   | x   |     | x  |    | x    | x  |     | x  | x  | x    |    | x  |
