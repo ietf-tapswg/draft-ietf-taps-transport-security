@@ -278,17 +278,18 @@ these are not intended for generic application use.
 Secure RTP (SRTP) is a profile for RTP that provides confidentiality,
 message authentication, and replay protection for RTP data packets
 and RTP control protocol (RTCP) packets {{?RFC3711}}.
-SRTP can use different handshake protocols, such as DTLS in DTLS-SRTP {{?RFC5764}}
-or ZRTP {{?RFC6189}}.
+SRTP provides a record layer only, and requires a separate handshake
+protocol to provide key agreement and identity management. 
 
-### ZRTP for Media Path Key Agreement
+The commonly used handshake protocol for SRTP is DTLS, in the form of
+DTLS-SRTP {{?RFC5764}}.  This is an extension to DTLS that negotiates
+the use of SRTP as the record layer, and describes how to export keys
+for use with SRTP.
 
-ZRTP {{?RFC6189}} is an alternative key agreement protocol for SRTP.
-It uses standard SRTP to protect RTP data packets and RTCP packets, but
-provides alternative key agreement and identity management protocols.
-Key agreement is performed using a Diffie-Hellman key exchange that runs
-on the media path. This generates a shared secret that is then used to
-generate the master key and salt for SRTP.
+ZRTP {{?RFC6189}} is an alternative key agreement and identity management
+protocols for SRTP.  ZRTP Key agreement is performed using a Diffie-Hellman
+key exchange that runs on the media path. This generates a shared secret
+that is then used to generate the master key and salt for SRTP.
 
 ## Transport-Layer Security Protocols
 
@@ -395,8 +396,8 @@ of reliability if the security protocol is encapsulating other transport protoco
 Application Payload Security Protocols:
 
 - DTLS
-- SRTP
 - ZRTP
+- SRTP
 
 Transport-Layer Security Protocols:
 
@@ -418,7 +419,9 @@ like TCP.
 
 Application Payload Security Protocols:
 
-- SRTP {{?RFC7201}}
+- DTLS when used as a handshake protocol for SRTP {{?RFC7850}}
+- ZRTP {{?RFC4571}}
+- SRTP {{?RFC4571}}
 
 Packet Security Protocols:
 
@@ -452,7 +455,7 @@ handshake begins or the keys are negotiated.
 mechanisms to access these, to the security protocol to use during handshakes.
   - TLS
   - DTLS
-  - SRTP
+  - ZRTP
   - QUIC
   - MinimalT
   - CurveCP
@@ -465,7 +468,7 @@ The application can choose the algorithms that are supported for key exchange,
 signatures, and ciphersuites.
   - TLS
   - DTLS
-  - SRTP
+  - ZRTP
   - QUIC
   - tcpcrypt
   - MinimalT
@@ -484,6 +487,7 @@ The application provides the ability to save and retrieve session state (such as
 keying material, and server parameters) that may be used to resume the security session.
   - TLS
   - DTLS
+  - ZRTP
   - QUIC
   - tcpcrypt
   - MinimalT
@@ -491,7 +495,6 @@ keying material, and server parameters) that may be used to resume the security 
 - Authentication Delegation:
 The application provides access to a separate module that will provide authentication,
 using EAP for example.
-  - SRTP
   - IKEv2
   - tcpcrypt
 
@@ -500,6 +503,7 @@ Either the handshake protocol or the application directly can supply pre-shared 
 in encrypting (and authenticating) communication with a peer.
   - TLS
   - DTLS
+  - ZRTP
   - QUIC
   - ESP
   - IKEv2
@@ -515,7 +519,7 @@ During a handshake, the security protocol will conduct identity validation of th
 This can call into the application to offload validation.
   - TLS
   - DTLS
-  - SRTP
+  - ZRTP
   - QUIC
   - MinimalT
   - CurveCP
@@ -541,6 +545,7 @@ which an attacker terminates an underlying insecure connection-oriented protocol
 the session.
   - TLS
   - DTLS
+  - ZRTP
   - QUIC
   - tcpcrypt
   - MinimalT
