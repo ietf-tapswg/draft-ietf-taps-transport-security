@@ -19,7 +19,7 @@ author:
     street: Marchstr. 23
     city: 10587 Berlin
     country: Germany
-    email: theresa@inet.tu-berlin.de
+    email: ietf@tenghardt.net
   -
     ins: T. Pauly
     name: Tommy Pauly
