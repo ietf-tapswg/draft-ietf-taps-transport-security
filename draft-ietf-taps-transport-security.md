@@ -296,15 +296,15 @@ that is then used to generate the master key and salt for SRTP.
 The following security protocols provide protection for both application payloads and
 headers that are used for transport services.
 
-### IETF QUIC {#section-quic}
+### IETF QUIC {#quic}
 
 QUIC is a new standards-track transport protocol that runs over UDP, loosely based on Google's
-original proprietary gQUIC protocol {{?I-D.ietf-quic-transport}} (See {{section-gquic}} for more details).
+original proprietary gQUIC protocol {{?I-D.ietf-quic-transport}} (See {{gquic}} for more details).
 The QUIC transport layer itself provides support for data confidentiality and integrity. This requires
 keys to be derived with a separate handshake protocol. A mapping for QUIC of TLS 1.3 {{?I-D.ietf-quic-tls}}
 has been specified to provide this handshake.
 
-### Google QUIC {#section-gquic}
+### Google QUIC {#gquic}
 
 Google QUIC (gQUIC) is a UDP-based multiplexed streaming protocol designed and deployed by Google
 following experience from deploying SPDY, the proprietary predecessor to HTTP/2.
