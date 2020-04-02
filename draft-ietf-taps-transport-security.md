@@ -415,8 +415,8 @@ like TCP.
 Application Payload Security Protocols:
 
 - DTLS when used as a handshake protocol for SRTP {{?RFC7850}}
-- ZRTP {{?RFC4571}}
-- SRTP {{?RFC4571}}
+- ZRTP {{?RFC6189}}
+- SRTP {{?RFC4571}}{{?RFC3711}}
 
 Packet Security Protocols:
 
