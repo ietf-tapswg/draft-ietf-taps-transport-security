@@ -47,12 +47,7 @@ author:
   -
     ins: C. A. Wood
     name: Christopher A. Wood
-    role: editor
-    org: Apple Inc.
-    street: One Apple Park Way
-    city: Cupertino, California 95014
-    country: United States of America
-    email: cawood@apple.com
+    email: caw@heapingbits.net
 
 informative:
     WireGuard:
@@ -86,7 +81,7 @@ informative:
       author:
         -
           ins: D. J. Bernstein
-    MinimalT:
+    MinimaLT:
       title: MinimaLT -- Minimal-latency Networking Through Better Security
       target: http://dl.acm.org/citation.cfm?id=2516737
       date: {DATE}
@@ -128,7 +123,7 @@ document supplements that work by surveying commonly used and notable network se
 and identifying the interfaces between these protocols and both transport protocols and
 applications.  It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS),
 IETF QUIC, Google QUIC (gQUIC), tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol
-(IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP, and MinimalT. For each protocol, this document
+(IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP, and MinimaLT. For each protocol, this document
 provides a brief description.  Then, it describes the interfaces between these protocols and
 transports in {{transport-interface}} and the interfaces between these protocols and applications in
 {{application-interface}}.
@@ -318,12 +313,12 @@ Tcpcrypt {{?RFC8548}} is a lightweight extension to the TCP protocol for opportu
 use tcpcrypt's unique session ID for further application-level authentication. Absent this authentication,
 tcpcrypt is vulnerable to active attacks.
 
-### MinimalT
+### MinimaLT
 
-MinimalT is a UDP-based transport security protocol designed to offer confidentiality,
-mutual authentication, DoS prevention, and connection mobility {{MinimalT}}. One major
+MinimaLT is a UDP-based transport security protocol designed to offer confidentiality,
+mutual authentication, DoS prevention, and connection mobility {{MinimaLT}}. One major
 goal of the protocol is to leverage existing protocols to obtain server-side configuration
-information used to more quickly bootstrap a connection. MinimalT uses a variant of TCP's
+information used to more quickly bootstrap a connection. MinimaLT uses a variant of TCP's
 congestion control algorithm.
 
 ### CurveCP
@@ -402,7 +397,7 @@ Application Payload Security Protocols:
 Transport-Layer Security Protocols:
 
 - QUIC
-- MinimalT
+- MinimaLT
 - CurveCP
 
 Packet Security Protocols:
@@ -434,7 +429,7 @@ that is needed for its functionality. Specific, tcpcrypt is designed to run on t
 uses the TCP Encryption Negotiation Option (ENO) {{?RFC8547}} to negotiate its
 protocol support.
 
-QUIC, CurveCP, and MinimalT provide both transport functionality and security functionality. They have
+QUIC, CurveCP, and MinimaLT provide both transport functionality and security functionality. They have
 a dependencies on running over a framed protocol like UDP, but they add their own layers of
 reliability and other transport services. Thus, an application that uses one of these protocols
 cannot decouple the security from transport functionality.
@@ -461,7 +456,7 @@ mechanisms to access these, to the security protocol to use during handshakes.
   - DTLS
   - ZRTP
   - QUIC
-  - MinimalT
+  - MinimaLT
   - CurveCP
   - IKEv2
   - WireGuard
@@ -475,7 +470,7 @@ signatures, and ciphersuites.
   - ZRTP
   - QUIC
   - tcpcrypt
-  - MinimalT
+  - MinimaLT
   - IKEv2
   - OpenVPN
 
@@ -494,7 +489,7 @@ keying material, and server parameters) that may be used to resume the security 
   - ZRTP
   - QUIC
   - tcpcrypt
-  - MinimalT
+  - MinimaLT
 
 - Authentication Delegation (AD):
 The application provides access to a separate module that will provide authentication,
@@ -513,7 +508,7 @@ in encrypting (and authenticating) communication with a peer.
   - IKEv2
   - OpenVPN
   - tcpcrypt
-  - MinimalT
+  - MinimaLT
   - WireGuard
 
 ## Connection Interfaces
@@ -525,7 +520,7 @@ This can call into the application to offload validation.
   - DTLS
   - ZRTP
   - QUIC
-  - MinimalT
+  - MinimaLT
   - CurveCP
   - IKEv2
   - WireGuard
@@ -552,7 +547,7 @@ the session.
   - ZRTP
   - QUIC
   - tcpcrypt
-  - MinimalT
+  - MinimaLT
   - IKEv2
   - OpenVPN
 
@@ -563,7 +558,7 @@ by the application directly or by the record protocol sending a key expiration e
   - DTLS
   - QUIC
   - tcpcrypt
-  - MinimalT
+  - MinimaLT
   - IKEv2
 
 - Shared Secret Export (PSKE):
@@ -573,7 +568,7 @@ The handshake protocol may provide an interface for producing shared secrets for
   - tcpcrypt
   - IKEv2
   - OpenVPN
-  - MinimalT
+  - MinimaLT
 
 - Key Expiration (KE):
 The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based
@@ -586,7 +581,7 @@ The record protocol can be signaled that it is being migrated to another transpo
 connection mobility, which may reset address and state validation and induce state changes such
 as use of a new Connection Identifier (CID).
   - QUIC
-  - MinimalT
+  - MinimaLT
   - CurveCP
   - IKEv2 {{?RFC4555}}
   - WireGuard
@@ -603,7 +598,7 @@ The following table summarizes which protocol exposes which interface.
 | ZRTP      | x   | x   |     | x  |    | x    | x  |     | x  |    |      |    |    |
 | QUIC      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  |      |    | x  |
 | tcpcrypt  |     | x   |     | x  | x  | x    |    |     | x  | x  | x    |    |    |
-| MinimalT  | x   | x   |     | x  |    | x    | x  |     | x  | x  | x    |    | x  |
+| MinimaLT  | x   | x   |     | x  |    | x    | x  |     | x  | x  | x    |    | x  |
 | CurveCP   | x   |     |     |    |    |      | x  |     |    |    |      |    | x  |
 | IKEv2     | x   | x   |     |    | x  | x    | x  | x   | x  | x  | x    |    | x  |
 | ESP       |     |     |     |    |    | x    |    |     |    |    |      | x  |    |
