@@ -122,7 +122,7 @@ Services and features provided by transport protocols have been cataloged in {{?
 document supplements that work by surveying commonly used and notable network security protocols,
 and identifying the interfaces between these protocols and both transport protocols and
 applications.  It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS),
-IETF QUIC, Google QUIC (gQUIC), tcpcrypt, Internet Protocol Security (IPsec), SRTP (with DTLS),
+IETF QUIC, Google QUIC (gQUIC), tcpcrypt, Internet Protocol Security (IPsec), Secure Real-time Transport Protocol (SRTP) with DTLS,
 WireGuard, CurveCP, and MinimaLT. For each protocol, this document provides a brief description.
 Then, it describes the interfaces between these protocols and transports in {{transport-interface}}
 and the interfaces between these protocols and applications in {{application-interface}}.
@@ -130,7 +130,7 @@ and the interfaces between these protocols and applications in {{application-int
 Selected protocols represent a superset of functionality and features a Transport Services system may
 need to support, both internally and externally (via an API) for applications {{?I-D.ietf-taps-arch}}. Ubiquitous
 IETF protocols such as (D)TLS, as well as non-standard protocols such as gQUIC,
-are both included despite overlapping features. As such, this survey is not limited to protocols
+are included despite overlapping features. As such, this survey is not limited to protocols
 developed within the scope or context of the IETF. Outside of this candidate set, protocols
 that do not offer new features are omitted. For example, newer protocols such as WireGuard make
 unique design choices that have implications and limitations on application usage. In contrast,
@@ -154,7 +154,7 @@ One of the goals of Transport Services is to define a common interface for using
 software using transport protocols to easily adopt new protocols that provide similar feature-sets. The survey of
 the dependencies security protocols have upon transport protocols can guide implementations in determining
 which transport protocols are appropriate to be able to use beneath a given security protocol. For example,
-a security protocol that expects to run over a reliable stream of bytes, like TLS, restrict the set of transport
+a security protocol that expects to run over a reliable stream of bytes, like TLS, restricts the set of transport
 protocols that can be used to those that offer a reliable stream of bytes.
 
 Defining the common interfaces that security protocols provide to applications also allows interfaces to be
@@ -178,7 +178,7 @@ use the set of protocols and algorithms that are requested by applications or by
 The following terms are used throughout this document to describe the roles and interactions of transport security protocols:
 
 - Transport Feature: a specific end-to-end feature that the transport layer provides to an application.
-Examples include confidentiality, reliable delivery, ordered delivery, message-versus-stream orientation, etc.
+Examples include confidentiality, reliable delivery, ordered delivery, and message-versus-stream orientation.
 
 - Transport Service: a set of Transport Features, without an association to any given framing protocol,
 which provides functionality to an application.
@@ -281,7 +281,7 @@ the use of SRTP as the record layer, and describes how to export keys
 for use with SRTP.
 
 ZRTP {{?RFC6189}} is an alternative key agreement and identity management
-protocols for SRTP.  ZRTP Key agreement is performed using a Diffie-Hellman
+protocol for SRTP.  ZRTP Key agreement is performed using a Diffie-Hellman
 key exchange that runs on the media path. This generates a shared secret
 that is then used to generate the master key and salt for SRTP.
 
@@ -356,7 +356,7 @@ OpenVPN {{OpenVPN}} is a commonly used protocol designed as an alternative to
 IPsec. A major goal of this protocol is to provide a VPN that is simple to
 configure and works over a variety of transports. OpenVPN encapsulates either
 IP packets or Ethernet frames within a secure tunnel and can run over either UDP or TCP.
-For key establishment, OpenVPN can use TLS as a handshake protocol or pre-shared keys.
+For key establishment, OpenVPN can use TLS as a handshake protocol or it can use pre-shared keys.
 
 # Transport Dependencies {#transport-interface}
 
@@ -473,9 +473,9 @@ signatures, and ciphersuites.
   - IPsec
   - OpenVPN
 
-- Extensions (Application-Layer Protocol Negotiation) (EXT):
+- Extensions (EXT):
 The application enables or configures extensions that are to be negotiated by
-the security protocol, such as ALPN {{?RFC7301}}.
+the security protocol, such as Application-Layer Protocol Negotiation (ALPN) {{?RFC7301}}.
   - TLS
   - DTLS
   - QUIC
