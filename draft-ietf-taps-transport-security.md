@@ -127,7 +127,8 @@ WireGuard, CurveCP, and MinimaLT. For each protocol, this document provides a br
 Then, it describes the interfaces between these protocols and transports in {{transport-interface}}
 and the interfaces between these protocols and applications in {{application-interface}}.
 
-Selected protocols represent a superset of functionality and features a Transport Services system may
+A Transport Services system exposes an interface to different Transport Services to applications. Further, a Transport Services system maps the Transport Service that an application has requested to a specific protocol stack, including transport protocols and security protocols.
+The security protocols included in survey represent a superset of functionality and features a Transport Services system may
 need to support, both internally and externally (via an API) for applications {{?I-D.ietf-taps-arch}}. Ubiquitous
 IETF protocols such as (D)TLS, as well as non-standard protocols such as gQUIC,
 are included despite overlapping features. As such, this survey is not limited to protocols
@@ -150,7 +151,7 @@ omitted from this survey.
 This survey is intended to help identify the most common interface surfaces between security protocols and
 transport protocols, and between security protocols and applications.
 
-One of the goals of Transport Services is to define a common interface for using transport protocols that allows
+One of the goals of the Transport Services effort is to define a common interface for using transport protocols that allows
 software using transport protocols to easily adopt new protocols that provide similar feature-sets. The survey of
 the dependencies security protocols have upon transport protocols can guide implementations in determining
 which transport protocols are appropriate to be able to use beneath a given security protocol. For example,
@@ -182,6 +183,8 @@ Examples include confidentiality, reliable delivery, ordered delivery, and messa
 
 - Transport Service: a set of Transport Features, without an association to any given framing protocol,
 which provides functionality to an application.
+
+- Transport Services system: a software component that exposes an interface to different Transport Services to an application.
 
 - Transport Protocol: an implementation that provides one or more different transport services using a
 specific framing and header format on the wire. A Transport Protocol services an application.
