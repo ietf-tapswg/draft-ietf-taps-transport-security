@@ -122,11 +122,10 @@ Services and features provided by transport protocols have been cataloged in {{?
 document supplements that work by surveying commonly used and notable network security protocols,
 and identifying the interfaces between these protocols and both transport protocols and
 applications.  It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS),
-IETF QUIC, Google QUIC (gQUIC), tcpcrypt, Internet Key Exchange with Encapsulating Security Protocol
-(IKEv2 + ESP), SRTP (with DTLS), WireGuard, CurveCP, and MinimaLT. For each protocol, this document
-provides a brief description.  Then, it describes the interfaces between these protocols and
-transports in {{transport-interface}} and the interfaces between these protocols and applications in
-{{application-interface}}.
+IETF QUIC, Google QUIC (gQUIC), tcpcrypt, Internet Protocol Security (IPsec), SRTP (with DTLS),
+WireGuard, CurveCP, and MinimaLT. For each protocol, this document provides a brief description.
+Then, it describes the interfaces between these protocols and transports in {{transport-interface}}
+and the interfaces between these protocols and applications in {{application-interface}}.
 
 Selected protocols represent a superset of functionality and features a Transport Services system may
 need to support, both internally and externally (via an API) for applications {{?I-D.ietf-taps-arch}}. Ubiquitous
@@ -333,7 +332,7 @@ The following protocols provide protection for IP packets. These are generally u
 such as for Virtual Private Networks (VPNs). Often, applications will not interact directly with these
 protocols. However, applications that implement tunnels will interact directly with these protocols.
 
-### IKEv2 with ESP
+### IPsec
 
 IKEv2 {{?RFC7296}} and ESP {{?RFC4303}} together form the modern IPsec protocol suite that encrypts
 and authenticates IP packets, either for creating tunnels (tunnel-mode) or for direct transport
@@ -402,7 +401,7 @@ Transport-Layer Security Protocols:
 
 Packet Security Protocols:
 
-- IKEv2 and ESP
+- IPsec
 - WireGuard
 - OpenVPN
 
@@ -420,7 +419,7 @@ Application Payload Security Protocols:
 
 Packet Security Protocols:
 
-- IKEv2 and ESP {{?RFC8229}}
+- IPsec {{?RFC8229}}
 
 ## Transport-Specific Dependencies
 
@@ -458,7 +457,7 @@ mechanisms to access these, to the security protocol to use during handshakes.
   - QUIC
   - MinimaLT
   - CurveCP
-  - IKEv2
+  - IPsec
   - WireGuard
   - OpenVPN
 
@@ -471,7 +470,7 @@ signatures, and ciphersuites.
   - QUIC
   - tcpcrypt
   - MinimaLT
-  - IKEv2
+  - IPsec
   - OpenVPN
 
 - Extensions (Application-Layer Protocol Negotiation) (EXT):
@@ -494,7 +493,7 @@ keying material, and server parameters) that may be used to resume the security 
 - Authentication Delegation (AD):
 The application provides access to a separate module that will provide authentication,
 using EAP for example.
-  - IKEv2
+  - IPsec
   - tcpcrypt
 
 - Pre-Shared Key Import (PSKI):
@@ -505,7 +504,7 @@ in encrypting (and authenticating) communication with a peer.
   - ZRTP
   - QUIC
   - ESP
-  - IKEv2
+  - IPsec
   - OpenVPN
   - tcpcrypt
   - MinimaLT
@@ -522,7 +521,7 @@ This can call into the application to offload validation.
   - QUIC
   - MinimaLT
   - CurveCP
-  - IKEv2
+  - IPsec
   - WireGuard
   - OpenVPN
 
@@ -532,7 +531,7 @@ data to the transport protocol or application. This involves sending a cookie
 exchange to avoid DoS attacks.
   - DTLS
   - QUIC
-  - IKEv2
+  - IPsec
   - WireGuard
 
 ## Post-Connection Interfaces
@@ -548,7 +547,7 @@ the session.
   - QUIC
   - tcpcrypt
   - MinimaLT
-  - IKEv2
+  - IPsec
   - OpenVPN
 
 - Key Update (KU):
@@ -559,14 +558,14 @@ by the application directly or by the record protocol sending a key expiration e
   - QUIC
   - tcpcrypt
   - MinimaLT
-  - IKEv2
+  - IPsec
 
 - Shared Secret Export (PSKE):
 The handshake protocol may provide an interface for producing shared secrets for application-specific uses.
   - TLS
   - DTLS
   - tcpcrypt
-  - IKEv2
+  - IPsec
   - OpenVPN
   - MinimaLT
 
@@ -583,7 +582,7 @@ as use of a new Connection Identifier (CID).
   - QUIC
   - MinimaLT
   - CurveCP
-  - IKEv2 {{?RFC4555}}
+  - IPsec {{?RFC4555}}
   - WireGuard
 
 ## Summary of Interfaces Exposed by Protocols {#interface-protocols-table}
@@ -600,7 +599,7 @@ The following table summarizes which protocol exposes which interface.
 | tcpcrypt  |     | x   |     | x  | x  | x    |    |     | x  | x  | x    |    |    |
 | MinimaLT  | x   | x   |     | x  |    | x    | x  |     | x  | x  | x    |    | x  |
 | CurveCP   | x   |     |     |    |    |      | x  |     |    |    |      |    | x  |
-| IKEv2     | x   | x   |     |    | x  | x    | x  | x   | x  | x  | x    |    | x  |
+| IPsec     | x   | x   |     |    | x  | x    | x  | x   | x  | x  | x    |    | x  |
 | ESP       |     |     |     |    |    | x    |    |     |    |    |      | x  |    |
 | WireGuard | x   |     |     |    |    | x    | x  | x   |    |    |      |    | x  |
 | OpenVPN   | x   | x   |     |    |    | x    | x  |     | x  |    | x    |    |    |
