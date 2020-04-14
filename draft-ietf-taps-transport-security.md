@@ -359,7 +359,7 @@ OpenVPN {{OpenVPN}} is a commonly used protocol designed as an alternative to
 IPsec. A major goal of this protocol is to provide a VPN that is simple to
 configure and works over a variety of transports. OpenVPN encapsulates either
 IP packets or Ethernet frames within a secure tunnel and can run over either UDP or TCP.
-For key establishment, OpenVPN can use TLS as a handshake protocol or it can use pre-shared keys.
+For key establishment, OpenVPN can either use TLS as a handshake protocol or use pre-shared keys.
 
 # Transport Dependencies {#transport-interface}
 
