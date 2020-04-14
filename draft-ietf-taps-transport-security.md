@@ -128,7 +128,7 @@ Then, it describes the interfaces between these protocols and transports in {{tr
 and the interfaces between these protocols and applications in {{application-interface}}.
 
 A Transport Services system exposes an interface to different Transport Services to applications. Further, a Transport Services system maps the Transport Service that an application has requested to a specific protocol stack, including transport protocols and security protocols.
-The security protocols included in survey represent a superset of functionality and features a Transport Services system may
+The security protocols included in this survey represent a superset of functionality and features a Transport Services system may
 need to support, both internally and externally (via an API) for applications {{?I-D.ietf-taps-arch}}. Ubiquitous
 IETF protocols such as (D)TLS, as well as non-standard protocols such as gQUIC,
 are included despite overlapping features. As such, this survey is not limited to protocols
