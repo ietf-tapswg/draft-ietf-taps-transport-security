@@ -127,7 +127,7 @@ WireGuard, CurveCP, and MinimaLT. For each protocol, this document provides a br
 Then, it describes the interfaces between these protocols and transports in {{transport-interface}}
 and the interfaces between these protocols and applications in {{application-interface}}.
 
-A Transport Services system exposes an interface to different Transport Services to applications. Further, a Transport Services system maps the Transport Service that an application has requested to a specific protocol stack, including transport protocols and security protocols.
+A Transport Services system exposes an interface for applications to access various (secure) transport protocol features.
 The security protocols included in this survey represent a superset of functionality and features a Transport Services system may
 need to support, both internally and externally (via an API) for applications {{?I-D.ietf-taps-arch}}. Ubiquitous
 IETF protocols such as (D)TLS, as well as non-standard protocols such as gQUIC,
