@@ -47,6 +47,10 @@ author:
   -
     ins: C. A. Wood
     name: Christopher A. Wood
+    org: Cloudflare
+    street: 101 Townsend St
+    city: San Francisco
+    country: United States of America
     email: caw@heapingbits.net
 
 informative:
