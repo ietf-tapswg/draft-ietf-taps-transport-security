@@ -458,7 +458,7 @@ In the following sections, we provide abbreviations of the interface names to us
 Configuration interfaces are used to configure the security protocols before a
 handshake begins or the keys are negotiated.
 
-- Identities and Private Keys (IPK): The application can provide its provide its identity,
+- Identities and Private Keys (IPK): The application can provide its identity,
 credentials (e.g., certificates), and private keys, or mechanisms to access these, to the
 security protocol to use during handshakes.
   - TLS
