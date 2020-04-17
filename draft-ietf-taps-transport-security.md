@@ -174,7 +174,7 @@ protocols have subtly different guarantees and vulnerabilities. Thus, any implem
 use the set of protocols and algorithms that are requested by applications or by a system policy.
 
 The protocols surveyed in this document represent a superset of functionality and features a Transport Services system may
-need to support. It does not list all transport protocols that a Transport Services system may need to implement, not does it mandate that a Transport Service system implement any particular protocol.
+need to support. It does not list all transport protocols that a Transport Services system may need to implement, nor does it mandate that a Transport Service system implement any particular protocol.
 
 A Transport Services system may implement any secure transport protocol that provides the described features. In doing so, it may need to expose an interface to the application to configure these features.
 
