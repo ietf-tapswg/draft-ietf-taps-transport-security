@@ -173,8 +173,10 @@ even where their interfaces to transport and applications are equivalent. Even b
 protocols have subtly different guarantees and vulnerabilities. Thus, any implementation needs to only
 use the set of protocols and algorithms that are requested by applications or by a system policy.
 
-While the protocols surveyed in this document represent a superset of functionality and features a Transport Services system may
-need to support, it is not a goal to list all transport protocols that a Transport Services system may need to implement or to mandate that certain protocols are implemented while others are not. Rather, a Transport Services system may implement any secure transport protocol that provides the described features, and it may need to expose an interface to the application to configure these features.
+The protocols surveyed in this document represent a superset of functionality and features a Transport Services system may
+need to support. It does not list all transport protocols that a Transport Services system may need to implement, not does it mandate that a Transport Service system implement any particular protocol.
+
+A Transport Services system may implement any secure transport protocol that provides the described features. In doing so, it may need to expose an interface to the application to configure these features.
 
 # Terminology
 
