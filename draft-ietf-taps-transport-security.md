@@ -518,12 +518,12 @@ in encrypting (and authenticating) communication with a peer.
   - DTLS
   - ZRTP
   - QUIC
-  - ESP
-  - IPsec
-  - OpenVPN
   - tcpcrypt
   - MinimaLT
+  - IPsec
+  - ESP
   - WireGuard
+  - OpenVPN
 
 ## Connection Interfaces
 
