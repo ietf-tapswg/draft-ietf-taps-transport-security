@@ -145,8 +145,7 @@ Similarly, AH adds per-datagram authentication and integrity, along with replay 
 these improvements, neither protocol sees general use and both lack critical properties important for emergent transport
 security protocols, such as confidentiality and privacy protections. Such protocols are thus omitted from this survey.
 
-The protocols surveyed in this document are point-to-point protocols. Security of multicast protocols
-is not covered.
+This document only surveys point-to-point protocols; multicast protocols are out of scope.
 
 ## Goals
 
