@@ -139,16 +139,18 @@ are included despite overlapping features. As such, this survey is not limited t
 developed within the scope or context of the IETF. Outside of this candidate set, protocols
 that do not offer new features are omitted. For example, newer protocols such as WireGuard make
 unique design choices that have implications and limitations on application usage. In contrast,
-protocols such as ALTS {{ALTS}} are omitted since they do not provide interfaces deemed unique.
+protocols such as SSH {{?RFC4253}}, GRE {{?RFC2890}}, L2TP {{?RFC 5641}}, and ALTS {{ALTS}}
+are omitted since they do not provide interfaces deemed unique.
 
-Authentication-only protocols such as TCP-AO {{?RFC5925}} and IPsec AH {{?RFC4302}} are excluded
-from this survey. TCP-AO adds authenticity protections to long-lived TCP connections, e.g., replay
-protection  with per-packet Message Authentication Codes. (This protocol obsoletes TCP MD5 "signature"
-options specified in {{?RFC2385}}.) One prime use case of TCP-AO is for protecting BGP connections.
-Similarly, AH adds per-datagram authenticity and adds similar replay protection. Despite these
-improvements, neither protocol sees general use and both lack critical properties important for emergent
-transport security protocols: confidentiality, privacy protections, and agility. Such protocols are thus
-omitted from this survey.
+Authentication-only protocols such as TCP-AO {{?RFC5925}} and IPsec Authentication Header (AH) {{?RFC4302}}
+are excluded from this survey. TCP-AO adds authentication to long-lived TCP connections, e.g., replay
+protection with per-packet Message Authentication Codes. (TCP-AO obsoletes TCP MD5 "signature"
+options specified in {{?RFC2385}}.) One primary use case of TCP-AO is for protecting BGP connections.
+Similarly, AH adds per-datagram authentication and integrity, along with replay protection. Despite
+these improvements, neither protocol sees general use and both lack critical properties important for emergent transport
+security protocols, such as confidentiality and privacy protections. Such protocols are thus omitted from this survey.
+
+This document only surveys point-to-point protocols; multicast protocols are out of scope.
 
 ## Goals
 
@@ -228,11 +230,12 @@ between connection instances.
 
 # Transport Security Protocol Descriptions
 
-This section contains brief descriptions of the various security protocols currently used to protect
-data being sent over a network.  These protocols are grouped based on where in the protocol stack
-they are implemented, which influences which parts of a packet they protect: Generic application
-payload, application payload for specific application-layer protocols, both application payload and
-transport headers, or entire IP packets.
+This section contains brief transport and security descriptions of the various security
+protocols currently used to protect data being sent over a network. These protocols are
+grouped based on where in the protocol stack they are implemented, which influences
+which parts of a packet they protect: Generic application payload, application payload
+for specific application-layer protocols, both application payload and transport headers,
+or entire IP packets.
 
 Note that not all security protocols can be easily categorized, e.g., as some protocols can be used
 in different ways or in combination with other protocols.
@@ -447,7 +450,7 @@ cannot decouple the security from transport functionality.
 
 # Application Interface {#application-interface}
 
-This section describes the interface surface exposed by the security protocols described above.
+This section describes the interface exposed by the security protocols described above.
 We partition these interfaces into
 pre-connection (configuration), connection, and post-connection interfaces, following
 conventions in {{?I-D.ietf-taps-interface}} and {{?I-D.ietf-taps-arch}}.
@@ -504,7 +507,7 @@ keying material, and server parameters) that may be used to resume the security 
 
 - Authentication Delegation (AD):
 The application provides access to a separate module that will provide authentication,
-using EAP for example.
+using Extensible Authentication Protocol (EAP) {{?RFC3748}} for example.
   - IPsec
   - tcpcrypt
 
