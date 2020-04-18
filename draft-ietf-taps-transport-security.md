@@ -139,7 +139,7 @@ are omitted since they do not provide interfaces deemed unique.
 
 Authentication-only protocols such as TCP-AO {{?RFC5925}} and IPsec Authentication Header (AH) {{?RFC4302}}
 are excluded from this survey. TCP-AO adds authentication to long-lived TCP connections, e.g., replay
-protection  with per-packet Message Authentication Codes. (TCP-AO obsoletes TCP MD5 "signature"
+protection with per-packet Message Authentication Codes. (TCP-AO obsoletes TCP MD5 "signature"
 options specified in {{?RFC2385}}.) One primary use case of TCP-AO is for protecting BGP connections.
 Similarly, AH adds per-datagram authentication and integrity, along with replay protection. Despite
 these improvements, neither protocol sees general use and both lack critical properties important for emergent transport
