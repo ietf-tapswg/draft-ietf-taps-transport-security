@@ -604,7 +604,7 @@ The following table summarizes which protocol exposes which interface.
 | Protocol  | IPK | ALG | EXT | CM | AD | PSKI | IV | SAV | CT | KU | PSKE | KE | ME |
 |:----------|:---:|:---:|:---:|:--:|:--:|:----:|:--:|:---:|:--:|:--:|:----:|:--:|:--:|
 | TLS       | x   | x   | x   | x  |    | x    | x  |     | x  | x  | x    |    |    |
-| DTLS      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  | x    |    |    |
+| DTLS      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  | x    |    | x  |
 | ZRTP      | x   | x   |     | x  |    | x    | x  |     | x  |    |      |    |    |
 | QUIC      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  |      |    | x  |
 | tcpcrypt  |     | x   |     | x  | x  | x    |    |     | x  | x  | x    |    |    |
