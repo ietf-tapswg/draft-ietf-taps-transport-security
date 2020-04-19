@@ -139,7 +139,7 @@ are included despite overlapping features. As such, this survey is not limited t
 developed within the scope or context of the IETF. Outside of this candidate set, protocols
 that do not offer new features are omitted. For example, newer protocols such as WireGuard make
 unique design choices that have implications for and limitations on application usage. In contrast,
-protocols such as SSH {{?RFC4253}}, GRE {{?RFC2890}}, L2TP {{?RFC 5641}}, and ALTS {{ALTS}}
+protocols such as SSH {{?RFC4253}}, GRE {{?RFC2890}}, L2TP {{?RFC5641}}, and ALTS {{ALTS}}
 are omitted since they do not provide interfaces deemed unique.
 
 Authentication-only protocols such as TCP-AO {{?RFC5925}} and IPsec Authentication Header (AH) {{?RFC4302}}
