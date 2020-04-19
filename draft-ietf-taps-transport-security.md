@@ -138,7 +138,7 @@ IETF protocols such as (D)TLS, as well as non-standard protocols such as gQUIC,
 are included despite overlapping features. As such, this survey is not limited to protocols
 developed within the scope or context of the IETF. Outside of this candidate set, protocols
 that do not offer new features are omitted. For example, newer protocols such as WireGuard make
-unique design choices that have implications and limitations on application usage. In contrast,
+unique design choices that have implications for and limitations on application usage. In contrast,
 protocols such as SSH {{?RFC4253}}, GRE {{?RFC2890}}, L2TP {{?RFC 5641}}, and ALTS {{ALTS}}
 are omitted since they do not provide interfaces deemed unique.
 
@@ -180,14 +180,19 @@ even where their interfaces to transport and applications are equivalent. Even b
 protocols have subtly different guarantees and vulnerabilities. Thus, any implementation needs to only
 use the set of protocols and algorithms that are requested by applications or by a system policy.
 
-The protocols surveyed in this document represent a superset of functionality and features a Transport Services system may
-need to support. It does not list all transport protocols that a Transport Services system may need to implement, nor does it mandate that a Transport Service system implement any particular protocol.
+Different security protocols also can use incompatible notions of peer identity and authentication, and
+cryptographic options. It is not a goal to identify a common set of representations for these concepts.
 
-A Transport Services system may implement any secure transport protocol that provides the described features. In doing so, it may need to expose an interface to the application to configure these features.
+The protocols surveyed in this document represent a superset of functionality and features a Transport Services system may
+need to support. It does not list all transport protocols that a Transport Services system may need to implement, nor does
+it mandate that a Transport Service system implement any particular protocol.
+
+A Transport Services system may implement any secure transport protocol that provides the described features. In doing so,
+it may need to expose an interface to the application to configure these features.
 
 # Terminology
 
-The following terms are used throughout this document to describe the roles and interactions of transport security protocols:
+The following terms are used throughout this document to describe the roles and interactions of transport security protocols (some of which are also defined in {{?RFC8095}}):
 
 - Transport Feature: a specific end-to-end feature that the transport layer provides to an application.
 Examples include confidentiality, reliable delivery, ordered delivery, and message-versus-stream orientation.
@@ -198,7 +203,8 @@ which provides functionality to an application.
 - Transport Services system: a software component that exposes an interface to different Transport Services to an application.
 
 - Transport Protocol: an implementation that provides one or more different transport services using a
-specific framing and header format on the wire. A Transport Protocol services an application.
+specific framing and header format on the wire. A Transport Protocol services an application, whether
+directly or in conjunction with a security protocol.
 
 - Application: an entity that uses a transport protocol for end-to-end delivery of data across the network.
 This may also be an upper layer protocol or tunnel encapsulation.
@@ -252,7 +258,7 @@ which can use keys supplied by the handshake protocol IKEv2, by other handshake 
 manual configuration. Moreover, some protocols can be used in different ways: While the base TLS protocol as
 defined in {{RFC8446}} has an integrated handshake and record protocol, TLS or DTLS can also be used
 to negotiate keys for other protocols, as in DTLS-SRTP, or the handshake protocol can be used with
-a separate record layer, as in QUIC.
+a separate record layer, as in QUIC {{?I-D.ietf-quic-transport}}.
 
 ## Application Payload Security Protocols
 
@@ -265,15 +271,16 @@ TLS (Transport Layer Security) {{?RFC8446}} is a common protocol used to establi
 over this session "prevents eavesdropping, tampering, and message forgery." TLS consists
 of a tightly coupled handshake and record protocol. The handshake protocol is used to authenticate peers,
 negotiate protocol options, such as cryptographic algorithms, and derive session-specific
-keying material. The record protocol is used to marshal (possibly encrypted) data from one
-peer to the other. This data may contain handshake messages or raw application data.
+keying material. The record protocol is used to marshal and, once the handshake has sufficiently
+progressed, encrypt, data from one peer to the other. This data may contain handshake messages or
+raw application data.
 
 ### DTLS
 
-DTLS (Datagram Transport Layer Security) {{?RFC6347}} is based on TLS, but differs in that
+DTLS (Datagram Transport Layer Security) {{?RFC6347}} {{?I-D.ietf-tls-dtls13}} is based on TLS, but differs in that
 it is designed to run over unreliable datagram protocols like UDP instead of TCP.
-DTLS modifies the protocol to make sure it can still provide the same security guarantees as TLS
-even without reliability from the transport. DTLS was designed to be as similar to TLS as possible,
+DTLS modifies the protocol to make sure it can still provide equivalent security guarantees to TLS
+with the exception of order protection/non-replayability. DTLS was designed to be as similar to TLS as possible,
 so this document assumes that all properties from TLS are carried over except where specified.
 
 ## Application-Specific Security Protocols
@@ -357,7 +364,7 @@ but this document considers them together, since that is the most common pattern
 
 ### WireGuard
 
-WireGuard is an IP-layer protocol designed as an alternative to IPsec {{WireGuard}}
+WireGuard {{WireGuard}} is an IP-layer protocol designed as an alternative to IPsec
 for certain use cases. It uses UDP to encapsulate IP datagrams between peers.
 Unlike most transport security protocols, which rely on Public Key Infrastructure (PKI)
 for peer authentication, WireGuard authenticates peers using pre-shared public keys
@@ -464,8 +471,9 @@ In the following sections, we provide abbreviations of the interface names to us
 Configuration interfaces are used to configure the security protocols before a
 handshake begins or the keys are negotiated.
 
-- Identities and Private Keys (IPK): The application can provide its identities (certificates) and private keys, or
-mechanisms to access these, to the security protocol to use during handshakes.
+- Identities and Private Keys (IPK): The application can provide its identity,
+credentials (e.g., certificates), and private keys, or mechanisms to access these, to the
+security protocol to use during handshakes.
   - TLS
   - DTLS
   - ZRTP
@@ -541,8 +549,8 @@ This can call into the application to offload validation.
   - OpenVPN
 
 - Source Address Validation (SAV):
-The handshake protocol may delegate validation of the remote peer that has sent
-data to the transport protocol or application. This involves sending a cookie
+The handshake protocol may interact with the transport protocol or application to
+validate the address of the remote peer that has sent data. This involves sending a cookie
 exchange to avoid DoS attacks.
   - DTLS
   - QUIC
@@ -594,6 +602,7 @@ between the record layer and the handshake layer.
 The record protocol can be signaled that it is being migrated to another transport or interface due to
 connection mobility, which may reset address and state validation and induce state changes such
 as use of a new Connection Identifier (CID).
+  - DTLS (version 1.3 only {{?I-D.ietf-tls-dtls13}})
   - QUIC
   - MinimaLT
   - CurveCP
@@ -608,7 +617,7 @@ The following table summarizes which protocol exposes which interface.
 | Protocol  | IPK | ALG | EXT | CM | AD | PSKI | IV | SAV | CT | KU | PSKE | KE | ME |
 |:----------|:---:|:---:|:---:|:--:|:--:|:----:|:--:|:---:|:--:|:--:|:----:|:--:|:--:|
 | TLS       | x   | x   | x   | x  |    | x    | x  |     | x  | x  | x    |    |    |
-| DTLS      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  | x    |    |    |
+| DTLS      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  | x    |    | x  |
 | ZRTP      | x   | x   |     | x  |    | x    | x  |     | x  |    |      |    |    |
 | QUIC      | x   | x   | x   | x  |    | x    | x  | x   | x  | x  |      |    | x  |
 | tcpcrypt  |     | x   |     | x  | x  | x    |    |     | x  | x  | x    |    |    |
@@ -640,8 +649,8 @@ protocol implementation.
 # Privacy Considerations
 
 Analysis of how features improve or degrade privacy is intentionally omitted from this survey.
-All security protocols surveyed generally improve privacy by reducing information leakage via
-encryption. However, varying amounts of metadata remain in the clear across each
+All security protocols surveyed generally improve privacy by using encryption to reduce information
+leakage. However, varying amounts of metadata remain in the clear across each
 protocol. For example, client and server certificates are sent in cleartext in TLS
 1.2 {{?RFC5246}}, whereas they are encrypted in TLS 1.3 {{?RFC8446}}. A survey of privacy
 features, or lack thereof, for various security protocols could be addressed in a
