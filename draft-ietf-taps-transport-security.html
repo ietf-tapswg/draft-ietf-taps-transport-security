@@ -1,0 +1,2272 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>A Survey of the Interaction Between Security Protocols and Transport Services</title>
+<meta content="Theresa Enghardt" name="author">
+<meta content="Tommy Pauly" name="author">
+<meta content="Colin Perkins" name="author">
+<meta content="Kyle Rose" name="author">
+<meta content="Christopher A. Wood" name="author">
+<meta content="
+       This document provides a survey of commonly used or notable network security protocols, with a focus
+on how they interact and integrate with applications and transport protocols. Its goal is to supplement
+efforts to define and catalog transport services by describing the interfaces required to
+add security protocols. This survey is not limited to protocols developed within the scope or context of
+the IETF, and those included represent a superset of features a Transport Services system may need to support. 
+    " name="description">
+<meta content="xml2rfc 2.36.0" name="generator">
+<meta content="Internet-Draft" name="keyword">
+<meta content="draft-ietf-taps-transport-security-latest" name="ietf.draft">
+<link href="draft-ietf-taps-transport-security.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@import url('https://martinthomson.github.io/i-d-template/fonts.css');
+
+html {
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --small-font-size: 14.5px;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+#title, h1, h2, h3, h4, h5, h6 {
+  font-family: "Cabin Condensed", sans-serif;
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+#title {
+  padding: 1em 0 0.2em;
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 26px;
+}
+h4, h5, h6 {
+  font-size: 18px;
+  line-height: 22px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+}
+#abstract+p, #abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 18px;
+  line-height: 24px;
+}
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div, span {
+  position: relative;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 1em 2em;
+}
+ol ol, ul ul, ol ul, ul ol {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+ul.compact, .ulCompact,
+ol.compact, .olCompact {
+  line-height: 100%;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl > dd {
+  margin-bottom: .8em;
+  min-height: 1.3em;
+}
+dl.compact > dd, .dlCompact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href].selfRef {
+  color: var(--text-color);
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
+a.xref {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px 'Oxygen Mono', monospace;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+}
+@media screen {
+  pre {
+    display: inline-block;
+    overflow-x: auto;
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  pre + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+  table {
+    display: inline-block;
+    overflow-x: auto;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5em 0.75em;
+}
+th {
+  text-align: left;
+  background-color: #eee;
+}
+tr:nth-child(2n) > td {
+  background-color: var(--background-color);
+}
+tr:nth-child(2n+1) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody tr:nth-child(2n) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody tr:nth-child(2n+1) > td {
+  background-color: var(--background-color);
+}
+table caption {
+  margin: 0;
+  padding: 3px 1em;
+  border-top: 1px solid var(--line-color);
+}
+table p {
+  /* XXX to avoid bottom margin on table row signifiers. If paragraphs should
+     be allowed within tables more generally, it would be far better to select on a class. */
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  visibility: hidden;
+  user-select: none;
+}
+a.pilcrow[href] { color: #ddd; }
+a.pilcrow[href]:hover { text-decoration: none; }
+@media screen {
+  :hover > a.pilcrow {
+    visibility: visible;
+  }
+  a.pilcrow:hover {
+    background-color: transparent;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+}
+
+.role {
+  font-variant: all-small-caps;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 8em;
+}
+#identifiers dt {
+  width: var(--identifier-width);
+  margin: 0;
+  clear: left;
+  float: left;
+  text-align: right;
+}
+#identifiers dd {
+  margin: 0 0 0 calc(1em + var(--identifier-width));
+  min-width: 5em;
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+#toc nav ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+#toc nav li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+#toc a.xref {
+  white-space: normal;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dd {
+  margin-left: 8em;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+.index ul {
+  margin: 0 0 0 1em;
+  padding: 0;
+  list-style: none;
+}
+.index ul ul {
+  margin: 0;
+}
+.index li {
+  margin: 0;
+  text-indent: -2em;
+  padding-left: 2em;
+  padding-bottom: 5px;
+}
+.indexIndex {
+  margin: 0.5em 0 1em;
+}
+.index a {
+  font-weight: 700;
+}
+/* make the index two-column on all but the smallest screens */
+@media (min-width: 500px) {
+  .index ul {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  .index ul ul {
+    column-count: 1;
+    column-gap: 0;
+  }
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses > section {
+    display: relative;
+    padding: 32px 0 0;
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #name-authors-addresses {
+    position: absolute;
+    top: 0px;
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+    break-inside: avoid-column;
+  }
+}
+
+/* temporary notes */
+.rfcEditorRemove::before {
+  position: absolute;
+  top: 0.2em;
+  right: 0.2em;
+  padding: 0.2em;
+  content: "The RFC Editor will remove this note";
+  color: #b76427;
+  background-color: rgba(249, 232, 105, 0.3);
+}
+.rfcEditorRemove {
+  position: relative;
+  padding-top: 1.8em;
+  background-color: rgba(249, 232, 105, 0.3);
+  border-radius: 3px;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc.active {
+      opacity: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 8px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active nav {
+    display: block;
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin-top: 2px;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  #toc nav > ul  {
+    margin-bottom: 2em;
+  }
+  #toc ul {
+    margin: 0 0 0 4px;
+    font-size: var(--small-font-size);
+  }
+  #toc ul p, #toc ul li {
+    margin: 2px 0;
+    line-height: 22px;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre {
+    page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  h2+*, h3+*, h4+*, h5+*, h6+* {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Changes introduced to fix issues found during implementation */
+
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin: 8px 0.5em 0;
+}
+
+/* Fix the dl styling to match the RFC 7992 attributes */
+dl > dt,
+dl.dlParallel > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+
+/* Provide styling for table cell text alignment */
+table .text-left, table .text-left {
+  text-align: left;
+}
+table .text-center, table .text-center {
+  text-align: center;
+}
+table .text-right, table .text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 20em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Provide table alignment support.  We can't use the alignX classes above
+   since they do unwanted things with caption and other styling. */
+table.right {
+ margin-left: auto;
+ margin-right: 0;
+}
+table.center {
+ margin-left: auto;
+ margin-right: auto;
+}
+table.left {
+ margin-left: 0;
+ margin-right: auto;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  dd {
+    page-break-before: avoid;
+  }
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+/* Tweak the bcp14 keyword presentation */
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+</style>
+<link href="rfc-local.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">Transport Security Survey</td>
+<td class="right">April 2020</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Enghardt, et al.</td>
+<td class="center">Expires 21 October 2020</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Network Working Group</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-ietf-taps-transport-security-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2020-04-19" class="published">19 April 2020</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Informational</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2020-10-21">21 October 2020</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">T. Enghardt</div>
+<div class="org">TU Berlin</div>
+</div>
+<div class="author">
+      <div class="author-name">T. Pauly</div>
+<div class="org">Apple Inc.</div>
+</div>
+<div class="author">
+      <div class="author-name">C. Perkins</div>
+<div class="org">University of Glasgow</div>
+</div>
+<div class="author">
+      <div class="author-name">K. Rose</div>
+<div class="org">Akamai Technologies, Inc.</div>
+</div>
+<div class="author">
+      <div class="author-name">C.A. Wood</div>
+<div class="org">Cloudflare</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">A Survey of the Interaction Between Security Protocols and Transport Services</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document provides a survey of commonly used or notable network security protocols, with a focus
+on how they interact and integrate with applications and transport protocols. Its goal is to supplement
+efforts to define and catalog transport services by describing the interfaces required to
+add security protocols. This survey is not limited to protocols developed within the scope or context of
+the IETF, and those included represent a superset of features a Transport Services system may need to support.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 21 October 2020.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2020 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Simplified BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Simplified BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1"><a href="#section-1" class="xref">1</a>.  <a href="#name-introduction" class="xref">Introduction</a><a href="#section-toc.1-1.1.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1"><a href="#section-1.1" class="xref">1.1</a>.  <a href="#name-goals" class="xref">Goals</a><a href="#section-toc.1-1.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="toc ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1"><a href="#section-1.2" class="xref">1.2</a>.  <a href="#name-non-goals" class="xref">Non-Goals</a><a href="#section-toc.1-1.1.2.2.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+          <li class="toc ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="xref">2</a>.  <a href="#name-terminology" class="xref">Terminology</a><a href="#section-toc.1-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="toc ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="xref">3</a>.  <a href="#name-transport-security-protocol" class="xref">Transport Security Protocol Descriptions</a><a href="#section-toc.1-1.3.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="xref">3.1</a>.  <a href="#name-application-payload-securit" class="xref">Application Payload Security Protocols</a><a href="#section-toc.1-1.3.2.1.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.3.2.1.2.1">
+                    <p id="section-toc.1-1.3.2.1.2.1.1"><a href="#section-3.1.1" class="xref">3.1.1</a>.  <a href="#name-tls" class="xref">TLS</a><a href="#section-toc.1-1.3.2.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                  <li class="toc ulEmpty" id="section-toc.1-1.3.2.1.2.2">
+                    <p id="section-toc.1-1.3.2.1.2.2.1"><a href="#section-3.1.2" class="xref">3.1.2</a>.  <a href="#name-dtls" class="xref">DTLS</a><a href="#section-toc.1-1.3.2.1.2.2.1" class="pilcrow">¶</a></p>
+</li>
+                </ul>
+</li>
+              <li class="toc ulEmpty" id="section-toc.1-1.3.2.2">
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="xref">3.2</a>.  <a href="#name-application-specific-securi" class="xref">Application-Specific Security Protocols</a><a href="#section-toc.1-1.3.2.2.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.3.2.2.2.1">
+                    <p id="section-toc.1-1.3.2.2.2.1.1"><a href="#section-3.2.1" class="xref">3.2.1</a>.  <a href="#name-secure-rtp" class="xref">Secure RTP</a><a href="#section-toc.1-1.3.2.2.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                </ul>
+</li>
+              <li class="toc ulEmpty" id="section-toc.1-1.3.2.3">
+                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="xref">3.3</a>.  <a href="#name-transport-layer-security-pr" class="xref">Transport-Layer Security Protocols</a><a href="#section-toc.1-1.3.2.3.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.3.2.3.2.1">
+                    <p id="section-toc.1-1.3.2.3.2.1.1"><a href="#section-3.3.1" class="xref">3.3.1</a>.  <a href="#name-ietf-quic" class="xref">IETF QUIC</a><a href="#section-toc.1-1.3.2.3.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                  <li class="toc ulEmpty" id="section-toc.1-1.3.2.3.2.2">
+                    <p id="section-toc.1-1.3.2.3.2.2.1"><a href="#section-3.3.2" class="xref">3.3.2</a>.  <a href="#name-google-quic" class="xref">Google QUIC</a><a href="#section-toc.1-1.3.2.3.2.2.1" class="pilcrow">¶</a></p>
+</li>
+                  <li class="toc ulEmpty" id="section-toc.1-1.3.2.3.2.3">
+                    <p id="section-toc.1-1.3.2.3.2.3.1"><a href="#section-3.3.3" class="xref">3.3.3</a>.  <a href="#name-tcpcrypt" class="xref">tcpcrypt</a><a href="#section-toc.1-1.3.2.3.2.3.1" class="pilcrow">¶</a></p>
+</li>
+                  <li class="toc ulEmpty" id="section-toc.1-1.3.2.3.2.4">
+                    <p id="section-toc.1-1.3.2.3.2.4.1"><a href="#section-3.3.4" class="xref">3.3.4</a>.  <a href="#name-minimalt" class="xref">MinimaLT</a><a href="#section-toc.1-1.3.2.3.2.4.1" class="pilcrow">¶</a></p>
+</li>
+                  <li class="toc ulEmpty" id="section-toc.1-1.3.2.3.2.5">
+                    <p id="section-toc.1-1.3.2.3.2.5.1"><a href="#section-3.3.5" class="xref">3.3.5</a>.  <a href="#name-curvecp" class="xref">CurveCP</a><a href="#section-toc.1-1.3.2.3.2.5.1" class="pilcrow">¶</a></p>
+</li>
+                </ul>
+</li>
+              <li class="toc ulEmpty" id="section-toc.1-1.3.2.4">
+                <p id="section-toc.1-1.3.2.4.1"><a href="#section-3.4" class="xref">3.4</a>.  <a href="#name-packet-security-protocols" class="xref">Packet Security Protocols</a><a href="#section-toc.1-1.3.2.4.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.3.2.4.2.1">
+                    <p id="section-toc.1-1.3.2.4.2.1.1"><a href="#section-3.4.1" class="xref">3.4.1</a>.  <a href="#name-ipsec" class="xref">IPsec</a><a href="#section-toc.1-1.3.2.4.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                  <li class="toc ulEmpty" id="section-toc.1-1.3.2.4.2.2">
+                    <p id="section-toc.1-1.3.2.4.2.2.1"><a href="#section-3.4.2" class="xref">3.4.2</a>.  <a href="#name-wireguard" class="xref">WireGuard</a><a href="#section-toc.1-1.3.2.4.2.2.1" class="pilcrow">¶</a></p>
+</li>
+                  <li class="toc ulEmpty" id="section-toc.1-1.3.2.4.2.3">
+                    <p id="section-toc.1-1.3.2.4.2.3.1"><a href="#section-3.4.3" class="xref">3.4.3</a>.  <a href="#name-openvpn" class="xref">OpenVPN</a><a href="#section-toc.1-1.3.2.4.2.3.1" class="pilcrow">¶</a></p>
+</li>
+                </ul>
+</li>
+            </ul>
+</li>
+          <li class="toc ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="xref">4</a>.  <a href="#name-transport-dependencies" class="xref">Transport Dependencies</a><a href="#section-toc.1-1.4.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="xref">4.1</a>.  <a href="#name-reliable-byte-stream-transp" class="xref">Reliable Byte-Stream Transports</a><a href="#section-toc.1-1.4.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="toc ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="xref">4.2</a>.  <a href="#name-unreliable-datagram-transpo" class="xref">Unreliable Datagram Transports</a><a href="#section-toc.1-1.4.2.2.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.4.2.2.2.1">
+                    <p id="section-toc.1-1.4.2.2.2.1.1"><a href="#section-4.2.1" class="xref">4.2.1</a>.  <a href="#name-datagram-protocols-with-def" class="xref">Datagram Protocols with Defined Byte-Stream Mappings</a><a href="#section-toc.1-1.4.2.2.2.1.1" class="pilcrow">¶</a></p>
+</li>
+                </ul>
+</li>
+              <li class="toc ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="xref">4.3</a>.  <a href="#name-transport-specific-dependen" class="xref">Transport-Specific Dependencies</a><a href="#section-toc.1-1.4.2.3.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+          <li class="toc ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="xref">5</a>.  <a href="#name-application-interface" class="xref">Application Interface</a><a href="#section-toc.1-1.5.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="xref">5.1</a>.  <a href="#name-pre-connection-interfaces" class="xref">Pre-Connection Interfaces</a><a href="#section-toc.1-1.5.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="toc ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="xref">5.2</a>.  <a href="#name-connection-interfaces" class="xref">Connection Interfaces</a><a href="#section-toc.1-1.5.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="toc ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="xref">5.3</a>.  <a href="#name-post-connection-interfaces" class="xref">Post-Connection Interfaces</a><a href="#section-toc.1-1.5.2.3.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="toc ulEmpty" id="section-toc.1-1.5.2.4">
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="xref">5.4</a>.  <a href="#name-summary-of-interfaces-expos" class="xref">Summary of Interfaces Exposed by Protocols</a><a href="#section-toc.1-1.5.2.4.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+          <li class="toc ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="xref">6</a>.  <a href="#name-iana-considerations" class="xref">IANA Considerations</a><a href="#section-toc.1-1.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="toc ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="xref">7</a>.  <a href="#name-security-considerations" class="xref">Security Considerations</a><a href="#section-toc.1-1.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="toc ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="xref">8</a>.  <a href="#name-privacy-considerations" class="xref">Privacy Considerations</a><a href="#section-toc.1-1.8.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="toc ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="xref">9</a>.  <a href="#name-acknowledgments" class="xref">Acknowledgments</a><a href="#section-toc.1-1.9.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="toc ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="xref">10</a>. <a href="#name-informative-references" class="xref">Informative References</a><a href="#section-toc.1-1.10.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="toc ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#section-appendix.a" class="xref"></a><a href="#name-authors-addresses" class="xref">Authors' Addresses</a><a href="#section-toc.1-1.11.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">Services and features provided by transport protocols have been cataloged in <span>[<a href="#RFC8095" class="xref">RFC8095</a>]</span>. This
+document supplements that work by surveying commonly used and notable network security protocols,
+and identifying the interfaces between these protocols and both transport protocols and
+applications.  It examines Transport Layer Security (TLS), Datagram Transport Layer Security (DTLS),
+IETF QUIC, Google QUIC (gQUIC), tcpcrypt, Internet Protocol Security (IPsec), Secure Real-time Transport Protocol (SRTP) with DTLS,
+WireGuard, CurveCP, and MinimaLT. For each protocol, this document provides a brief description.
+Then, it describes the interfaces between these protocols and transports in <a href="#transport-interface" class="xref">Section 4</a>
+and the interfaces between these protocols and applications in <a href="#application-interface" class="xref">Section 5</a>.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">A Transport Services system exposes an interface for applications to access various (secure) transport protocol features.
+The security protocols included in this survey represent a superset of functionality and features a Transport Services system may
+need to support, both internally and externally (via an API) for applications <span>[<a href="#I-D.ietf-taps-arch" class="xref">I-D.ietf-taps-arch</a>]</span>. Ubiquitous
+IETF protocols such as (D)TLS, as well as non-standard protocols such as gQUIC,
+are included despite overlapping features. As such, this survey is not limited to protocols
+developed within the scope or context of the IETF. Outside of this candidate set, protocols
+that do not offer new features are omitted. For example, newer protocols such as WireGuard make
+unique design choices that have implications for and limitations on application usage. In contrast,
+protocols such as SSH <span>[<a href="#RFC4253" class="xref">RFC4253</a>]</span>, GRE <span>[<a href="#RFC2890" class="xref">RFC2890</a>]</span>, L2TP <span>[<a href="#RFC5641" class="xref">RFC5641</a>]</span>, and ALTS <span>[<a href="#ALTS" class="xref">ALTS</a>]</span>
+are omitted since they do not provide interfaces deemed unique.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">Authentication-only protocols such as TCP-AO <span>[<a href="#RFC5925" class="xref">RFC5925</a>]</span> and IPsec Authentication Header (AH) <span>[<a href="#RFC4302" class="xref">RFC4302</a>]</span>
+are excluded from this survey. TCP-AO adds authentication to long-lived TCP connections, e.g., replay
+protection with per-packet Message Authentication Codes. (TCP-AO obsoletes TCP MD5 "signature"
+options specified in <span>[<a href="#RFC2385" class="xref">RFC2385</a>]</span>.) One primary use case of TCP-AO is for protecting BGP connections.
+Similarly, AH adds per-datagram authentication and integrity, along with replay protection. Despite
+these improvements, neither protocol sees general use and both lack critical properties important for emergent transport
+security protocols, such as confidentiality and privacy protections. Such protocols are thus omitted from this survey.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">This document only surveys point-to-point protocols; multicast protocols are out of scope.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<div id="goals">
+<section id="section-1.1">
+        <h3 id="name-goals">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-goals" class="section-name selfRef">Goals</a>
+        </h3>
+<p id="section-1.1-1">This survey is intended to help identify the most common interface surfaces between security protocols and
+transport protocols, and between security protocols and applications.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-2">One of the goals of the Transport Services effort is to define a common interface for using transport protocols that allows
+software using transport protocols to easily adopt new protocols that provide similar feature-sets. The survey of
+the dependencies security protocols have upon transport protocols can guide implementations in determining
+which transport protocols are appropriate to be able to use beneath a given security protocol. For example,
+a security protocol that expects to run over a reliable stream of bytes, like TLS, restricts the set of transport
+protocols that can be used to those that offer a reliable stream of bytes.<a href="#section-1.1-2" class="pilcrow">¶</a></p>
+<p id="section-1.1-3">Defining the common interfaces that security protocols provide to applications also allows interfaces to be
+designed in a way that common functionality can use the same APIs. For example, many security protocols
+that provide authentication let the application be involved in peer identity validation. Any interface to use
+a secure transport protocol stack thus needs to allow applications to perform this action during connection
+establishment.<a href="#section-1.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="non-goals">
+<section id="section-1.2">
+        <h3 id="name-non-goals">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-non-goals" class="section-name selfRef">Non-Goals</a>
+        </h3>
+<p id="section-1.2-1">While this survey provides similar analysis to that which was performed for transport protocols in <span>[<a href="#RFC8095" class="xref">RFC8095</a>]</span>,
+it is important to distinguish that the use of security protocols requires more consideration.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<p id="section-1.2-2">It is not a goal to allow software implementations to automatically switch between different security protocols,
+even where their interfaces to transport and applications are equivalent. Even between versions, security
+protocols have subtly different guarantees and vulnerabilities. Thus, any implementation needs to only
+use the set of protocols and algorithms that are requested by applications or by a system policy.<a href="#section-1.2-2" class="pilcrow">¶</a></p>
+<p id="section-1.2-3">Different security protocols also can use incompatible notions of peer identity and authentication, and
+cryptographic options. It is not a goal to identify a common set of representations for these concepts.<a href="#section-1.2-3" class="pilcrow">¶</a></p>
+<p id="section-1.2-4">The protocols surveyed in this document represent a superset of functionality and features a Transport Services system may
+need to support. It does not list all transport protocols that a Transport Services system may need to implement, nor does
+it mandate that a Transport Service system implement any particular protocol.<a href="#section-1.2-4" class="pilcrow">¶</a></p>
+<p id="section-1.2-5">A Transport Services system may implement any secure transport protocol that provides the described features. In doing so,
+it may need to expose an interface to the application to configure these features.<a href="#section-1.2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="terminology">
+<section id="section-2">
+      <h2 id="name-terminology">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
+      </h2>
+<p id="section-2-1">The following terms are used throughout this document to describe the roles and interactions of transport security protocols (some of which are also defined in <span>[<a href="#RFC8095" class="xref">RFC8095</a>]</span>):<a href="#section-2-1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-2-2.1">Transport Feature: a specific end-to-end feature that the transport layer provides to an application.
+Examples include confidentiality, reliable delivery, ordered delivery, and message-versus-stream orientation.<a href="#section-2-2.1" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.2">Transport Service: a set of Transport Features, without an association to any given framing protocol,
+which provides functionality to an application.<a href="#section-2-2.2" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.3">Transport Services system: a software component that exposes an interface to different Transport Services to an application.<a href="#section-2-2.3" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.4">Transport Protocol: an implementation that provides one or more different transport services using a
+specific framing and header format on the wire. A Transport Protocol services an application, whether
+directly or in conjunction with a security protocol.<a href="#section-2-2.4" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.5">Application: an entity that uses a transport protocol for end-to-end delivery of data across the network.
+This may also be an upper layer protocol or tunnel encapsulation.<a href="#section-2-2.5" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.6">Security Protocol: a defined network protocol that implements one or more security features, such as
+authentication, encryption, key generation, session resumption, and privacy. Security
+protocols may be used alongside transport protocols, and in combination with other security protocols when
+appropriate.<a href="#section-2-2.6" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.7">Handshake Protocol: a protocol that enables peers to validate each other and to securely establish
+shared cryptographic context.<a href="#section-2-2.7" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.8">Record: Framed protocol messages.<a href="#section-2-2.8" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.9">Record Protocol: a security protocol that allows data to be divided into manageable blocks and protected
+using shared cryptographic context.<a href="#section-2-2.9" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.10">Session: an ephemeral security association between applications.<a href="#section-2-2.10" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.11">Connection: the shared state of two or more endpoints that persists across messages that are transmitted
+between these endpoints. A connection is a transient participant of a session, and a session generally lasts
+between connection instances.<a href="#section-2-2.11" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.12">Peer: an endpoint application party to a session.<a href="#section-2-2.12" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.13">Client: the peer responsible for initiating a session.<a href="#section-2-2.13" class="pilcrow">¶</a>
+</li>
+        <li id="section-2-2.14">Server: the peer responsible for responding to a session initiation.<a href="#section-2-2.14" class="pilcrow">¶</a>
+</li>
+      </ul>
+</section>
+</div>
+<div id="transport-security-protocol-descriptions">
+<section id="section-3">
+      <h2 id="name-transport-security-protocol">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-transport-security-protocol" class="section-name selfRef">Transport Security Protocol Descriptions</a>
+      </h2>
+<p id="section-3-1">This section contains brief transport and security descriptions of the various security
+protocols currently used to protect data being sent over a network. These protocols are
+grouped based on where in the protocol stack they are implemented, which influences
+which parts of a packet they protect: Generic application payload, application payload
+for specific application-layer protocols, both application payload and transport headers,
+or entire IP packets.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-2">Note that not all security protocols can be easily categorized, e.g., as some protocols can be used
+in different ways or in combination with other protocols.
+One major reason for this is that channel security protocols often consist of two components:<a href="#section-3-2" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-3-3.1">A handshake protocol, which is responsible for negotiating parameters, authenticating the
+endpoints, and establishing shared keys.<a href="#section-3-3.1" class="pilcrow">¶</a>
+</li>
+        <li id="section-3-3.2">A record protocol, which is used to encrypt traffic using keys and parameters provided by the
+handshake protocol.<a href="#section-3-3.2" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="section-3-4">For some protocols, such as tcpcrypt, these two components are tightly integrated. In contrast, for
+IPsec, these components are implemented in separate protocols: AH and ESP are record protocols,
+which can use keys supplied by the handshake protocol IKEv2, by other handshake protocols, or by
+manual configuration. Moreover, some protocols can be used in different ways: While the base TLS protocol as
+defined in <span>[<a href="#RFC8446" class="xref">RFC8446</a>]</span> has an integrated handshake and record protocol, TLS or DTLS can also be used
+to negotiate keys for other protocols, as in DTLS-SRTP, or the handshake protocol can be used with
+a separate record layer, as in QUIC <span>[<a href="#I-D.ietf-quic-transport" class="xref">I-D.ietf-quic-transport</a>]</span>.<a href="#section-3-4" class="pilcrow">¶</a></p>
+<div id="application-payload-security-protocols">
+<section id="section-3.1">
+        <h3 id="name-application-payload-securit">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-application-payload-securit" class="section-name selfRef">Application Payload Security Protocols</a>
+        </h3>
+<p id="section-3.1-1">The following protocols provide security that protects application payloads sent over a
+transport. They do not specifically protect any headers used for transport-layer functionality.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<div id="tls">
+<section id="section-3.1.1">
+          <h4 id="name-tls">
+<a href="#section-3.1.1" class="section-number selfRef">3.1.1. </a><a href="#name-tls" class="section-name selfRef">TLS</a>
+          </h4>
+<p id="section-3.1.1-1">TLS (Transport Layer Security) <span>[<a href="#RFC8446" class="xref">RFC8446</a>]</span> is a common protocol used to establish a secure session between two endpoints. Communication
+over this session "prevents eavesdropping, tampering, and message forgery." TLS consists
+of a tightly coupled handshake and record protocol. The handshake protocol is used to authenticate peers,
+negotiate protocol options, such as cryptographic algorithms, and derive session-specific
+keying material. The record protocol is used to marshal and, once the handshake has sufficiently
+progressed, encrypt, data from one peer to the other. This data may contain handshake messages or
+raw application data.<a href="#section-3.1.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="dtls">
+<section id="section-3.1.2">
+          <h4 id="name-dtls">
+<a href="#section-3.1.2" class="section-number selfRef">3.1.2. </a><a href="#name-dtls" class="section-name selfRef">DTLS</a>
+          </h4>
+<p id="section-3.1.2-1">DTLS (Datagram Transport Layer Security) <span>[<a href="#RFC6347" class="xref">RFC6347</a>]</span> <span>[<a href="#I-D.ietf-tls-dtls13" class="xref">I-D.ietf-tls-dtls13</a>]</span> is based on TLS, but differs in that
+it is designed to run over unreliable datagram protocols like UDP instead of TCP.
+DTLS modifies the protocol to make sure it can still provide equivalent security guarantees to TLS
+with the exception of order protection/non-replayability. DTLS was designed to be as similar to TLS as possible,
+so this document assumes that all properties from TLS are carried over except where specified.<a href="#section-3.1.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="application-specific-security-protocols">
+<section id="section-3.2">
+        <h3 id="name-application-specific-securi">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-application-specific-securi" class="section-name selfRef">Application-Specific Security Protocols</a>
+        </h3>
+<p id="section-3.2-1">The following protocols provide application-specific security by protecting
+application payloads used for specific use-cases. Unlike the protocols above,
+these are not intended for generic application use.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<div id="secure-rtp">
+<section id="section-3.2.1">
+          <h4 id="name-secure-rtp">
+<a href="#section-3.2.1" class="section-number selfRef">3.2.1. </a><a href="#name-secure-rtp" class="section-name selfRef">Secure RTP</a>
+          </h4>
+<p id="section-3.2.1-1">Secure RTP (SRTP) is a profile for RTP that provides confidentiality,
+message authentication, and replay protection for RTP data packets
+and RTP control protocol (RTCP) packets <span>[<a href="#RFC3711" class="xref">RFC3711</a>]</span>.
+SRTP provides a record layer only, and requires a separate handshake
+protocol to provide key agreement and identity management.<a href="#section-3.2.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.2.1-2">The commonly used handshake protocol for SRTP is DTLS, in the form of
+DTLS-SRTP <span>[<a href="#RFC5764" class="xref">RFC5764</a>]</span>.  This is an extension to DTLS that negotiates
+the use of SRTP as the record layer, and describes how to export keys
+for use with SRTP.<a href="#section-3.2.1-2" class="pilcrow">¶</a></p>
+<p id="section-3.2.1-3">ZRTP <span>[<a href="#RFC6189" class="xref">RFC6189</a>]</span> is an alternative key agreement and identity management
+protocol for SRTP.  ZRTP Key agreement is performed using a Diffie-Hellman
+key exchange that runs on the media path. This generates a shared secret
+that is then used to generate the master key and salt for SRTP.<a href="#section-3.2.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="transport-layer-security-protocols">
+<section id="section-3.3">
+        <h3 id="name-transport-layer-security-pr">
+<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-transport-layer-security-pr" class="section-name selfRef">Transport-Layer Security Protocols</a>
+        </h3>
+<p id="section-3.3-1">The following security protocols provide protection for both application payloads and
+headers that are used for transport services.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<div id="quic">
+<section id="section-3.3.1">
+          <h4 id="name-ietf-quic">
+<a href="#section-3.3.1" class="section-number selfRef">3.3.1. </a><a href="#name-ietf-quic" class="section-name selfRef">IETF QUIC</a>
+          </h4>
+<p id="section-3.3.1-1">QUIC is a new standards-track transport protocol that runs over UDP, loosely based on Google's
+original proprietary gQUIC protocol <span>[<a href="#I-D.ietf-quic-transport" class="xref">I-D.ietf-quic-transport</a>]</span> (See <a href="#gquic" class="xref">Section 3.3.2</a> for more details).
+The QUIC transport layer itself provides support for data confidentiality and integrity. This requires
+keys to be derived with a separate handshake protocol. A mapping for QUIC of TLS 1.3 <span>[<a href="#I-D.ietf-quic-tls" class="xref">I-D.ietf-quic-tls</a>]</span>
+has been specified to provide this handshake.<a href="#section-3.3.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="gquic">
+<section id="section-3.3.2">
+          <h4 id="name-google-quic">
+<a href="#section-3.3.2" class="section-number selfRef">3.3.2. </a><a href="#name-google-quic" class="section-name selfRef">Google QUIC</a>
+          </h4>
+<p id="section-3.3.2-1">Google QUIC (gQUIC) is a UDP-based multiplexed streaming protocol designed and deployed by Google
+following experience from deploying SPDY, the proprietary predecessor to HTTP/2.
+gQUIC was originally known as "QUIC": this document uses gQUIC to unambiguously distinguish
+it from the standards-track IETF QUIC. The proprietary technical forebear of IETF QUIC, gQUIC
+was originally designed with tightly-integrated security and application data transport protocols.<a href="#section-3.3.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="tcpcrypt">
+<section id="section-3.3.3">
+          <h4 id="name-tcpcrypt">
+<a href="#section-3.3.3" class="section-number selfRef">3.3.3. </a><a href="#name-tcpcrypt" class="section-name selfRef">tcpcrypt</a>
+          </h4>
+<p id="section-3.3.3-1">Tcpcrypt <span>[<a href="#RFC8548" class="xref">RFC8548</a>]</span> is a lightweight extension to the TCP protocol for opportunistic encryption. Applications may
+use tcpcrypt's unique session ID for further application-level authentication. Absent this authentication,
+tcpcrypt is vulnerable to active attacks.<a href="#section-3.3.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="minimalt">
+<section id="section-3.3.4">
+          <h4 id="name-minimalt">
+<a href="#section-3.3.4" class="section-number selfRef">3.3.4. </a><a href="#name-minimalt" class="section-name selfRef">MinimaLT</a>
+          </h4>
+<p id="section-3.3.4-1">MinimaLT is a UDP-based transport security protocol designed to offer confidentiality,
+mutual authentication, DoS prevention, and connection mobility <span>[<a href="#MinimaLT" class="xref">MinimaLT</a>]</span>. One major
+goal of the protocol is to leverage existing protocols to obtain server-side configuration
+information used to more quickly bootstrap a connection. MinimaLT uses a variant of TCP's
+congestion control algorithm.<a href="#section-3.3.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="curvecp">
+<section id="section-3.3.5">
+          <h4 id="name-curvecp">
+<a href="#section-3.3.5" class="section-number selfRef">3.3.5. </a><a href="#name-curvecp" class="section-name selfRef">CurveCP</a>
+          </h4>
+<p id="section-3.3.5-1">CurveCP <span>[<a href="#CurveCP" class="xref">CurveCP</a>]</span> is a UDP-based transport security protocol from Daniel J. Bernstein.
+Unlike many other security protocols, it is based entirely upon public key algorithms.
+CurveCP provides its own reliability for application data as part of its protocol.<a href="#section-3.3.5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="packet-security-protocols">
+<section id="section-3.4">
+        <h3 id="name-packet-security-protocols">
+<a href="#section-3.4" class="section-number selfRef">3.4. </a><a href="#name-packet-security-protocols" class="section-name selfRef">Packet Security Protocols</a>
+        </h3>
+<p id="section-3.4-1">The following protocols provide protection for IP packets. These are generally used as tunnels,
+such as for Virtual Private Networks (VPNs). Often, applications will not interact directly with these
+protocols. However, applications that implement tunnels will interact directly with these protocols.<a href="#section-3.4-1" class="pilcrow">¶</a></p>
+<div id="ipsec">
+<section id="section-3.4.1">
+          <h4 id="name-ipsec">
+<a href="#section-3.4.1" class="section-number selfRef">3.4.1. </a><a href="#name-ipsec" class="section-name selfRef">IPsec</a>
+          </h4>
+<p id="section-3.4.1-1">IKEv2 <span>[<a href="#RFC7296" class="xref">RFC7296</a>]</span> and ESP <span>[<a href="#RFC4303" class="xref">RFC4303</a>]</span> together form the modern IPsec protocol suite that encrypts
+and authenticates IP packets, either for creating tunnels (tunnel-mode) or for direct transport
+connections (transport-mode). This suite of protocols separates out the key generation protocol
+(IKEv2) from the transport encryption protocol (ESP). Each protocol can be used independently,
+but this document considers them together, since that is the most common pattern.<a href="#section-3.4.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="wireguard">
+<section id="section-3.4.2">
+          <h4 id="name-wireguard">
+<a href="#section-3.4.2" class="section-number selfRef">3.4.2. </a><a href="#name-wireguard" class="section-name selfRef">WireGuard</a>
+          </h4>
+<p id="section-3.4.2-1">WireGuard <span>[<a href="#WireGuard" class="xref">WireGuard</a>]</span> is an IP-layer protocol designed as an alternative to IPsec
+for certain use cases. It uses UDP to encapsulate IP datagrams between peers.
+Unlike most transport security protocols, which rely on Public Key Infrastructure (PKI)
+for peer authentication, WireGuard authenticates peers using pre-shared public keys
+delivered out-of-band, each of which is bound to one or more IP addresses.
+Moreover, as a protocol suited for VPNs, WireGuard offers no extensibility, negotiation,
+or cryptographic agility.<a href="#section-3.4.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="openvpn">
+<section id="section-3.4.3">
+          <h4 id="name-openvpn">
+<a href="#section-3.4.3" class="section-number selfRef">3.4.3. </a><a href="#name-openvpn" class="section-name selfRef">OpenVPN</a>
+          </h4>
+<p id="section-3.4.3-1">OpenVPN <span>[<a href="#OpenVPN" class="xref">OpenVPN</a>]</span> is a commonly used protocol designed as an alternative to
+IPsec. A major goal of this protocol is to provide a VPN that is simple to
+configure and works over a variety of transports. OpenVPN encapsulates either
+IP packets or Ethernet frames within a secure tunnel and can run over either UDP or TCP.
+For key establishment, OpenVPN can either use TLS as a handshake protocol or use pre-shared keys.<a href="#section-3.4.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="transport-interface">
+<section id="section-4">
+      <h2 id="name-transport-dependencies">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-transport-dependencies" class="section-name selfRef">Transport Dependencies</a>
+      </h2>
+<p id="section-4-1">Across the different security protocols listed above, the primary dependency on transport
+protocols is the presentation of data: either an unbounded stream of bytes, or framed
+messages. Within protocols that rely on the transport for message framing, most are
+built to run over transports that inherently provide framing, like UDP, but some also define
+how their messages can be framed over byte-stream transports.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<div id="reliable-byte-stream-transports">
+<section id="section-4.1">
+        <h3 id="name-reliable-byte-stream-transp">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-reliable-byte-stream-transp" class="section-name selfRef">Reliable Byte-Stream Transports</a>
+        </h3>
+<p id="section-4.1-1">The following protocols all depend upon running on a transport protocol that provides
+a reliable, in-order stream of bytes. This is typically TCP.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">Application Payload Security Protocols:<a href="#section-4.1-2" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-4.1-3.1">TLS<a href="#section-4.1-3.1" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-4.1-4">Transport-Layer Security Protocols:<a href="#section-4.1-4" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-4.1-5.1">tcpcrypt<a href="#section-4.1-5.1" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+</div>
+<div id="unreliable-datagram-transports">
+<section id="section-4.2">
+        <h3 id="name-unreliable-datagram-transpo">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-unreliable-datagram-transpo" class="section-name selfRef">Unreliable Datagram Transports</a>
+        </h3>
+<p id="section-4.2-1">The following protocols all depend on the transport protocol to provide message framing
+to encapsulate their data. These protocols are built to run using UDP, and thus do not
+have any requirement for reliability. Running these protocols over a protocol that
+does provide reliability will not break functionality, but may lead to multiple layers
+of reliability if the security protocol is encapsulating other transport protocol traffic.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<p id="section-4.2-2">Application Payload Security Protocols:<a href="#section-4.2-2" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-4.2-3.1">DTLS<a href="#section-4.2-3.1" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.2-3.2">ZRTP<a href="#section-4.2-3.2" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.2-3.3">SRTP<a href="#section-4.2-3.3" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-4.2-4">Transport-Layer Security Protocols:<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-4.2-5.1">QUIC<a href="#section-4.2-5.1" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.2-5.2">MinimaLT<a href="#section-4.2-5.2" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.2-5.3">CurveCP<a href="#section-4.2-5.3" class="pilcrow">¶</a>
+</li>
+        </ul>
+<p id="section-4.2-6">Packet Security Protocols:<a href="#section-4.2-6" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-4.2-7.1">IPsec<a href="#section-4.2-7.1" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.2-7.2">WireGuard<a href="#section-4.2-7.2" class="pilcrow">¶</a>
+</li>
+          <li id="section-4.2-7.3">OpenVPN<a href="#section-4.2-7.3" class="pilcrow">¶</a>
+</li>
+        </ul>
+<div id="datagram-protocols-with-defined-byte-stream-mappings">
+<section id="section-4.2.1">
+          <h4 id="name-datagram-protocols-with-def">
+<a href="#section-4.2.1" class="section-number selfRef">4.2.1. </a><a href="#name-datagram-protocols-with-def" class="section-name selfRef">Datagram Protocols with Defined Byte-Stream Mappings</a>
+          </h4>
+<p id="section-4.2.1-1">Of the protocols listed above that depend on the transport for message framing, some
+do have well-defined mappings for sending their messages over byte-stream transports
+like TCP.<a href="#section-4.2.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.2.1-2">Application Payload Security Protocols:<a href="#section-4.2.1-2" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-4.2.1-3.1">DTLS when used as a handshake protocol for SRTP <span>[<a href="#RFC7850" class="xref">RFC7850</a>]</span><a href="#section-4.2.1-3.1" class="pilcrow">¶</a>
+</li>
+            <li id="section-4.2.1-3.2">ZRTP <span>[<a href="#RFC6189" class="xref">RFC6189</a>]</span><a href="#section-4.2.1-3.2" class="pilcrow">¶</a>
+</li>
+            <li id="section-4.2.1-3.3">SRTP <span>[<a href="#RFC4571" class="xref">RFC4571</a>]</span><span>[<a href="#RFC3711" class="xref">RFC3711</a>]</span><a href="#section-4.2.1-3.3" class="pilcrow">¶</a>
+</li>
+          </ul>
+<p id="section-4.2.1-4">Packet Security Protocols:<a href="#section-4.2.1-4" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-4.2.1-5.1">IPsec <span>[<a href="#RFC8229" class="xref">RFC8229</a>]</span><a href="#section-4.2.1-5.1" class="pilcrow">¶</a>
+</li>
+          </ul>
+</section>
+</div>
+</section>
+</div>
+<div id="transport-specific-dependencies">
+<section id="section-4.3">
+        <h3 id="name-transport-specific-dependen">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-transport-specific-dependen" class="section-name selfRef">Transport-Specific Dependencies</a>
+        </h3>
+<p id="section-4.3-1">One protocol surveyed, tcpcrypt, has an direct dependency on a feature in the transport
+that is needed for its functionality. Specific, tcpcrypt is designed to run on top of TCP, and
+uses the TCP Encryption Negotiation Option (ENO) <span>[<a href="#RFC8547" class="xref">RFC8547</a>]</span> to negotiate its
+protocol support.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3-2">QUIC, CurveCP, and MinimaLT provide both transport functionality and security functionality. They have
+a dependencies on running over a framed protocol like UDP, but they add their own layers of
+reliability and other transport services. Thus, an application that uses one of these protocols
+cannot decouple the security from transport functionality.<a href="#section-4.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="application-interface">
+<section id="section-5">
+      <h2 id="name-application-interface">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-application-interface" class="section-name selfRef">Application Interface</a>
+      </h2>
+<p id="section-5-1">This section describes the interface exposed by the security protocols described above.
+We partition these interfaces into
+pre-connection (configuration), connection, and post-connection interfaces, following
+conventions in <span>[<a href="#I-D.ietf-taps-interface" class="xref">I-D.ietf-taps-interface</a>]</span> and <span>[<a href="#I-D.ietf-taps-arch" class="xref">I-D.ietf-taps-arch</a>]</span>.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-2">Note that not all protocols support each interface.
+The table in <a href="#interface-protocols-table" class="xref">Section 5.4</a> summarizes which protocol exposes which of the interfaces.
+In the following sections, we provide abbreviations of the interface names to use in the summary table.<a href="#section-5-2" class="pilcrow">¶</a></p>
+<div id="pre-connection-interfaces">
+<section id="section-5.1">
+        <h3 id="name-pre-connection-interfaces">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-pre-connection-interfaces" class="section-name selfRef">Pre-Connection Interfaces</a>
+        </h3>
+<p id="section-5.1-1">Configuration interfaces are used to configure the security protocols before a
+handshake begins or the keys are negotiated.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.1-2.1">
+            <p id="section-5.1-2.1.1">Identities and Private Keys (IPK): The application can provide its identity,
+credentials (e.g., certificates), and private keys, or mechanisms to access these, to the
+security protocol to use during handshakes.<a href="#section-5.1-2.1.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.1-2.1.2.1">TLS<a href="#section-5.1-2.1.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.1.2.2">DTLS<a href="#section-5.1-2.1.2.2" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.1.2.3">ZRTP<a href="#section-5.1-2.1.2.3" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.1.2.4">QUIC<a href="#section-5.1-2.1.2.4" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.1.2.5">MinimaLT<a href="#section-5.1-2.1.2.5" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.1.2.6">CurveCP<a href="#section-5.1-2.1.2.6" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.1.2.7">IPsec<a href="#section-5.1-2.1.2.7" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.1.2.8">WireGuard<a href="#section-5.1-2.1.2.8" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.1.2.9">OpenVPN<a href="#section-5.1-2.1.2.9" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li id="section-5.1-2.2">
+            <p id="section-5.1-2.2.1">Supported Algorithms (Key Exchange, Signatures, and Ciphersuites) (ALG):
+The application can choose the algorithms that are supported for key exchange,
+signatures, and ciphersuites.<a href="#section-5.1-2.2.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.1-2.2.2.1">TLS<a href="#section-5.1-2.2.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.2.2.2">DTLS<a href="#section-5.1-2.2.2.2" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.2.2.3">ZRTP<a href="#section-5.1-2.2.2.3" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.2.2.4">QUIC<a href="#section-5.1-2.2.2.4" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.2.2.5">tcpcrypt<a href="#section-5.1-2.2.2.5" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.2.2.6">MinimaLT<a href="#section-5.1-2.2.2.6" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.2.2.7">IPsec<a href="#section-5.1-2.2.2.7" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.2.2.8">OpenVPN<a href="#section-5.1-2.2.2.8" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li id="section-5.1-2.3">
+            <p id="section-5.1-2.3.1">Extensions (EXT):
+The application enables or configures extensions that are to be negotiated by
+the security protocol, such as Application-Layer Protocol Negotiation (ALPN) <span>[<a href="#RFC7301" class="xref">RFC7301</a>]</span>.<a href="#section-5.1-2.3.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.1-2.3.2.1">TLS<a href="#section-5.1-2.3.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.3.2.2">DTLS<a href="#section-5.1-2.3.2.2" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.3.2.3">QUIC<a href="#section-5.1-2.3.2.3" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li id="section-5.1-2.4">
+            <p id="section-5.1-2.4.1">Session Cache Management (CM):
+The application provides the ability to save and retrieve session state (such as tickets,
+keying material, and server parameters) that may be used to resume the security session.<a href="#section-5.1-2.4.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.1-2.4.2.1">TLS<a href="#section-5.1-2.4.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.4.2.2">DTLS<a href="#section-5.1-2.4.2.2" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.4.2.3">ZRTP<a href="#section-5.1-2.4.2.3" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.4.2.4">QUIC<a href="#section-5.1-2.4.2.4" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.4.2.5">tcpcrypt<a href="#section-5.1-2.4.2.5" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.4.2.6">MinimaLT<a href="#section-5.1-2.4.2.6" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li id="section-5.1-2.5">
+            <p id="section-5.1-2.5.1">Authentication Delegation (AD):
+The application provides access to a separate module that will provide authentication,
+using Extensible Authentication Protocol (EAP) <span>[<a href="#RFC3748" class="xref">RFC3748</a>]</span> for example.<a href="#section-5.1-2.5.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.1-2.5.2.1">IPsec<a href="#section-5.1-2.5.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.5.2.2">tcpcrypt<a href="#section-5.1-2.5.2.2" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li id="section-5.1-2.6">
+            <p id="section-5.1-2.6.1">Pre-Shared Key Import (PSKI):
+Either the handshake protocol or the application directly can supply pre-shared keys for use
+in encrypting (and authenticating) communication with a peer.<a href="#section-5.1-2.6.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.1-2.6.2.1">TLS<a href="#section-5.1-2.6.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.6.2.2">DTLS<a href="#section-5.1-2.6.2.2" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.6.2.3">ZRTP<a href="#section-5.1-2.6.2.3" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.6.2.4">QUIC<a href="#section-5.1-2.6.2.4" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.6.2.5">tcpcrypt<a href="#section-5.1-2.6.2.5" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.6.2.6">MinimaLT<a href="#section-5.1-2.6.2.6" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.6.2.7">IPsec<a href="#section-5.1-2.6.2.7" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.6.2.8">ESP<a href="#section-5.1-2.6.2.8" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.6.2.9">WireGuard<a href="#section-5.1-2.6.2.9" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.1-2.6.2.10">OpenVPN<a href="#section-5.1-2.6.2.10" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+        </ul>
+</section>
+</div>
+<div id="connection-interfaces">
+<section id="section-5.2">
+        <h3 id="name-connection-interfaces">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-connection-interfaces" class="section-name selfRef">Connection Interfaces</a>
+        </h3>
+<ul>
+<li id="section-5.2-1.1">
+            <p id="section-5.2-1.1.1">Identity Validation (IV):
+During a handshake, the security protocol will conduct identity validation of the peer.
+This can call into the application to offload validation.<a href="#section-5.2-1.1.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.2-1.1.2.1">TLS<a href="#section-5.2-1.1.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.2-1.1.2.2">DTLS<a href="#section-5.2-1.1.2.2" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.2-1.1.2.3">ZRTP<a href="#section-5.2-1.1.2.3" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.2-1.1.2.4">QUIC<a href="#section-5.2-1.1.2.4" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.2-1.1.2.5">MinimaLT<a href="#section-5.2-1.1.2.5" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.2-1.1.2.6">CurveCP<a href="#section-5.2-1.1.2.6" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.2-1.1.2.7">IPsec<a href="#section-5.2-1.1.2.7" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.2-1.1.2.8">WireGuard<a href="#section-5.2-1.1.2.8" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.2-1.1.2.9">OpenVPN<a href="#section-5.2-1.1.2.9" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li id="section-5.2-1.2">
+            <p id="section-5.2-1.2.1">Source Address Validation (SAV):
+The handshake protocol may interact with the transport protocol or application to
+validate the address of the remote peer that has sent data. This involves sending a cookie
+exchange to avoid DoS attacks.<a href="#section-5.2-1.2.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.2-1.2.2.1">DTLS<a href="#section-5.2-1.2.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.2-1.2.2.2">QUIC<a href="#section-5.2-1.2.2.2" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.2-1.2.2.3">IPsec<a href="#section-5.2-1.2.2.3" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.2-1.2.2.4">WireGuard<a href="#section-5.2-1.2.2.4" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+        </ul>
+</section>
+</div>
+<div id="post-connection-interfaces">
+<section id="section-5.3">
+        <h3 id="name-post-connection-interfaces">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-post-connection-interfaces" class="section-name selfRef">Post-Connection Interfaces</a>
+        </h3>
+<ul>
+<li id="section-5.3-1.1">
+            <p id="section-5.3-1.1.1">Connection Termination (CT):
+The security protocol may be instructed to tear down its connection and session information.
+This is needed by some protocols, e.g., to prevent application data truncation attacks in
+which an attacker terminates an underlying insecure connection-oriented protocol to terminate
+the session.<a href="#section-5.3-1.1.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.3-1.1.2.1">TLS<a href="#section-5.3-1.1.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.1.2.2">DTLS<a href="#section-5.3-1.1.2.2" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.1.2.3">ZRTP<a href="#section-5.3-1.1.2.3" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.1.2.4">QUIC<a href="#section-5.3-1.1.2.4" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.1.2.5">tcpcrypt<a href="#section-5.3-1.1.2.5" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.1.2.6">MinimaLT<a href="#section-5.3-1.1.2.6" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.1.2.7">IPsec<a href="#section-5.3-1.1.2.7" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.1.2.8">OpenVPN<a href="#section-5.3-1.1.2.8" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li id="section-5.3-1.2">
+            <p id="section-5.3-1.2.1">Key Update (KU):
+The handshake protocol may be instructed to update its keying material, either
+by the application directly or by the record protocol sending a key expiration event.<a href="#section-5.3-1.2.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.3-1.2.2.1">TLS<a href="#section-5.3-1.2.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.2.2.2">DTLS<a href="#section-5.3-1.2.2.2" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.2.2.3">QUIC<a href="#section-5.3-1.2.2.3" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.2.2.4">tcpcrypt<a href="#section-5.3-1.2.2.4" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.2.2.5">MinimaLT<a href="#section-5.3-1.2.2.5" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.2.2.6">IPsec<a href="#section-5.3-1.2.2.6" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li id="section-5.3-1.3">
+            <p id="section-5.3-1.3.1">Shared Secret Export (PSKE):
+The handshake protocol may provide an interface for producing shared secrets for application-specific uses.<a href="#section-5.3-1.3.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.3-1.3.2.1">TLS<a href="#section-5.3-1.3.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.3.2.2">DTLS<a href="#section-5.3-1.3.2.2" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.3.2.3">tcpcrypt<a href="#section-5.3-1.3.2.3" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.3.2.4">IPsec<a href="#section-5.3-1.3.2.4" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.3.2.5">OpenVPN<a href="#section-5.3-1.3.2.5" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.3.2.6">MinimaLT<a href="#section-5.3-1.3.2.6" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li id="section-5.3-1.4">
+            <p id="section-5.3-1.4.1">Key Expiration (KE):
+The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based
+deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling
+between the record layer and the handshake layer.<a href="#section-5.3-1.4.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.3-1.4.2.1">ESP<a href="#section-5.3-1.4.2.1" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+          <li id="section-5.3-1.5">
+            <p id="section-5.3-1.5.1">Mobility Events (ME):
+The record protocol can be signaled that it is being migrated to another transport or interface due to
+connection mobility, which may reset address and state validation and induce state changes such
+as use of a new Connection Identifier (CID).<a href="#section-5.3-1.5.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-5.3-1.5.2.1">DTLS (version 1.3 only <span>[<a href="#I-D.ietf-tls-dtls13" class="xref">I-D.ietf-tls-dtls13</a>]</span>)<a href="#section-5.3-1.5.2.1" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.5.2.2">QUIC<a href="#section-5.3-1.5.2.2" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.5.2.3">MinimaLT<a href="#section-5.3-1.5.2.3" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.5.2.4">CurveCP<a href="#section-5.3-1.5.2.4" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.5.2.5">IPsec <span>[<a href="#RFC4555" class="xref">RFC4555</a>]</span><a href="#section-5.3-1.5.2.5" class="pilcrow">¶</a>
+</li>
+              <li id="section-5.3-1.5.2.6">WireGuard<a href="#section-5.3-1.5.2.6" class="pilcrow">¶</a>
+</li>
+            </ul>
+</li>
+        </ul>
+</section>
+</div>
+<div id="interface-protocols-table">
+<section id="section-5.4">
+        <h3 id="name-summary-of-interfaces-expos">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-summary-of-interfaces-expos" class="section-name selfRef">Summary of Interfaces Exposed by Protocols</a>
+        </h3>
+<p id="section-5.4-1">The following table summarizes which protocol exposes which interface.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+          <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Protocol</th>
+              <th class="text-center" rowspan="1" colspan="1">IPK</th>
+              <th class="text-center" rowspan="1" colspan="1">ALG</th>
+              <th class="text-center" rowspan="1" colspan="1">EXT</th>
+              <th class="text-center" rowspan="1" colspan="1">CM</th>
+              <th class="text-center" rowspan="1" colspan="1">AD</th>
+              <th class="text-center" rowspan="1" colspan="1">PSKI</th>
+              <th class="text-center" rowspan="1" colspan="1">IV</th>
+              <th class="text-center" rowspan="1" colspan="1">SAV</th>
+              <th class="text-center" rowspan="1" colspan="1">CT</th>
+              <th class="text-center" rowspan="1" colspan="1">KU</th>
+              <th class="text-center" rowspan="1" colspan="1">PSKE</th>
+              <th class="text-center" rowspan="1" colspan="1">KE</th>
+              <th class="text-center" rowspan="1" colspan="1">ME</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">TLS</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">DTLS</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">ZRTP</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">QUIC</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">tcpcrypt</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">MinimaLT</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">CurveCP</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">IPsec</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">ESP</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">WireGuard</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">OpenVPN</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1">x</td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+              <td class="text-center" rowspan="1" colspan="1"> </td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-5.4-3">x=Interface is exposed 
+(blank)=Interface is not exposed<a href="#section-5.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-6">
+      <h2 id="name-iana-considerations">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-6-1">This document has no request to IANA.<a href="#section-6-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-7">
+      <h2 id="name-security-considerations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-7-1">This document summarizes existing transport security protocols and their interfaces.
+It does not propose changes to or recommend usage of reference protocols. Moreover,
+no claims of security and privacy properties beyond those guaranteed by the protocols
+discussed are made. For example, metadata leakage via timing side channels and traffic
+analysis may compromise any protocol discussed in this survey. Applications using
+Security Interfaces should take such limitations into consideration when using a particular
+protocol implementation.<a href="#section-7-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="privacy-considerations">
+<section id="section-8">
+      <h2 id="name-privacy-considerations">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-privacy-considerations" class="section-name selfRef">Privacy Considerations</a>
+      </h2>
+<p id="section-8-1">Analysis of how features improve or degrade privacy is intentionally omitted from this survey.
+All security protocols surveyed generally improve privacy by using encryption to reduce information
+leakage. However, varying amounts of metadata remain in the clear across each
+protocol. For example, client and server certificates are sent in cleartext in TLS
+1.2 <span>[<a href="#RFC5246" class="xref">RFC5246</a>]</span>, whereas they are encrypted in TLS 1.3 <span>[<a href="#RFC8446" class="xref">RFC8446</a>]</span>. A survey of privacy
+features, or lack thereof, for various security protocols could be addressed in a
+separate document.<a href="#section-8-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="acknowledgments">
+<section id="section-9">
+      <h2 id="name-acknowledgments">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+      </h2>
+<p id="section-9-1">The authors would like to thank Bob Bradley, Frederic Jacobs, Mirja Kuehlewind,
+Yannick Sierra, Brian Trammell, and Magnus Westerlund for their input and feedback
+on this draft.<a href="#section-9-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<section id="section-10">
+      <h2 id="name-informative-references">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+      </h2>
+<dl class="references">
+<dt id="ALTS">[ALTS]</dt>
+      <dd>
+<span class="refAuthor">Ghali, C.</span><span class="refAuthor">, Stubblefield, A.</span><span class="refAuthor">, Knapp, E.</span><span class="refAuthor">, Li, J.</span><span class="refAuthor">, Schmidt, B.</span><span class="refAuthor">, and J. Boeuf</span>, <span class="refTitle">"Application Layer Transport Security"</span>, <time></time>, <span>&lt;<a href="https://cloud.google.com/security/encryption-in-transit/application-layer-transport-security/">https://cloud.google.com/security/encryption-in-transit/application-layer-transport-security/</a>&gt;</span>. </dd>
+<dt id="CurveCP">[CurveCP]</dt>
+      <dd>
+<span class="refAuthor">Bernstein, D.J.</span>, <span class="refTitle">"CurveCP -- Usable security for the Internet"</span>, <time></time>, <span>&lt;<a href="http://curvecp.org">http://curvecp.org</a>&gt;</span>. </dd>
+<dt id="I-D.ietf-quic-tls">[I-D.ietf-quic-tls]</dt>
+      <dd>
+<span class="refAuthor">Thomson, M.</span><span class="refAuthor"> and S. Turner</span>, <span class="refTitle">"Using TLS to Secure QUIC"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-quic-tls-27</span>, <time datetime="2020-02-21">21 February 2020</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-quic-tls-27.txt">http://www.ietf.org/internet-drafts/draft-ietf-quic-tls-27.txt</a>&gt;</span>. </dd>
+<dt id="I-D.ietf-quic-transport">[I-D.ietf-quic-transport]</dt>
+      <dd>
+<span class="refAuthor">Iyengar, J.</span><span class="refAuthor"> and M. Thomson</span>, <span class="refTitle">"QUIC: A UDP-Based Multiplexed and Secure Transport"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-quic-transport-27</span>, <time datetime="2020-02-21">21 February 2020</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-quic-transport-27.txt">http://www.ietf.org/internet-drafts/draft-ietf-quic-transport-27.txt</a>&gt;</span>. </dd>
+<dt id="I-D.ietf-taps-arch">[I-D.ietf-taps-arch]</dt>
+      <dd>
+<span class="refAuthor">Pauly, T.</span><span class="refAuthor">, Trammell, B.</span><span class="refAuthor">, Brunstrom, A.</span><span class="refAuthor">, Fairhurst, G.</span><span class="refAuthor">, Perkins, C.</span><span class="refAuthor">, Tiesel, P.</span><span class="refAuthor">, and C. Wood</span>, <span class="refTitle">"An Architecture for Transport Services"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-taps-arch-07</span>, <time datetime="2020-03-09">9 March 2020</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-taps-arch-07.txt">http://www.ietf.org/internet-drafts/draft-ietf-taps-arch-07.txt</a>&gt;</span>. </dd>
+<dt id="I-D.ietf-taps-interface">[I-D.ietf-taps-interface]</dt>
+      <dd>
+<span class="refAuthor">Trammell, B.</span><span class="refAuthor">, Welzl, M.</span><span class="refAuthor">, Enghardt, T.</span><span class="refAuthor">, Fairhurst, G.</span><span class="refAuthor">, Kuehlewind, M.</span><span class="refAuthor">, Perkins, C.</span><span class="refAuthor">, Tiesel, P.</span><span class="refAuthor">, Wood, C.</span><span class="refAuthor">, and T. Pauly</span>, <span class="refTitle">"An Abstract Application Layer Interface to Transport Services"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-taps-interface-06</span>, <time datetime="2020-03-09">9 March 2020</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-taps-interface-06.txt">http://www.ietf.org/internet-drafts/draft-ietf-taps-interface-06.txt</a>&gt;</span>. </dd>
+<dt id="I-D.ietf-tls-dtls13">[I-D.ietf-tls-dtls13]</dt>
+      <dd>
+<span class="refAuthor">Rescorla, E.</span><span class="refAuthor">, Tschofenig, H.</span><span class="refAuthor">, and N. Modadugu</span>, <span class="refTitle">"The Datagram Transport Layer Security (DTLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-dtls13-37</span>, <time datetime="2020-03-09">9 March 2020</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-tls-dtls13-37.txt">http://www.ietf.org/internet-drafts/draft-ietf-tls-dtls13-37.txt</a>&gt;</span>. </dd>
+<dt id="MinimaLT">[MinimaLT]</dt>
+      <dd>
+<span class="refAuthor">Petullo, W.M.</span><span class="refAuthor">, Zhang, X.</span><span class="refAuthor">, Solworth, J.A.</span><span class="refAuthor">, Bernstein, D.J.</span><span class="refAuthor">, and T. Lange</span>, <span class="refTitle">"MinimaLT -- Minimal-latency Networking Through Better Security"</span>, <time></time>, <span>&lt;<a href="http://dl.acm.org/citation.cfm?id=2516737">http://dl.acm.org/citation.cfm?id=2516737</a>&gt;</span>. </dd>
+<dt id="OpenVPN">[OpenVPN]</dt>
+      <dd>
+<span class="refTitle">"OpenVPN cryptographic layer"</span>, <time></time>, <span>&lt;<a href="https://openvpn.net/community-resources/openvpn-cryptographic-layer/">https://openvpn.net/community-resources/openvpn-cryptographic-layer/</a>&gt;</span>. </dd>
+<dt id="RFC2385">[RFC2385]</dt>
+      <dd>
+<span class="refAuthor">Heffernan, A.</span>, <span class="refTitle">"Protection of BGP Sessions via the TCP MD5 Signature Option"</span>, <span class="seriesInfo">RFC 2385</span>, <span class="seriesInfo">DOI 10.17487/RFC2385</span>, <time datetime="1998-08">August 1998</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2385">https://www.rfc-editor.org/info/rfc2385</a>&gt;</span>. </dd>
+<dt id="RFC2890">[RFC2890]</dt>
+      <dd>
+<span class="refAuthor">Dommety, G.</span>, <span class="refTitle">"Key and Sequence Number Extensions to GRE"</span>, <span class="seriesInfo">RFC 2890</span>, <span class="seriesInfo">DOI 10.17487/RFC2890</span>, <time datetime="2000-09">September 2000</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2890">https://www.rfc-editor.org/info/rfc2890</a>&gt;</span>. </dd>
+<dt id="RFC3711">[RFC3711]</dt>
+      <dd>
+<span class="refAuthor">Baugher, M.</span><span class="refAuthor">, McGrew, D.</span><span class="refAuthor">, Naslund, M.</span><span class="refAuthor">, Carrara, E.</span><span class="refAuthor">, and K. Norrman</span>, <span class="refTitle">"The Secure Real-time Transport Protocol (SRTP)"</span>, <span class="seriesInfo">RFC 3711</span>, <span class="seriesInfo">DOI 10.17487/RFC3711</span>, <time datetime="2004-03">March 2004</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc3711">https://www.rfc-editor.org/info/rfc3711</a>&gt;</span>. </dd>
+<dt id="RFC3748">[RFC3748]</dt>
+      <dd>
+<span class="refAuthor">Aboba, B.</span><span class="refAuthor">, Blunk, L.</span><span class="refAuthor">, Vollbrecht, J.</span><span class="refAuthor">, Carlson, J.</span><span class="refAuthor">, and H. Levkowetz, Ed.</span>, <span class="refTitle">"Extensible Authentication Protocol (EAP)"</span>, <span class="seriesInfo">RFC 3748</span>, <span class="seriesInfo">DOI 10.17487/RFC3748</span>, <time datetime="2004-06">June 2004</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc3748">https://www.rfc-editor.org/info/rfc3748</a>&gt;</span>. </dd>
+<dt id="RFC4253">[RFC4253]</dt>
+      <dd>
+<span class="refAuthor">Ylonen, T.</span><span class="refAuthor"> and C. Lonvick, Ed.</span>, <span class="refTitle">"The Secure Shell (SSH) Transport Layer Protocol"</span>, <span class="seriesInfo">RFC 4253</span>, <span class="seriesInfo">DOI 10.17487/RFC4253</span>, <time datetime="2006-01">January 2006</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc4253">https://www.rfc-editor.org/info/rfc4253</a>&gt;</span>. </dd>
+<dt id="RFC4302">[RFC4302]</dt>
+      <dd>
+<span class="refAuthor">Kent, S.</span>, <span class="refTitle">"IP Authentication Header"</span>, <span class="seriesInfo">RFC 4302</span>, <span class="seriesInfo">DOI 10.17487/RFC4302</span>, <time datetime="2005-12">December 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc4302">https://www.rfc-editor.org/info/rfc4302</a>&gt;</span>. </dd>
+<dt id="RFC4303">[RFC4303]</dt>
+      <dd>
+<span class="refAuthor">Kent, S.</span>, <span class="refTitle">"IP Encapsulating Security Payload (ESP)"</span>, <span class="seriesInfo">RFC 4303</span>, <span class="seriesInfo">DOI 10.17487/RFC4303</span>, <time datetime="2005-12">December 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc4303">https://www.rfc-editor.org/info/rfc4303</a>&gt;</span>. </dd>
+<dt id="RFC4555">[RFC4555]</dt>
+      <dd>
+<span class="refAuthor">Eronen, P.</span>, <span class="refTitle">"IKEv2 Mobility and Multihoming Protocol (MOBIKE)"</span>, <span class="seriesInfo">RFC 4555</span>, <span class="seriesInfo">DOI 10.17487/RFC4555</span>, <time datetime="2006-06">June 2006</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc4555">https://www.rfc-editor.org/info/rfc4555</a>&gt;</span>. </dd>
+<dt id="RFC4571">[RFC4571]</dt>
+      <dd>
+<span class="refAuthor">Lazzaro, J.</span>, <span class="refTitle">"Framing Real-time Transport Protocol (RTP) and RTP Control Protocol (RTCP) Packets over Connection-Oriented Transport"</span>, <span class="seriesInfo">RFC 4571</span>, <span class="seriesInfo">DOI 10.17487/RFC4571</span>, <time datetime="2006-07">July 2006</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc4571">https://www.rfc-editor.org/info/rfc4571</a>&gt;</span>. </dd>
+<dt id="RFC5246">[RFC5246]</dt>
+      <dd>
+<span class="refAuthor">Dierks, T.</span><span class="refAuthor"> and E. Rescorla</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.2"</span>, <span class="seriesInfo">RFC 5246</span>, <span class="seriesInfo">DOI 10.17487/RFC5246</span>, <time datetime="2008-08">August 2008</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5246">https://www.rfc-editor.org/info/rfc5246</a>&gt;</span>. </dd>
+<dt id="RFC5641">[RFC5641]</dt>
+      <dd>
+<span class="refAuthor">McGill, N.</span><span class="refAuthor"> and C. Pignataro</span>, <span class="refTitle">"Layer 2 Tunneling Protocol Version 3 (L2TPv3) Extended Circuit Status Values"</span>, <span class="seriesInfo">RFC 5641</span>, <span class="seriesInfo">DOI 10.17487/RFC5641</span>, <time datetime="2009-08">August 2009</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5641">https://www.rfc-editor.org/info/rfc5641</a>&gt;</span>. </dd>
+<dt id="RFC5764">[RFC5764]</dt>
+      <dd>
+<span class="refAuthor">McGrew, D.</span><span class="refAuthor"> and E. Rescorla</span>, <span class="refTitle">"Datagram Transport Layer Security (DTLS) Extension to Establish Keys for the Secure Real-time Transport Protocol (SRTP)"</span>, <span class="seriesInfo">RFC 5764</span>, <span class="seriesInfo">DOI 10.17487/RFC5764</span>, <time datetime="2010-05">May 2010</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5764">https://www.rfc-editor.org/info/rfc5764</a>&gt;</span>. </dd>
+<dt id="RFC5925">[RFC5925]</dt>
+      <dd>
+<span class="refAuthor">Touch, J.</span><span class="refAuthor">, Mankin, A.</span><span class="refAuthor">, and R. Bonica</span>, <span class="refTitle">"The TCP Authentication Option"</span>, <span class="seriesInfo">RFC 5925</span>, <span class="seriesInfo">DOI 10.17487/RFC5925</span>, <time datetime="2010-06">June 2010</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5925">https://www.rfc-editor.org/info/rfc5925</a>&gt;</span>. </dd>
+<dt id="RFC6189">[RFC6189]</dt>
+      <dd>
+<span class="refAuthor">Zimmermann, P.</span><span class="refAuthor">, Johnston, A., Ed.</span><span class="refAuthor">, and J. Callas</span>, <span class="refTitle">"ZRTP: Media Path Key Agreement for Unicast Secure RTP"</span>, <span class="seriesInfo">RFC 6189</span>, <span class="seriesInfo">DOI 10.17487/RFC6189</span>, <time datetime="2011-04">April 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6189">https://www.rfc-editor.org/info/rfc6189</a>&gt;</span>. </dd>
+<dt id="RFC6347">[RFC6347]</dt>
+      <dd>
+<span class="refAuthor">Rescorla, E.</span><span class="refAuthor"> and N. Modadugu</span>, <span class="refTitle">"Datagram Transport Layer Security Version 1.2"</span>, <span class="seriesInfo">RFC 6347</span>, <span class="seriesInfo">DOI 10.17487/RFC6347</span>, <time datetime="2012-01">January 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6347">https://www.rfc-editor.org/info/rfc6347</a>&gt;</span>. </dd>
+<dt id="RFC7296">[RFC7296]</dt>
+      <dd>
+<span class="refAuthor">Kaufman, C.</span><span class="refAuthor">, Hoffman, P.</span><span class="refAuthor">, Nir, Y.</span><span class="refAuthor">, Eronen, P.</span><span class="refAuthor">, and T. Kivinen</span>, <span class="refTitle">"Internet Key Exchange Protocol Version 2 (IKEv2)"</span>, <span class="seriesInfo">STD 79</span>, <span class="seriesInfo">RFC 7296</span>, <span class="seriesInfo">DOI 10.17487/RFC7296</span>, <time datetime="2014-10">October 2014</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7296">https://www.rfc-editor.org/info/rfc7296</a>&gt;</span>. </dd>
+<dt id="RFC7301">[RFC7301]</dt>
+      <dd>
+<span class="refAuthor">Friedl, S.</span><span class="refAuthor">, Popov, A.</span><span class="refAuthor">, Langley, A.</span><span class="refAuthor">, and E. Stephan</span>, <span class="refTitle">"Transport Layer Security (TLS) Application-Layer Protocol Negotiation Extension"</span>, <span class="seriesInfo">RFC 7301</span>, <span class="seriesInfo">DOI 10.17487/RFC7301</span>, <time datetime="2014-07">July 2014</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7301">https://www.rfc-editor.org/info/rfc7301</a>&gt;</span>. </dd>
+<dt id="RFC7850">[RFC7850]</dt>
+      <dd>
+<span class="refAuthor">Nandakumar, S.</span>, <span class="refTitle">"Registering Values of the SDP 'proto' Field for Transporting RTP Media over TCP under Various RTP Profiles"</span>, <span class="seriesInfo">RFC 7850</span>, <span class="seriesInfo">DOI 10.17487/RFC7850</span>, <time datetime="2016-04">April 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7850">https://www.rfc-editor.org/info/rfc7850</a>&gt;</span>. </dd>
+<dt id="RFC8095">[RFC8095]</dt>
+      <dd>
+<span class="refAuthor">Fairhurst, G., Ed.</span><span class="refAuthor">, Trammell, B., Ed.</span><span class="refAuthor">, and M. Kuehlewind, Ed.</span>, <span class="refTitle">"Services Provided by IETF Transport Protocols and Congestion Control Mechanisms"</span>, <span class="seriesInfo">RFC 8095</span>, <span class="seriesInfo">DOI 10.17487/RFC8095</span>, <time datetime="2017-03">March 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8095">https://www.rfc-editor.org/info/rfc8095</a>&gt;</span>. </dd>
+<dt id="RFC8229">[RFC8229]</dt>
+      <dd>
+<span class="refAuthor">Pauly, T.</span><span class="refAuthor">, Touati, S.</span><span class="refAuthor">, and R. Mantha</span>, <span class="refTitle">"TCP Encapsulation of IKE and IPsec Packets"</span>, <span class="seriesInfo">RFC 8229</span>, <span class="seriesInfo">DOI 10.17487/RFC8229</span>, <time datetime="2017-08">August 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8229">https://www.rfc-editor.org/info/rfc8229</a>&gt;</span>. </dd>
+<dt id="RFC8446">[RFC8446]</dt>
+      <dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="seriesInfo">RFC 8446</span>, <span class="seriesInfo">DOI 10.17487/RFC8446</span>, <time datetime="2018-08">August 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8446">https://www.rfc-editor.org/info/rfc8446</a>&gt;</span>. </dd>
+<dt id="RFC8547">[RFC8547]</dt>
+      <dd>
+<span class="refAuthor">Bittau, A.</span><span class="refAuthor">, Giffin, D.</span><span class="refAuthor">, Handley, M.</span><span class="refAuthor">, Mazieres, D.</span><span class="refAuthor">, and E. Smith</span>, <span class="refTitle">"TCP-ENO: Encryption Negotiation Option"</span>, <span class="seriesInfo">RFC 8547</span>, <span class="seriesInfo">DOI 10.17487/RFC8547</span>, <time datetime="2019-05">May 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8547">https://www.rfc-editor.org/info/rfc8547</a>&gt;</span>. </dd>
+<dt id="RFC8548">[RFC8548]</dt>
+      <dd>
+<span class="refAuthor">Bittau, A.</span><span class="refAuthor">, Giffin, D.</span><span class="refAuthor">, Handley, M.</span><span class="refAuthor">, Mazieres, D.</span><span class="refAuthor">, Slack, Q.</span><span class="refAuthor">, and E. Smith</span>, <span class="refTitle">"Cryptographic Protection of TCP Streams (tcpcrypt)"</span>, <span class="seriesInfo">RFC 8548</span>, <span class="seriesInfo">DOI 10.17487/RFC8548</span>, <time datetime="2019-05">May 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8548">https://www.rfc-editor.org/info/rfc8548</a>&gt;</span>. </dd>
+<dt id="WireGuard">[WireGuard]</dt>
+    <dd>
+<span class="refAuthor">Donenfeld, J.A.</span>, <span class="refTitle">"WireGuard -- Next Generation Kernel Network Tunnel"</span>, <time></time>, <span>&lt;<a href="https://www.wireguard.com/papers/wireguard.pdf">https://www.wireguard.com/papers/wireguard.pdf</a>&gt;</span>. </dd>
+</dl>
+</section>
+<div id="authors-addresses">
+<section id="section-appendix.a">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Theresa Enghardt</span></div>
+<div dir="auto" class="left"><span class="org">TU Berlin</span></div>
+<div dir="auto" class="left"><span class="street-address">Marchstr. 23</span></div>
+<div dir="auto" class="left"><span class="locality">10587 Berlin</span></div>
+<div dir="auto" class="left"><span class="country-name">Germany</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:ietf@tenghardt.net" class="email">ietf@tenghardt.net</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Tommy Pauly</span></div>
+<div dir="auto" class="left"><span class="org">Apple Inc.</span></div>
+<div dir="auto" class="left"><span class="street-address">One Apple Park Way</span></div>
+<div dir="auto" class="left">
+<span class="locality">Cupertino, California 95014</span>,  </div>
+<div dir="auto" class="left"><span class="country-name">United States of America</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:tpauly@apple.com" class="email">tpauly@apple.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Colin Perkins</span></div>
+<div dir="auto" class="left"><span class="org">University of Glasgow</span></div>
+<div dir="auto" class="left"><span class="street-address">School of Computing Science</span></div>
+<div dir="auto" class="left"><span class="locality">Glasgow  G12 8QQ</span></div>
+<div dir="auto" class="left"><span class="country-name">United Kingdom</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:csp@csperkins.org" class="email">csp@csperkins.org</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Kyle Rose</span></div>
+<div dir="auto" class="left"><span class="org">Akamai Technologies, Inc.</span></div>
+<div dir="auto" class="left"><span class="street-address">150 Broadway</span></div>
+<div dir="auto" class="left">
+<span class="locality">Cambridge, MA 02144</span>,  </div>
+<div dir="auto" class="left"><span class="country-name">United States of America</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:krose@krose.org" class="email">krose@krose.org</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Christopher A. Wood</span></div>
+<div dir="auto" class="left"><span class="org">Cloudflare</span></div>
+<div dir="auto" class="left"><span class="street-address">101 Townsend St</span></div>
+<div dir="auto" class="left">
+<span class="locality">San Francisco</span>,  </div>
+<div dir="auto" class="left"><span class="country-name">United States of America</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:caw@heapingbits.net" class="email">caw@heapingbits.net</a>
+</div>
+</address>
+</section>
+</div>
+<script>var toc = document.getElementById("toc");
+var tocToggle = toc.querySelector("h2");
+var tocNav = toc.querySelector("nav");
+
+// mobile menu toggle
+tocToggle.onclick = function(event) {
+    if (window.innerWidth < 1024) {
+ var tocNavDisplay = tocNav.currentStyle ? tocNav.currentStyle.display : getComputedStyle(tocNav, null).display;
+ if (tocNavDisplay == "none") {
+     tocNav.style.display = "block";
+ } else {
+     tocNav.style.display = "none";
+ }
+    }
+}
+
+// toc anchor scroll to anchor
+tocNav.addEventListener("click", function (event) {
+    event.preventDefault();
+    if (event.target.nodeName == 'A') {
+ if (window.innerWidth < 1024) {
+     tocNav.style.display = "none";
+ }
+ var href = event.target.getAttribute("href");
+ var anchorId = href.substr(1);
+ var anchor =  document.getElementById(anchorId);
+ anchor.scrollIntoView(true);
+ window.history.pushState("","",href);
+    }
+});
+
+// switch toc mode when window resized
+window.onresize = function () {
+    if (window.innerWidth < 1024) {
+ tocNav.style.display = "none";
+    } else {
+ tocNav.style.display = "block";
+    }
+}
+</script>
+</body>
+</html>
