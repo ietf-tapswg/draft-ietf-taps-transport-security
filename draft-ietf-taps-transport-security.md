@@ -529,7 +529,6 @@ in encrypting (and authenticating) communication with a peer.
   - tcpcrypt
   - MinimaLT
   - IPsec
-  - ESP
   - WireGuard
   - OpenVPN
 
@@ -596,7 +595,7 @@ The handshake protocol may provide an interface for producing shared secrets for
 The record protocol can signal that its keys are expiring due to reaching a time-based deadline, or a use-based
 deadline (number of bytes that have been encrypted with the key). This interaction is often limited to signaling
 between the record layer and the handshake layer.
-  - ESP
+  - IPsec
 
 - Mobility Events (ME):
 The record protocol can be signaled that it is being migrated to another transport or interface due to
@@ -623,8 +622,7 @@ The following table summarizes which protocol exposes which interface.
 | tcpcrypt  |     | x   |     | x  | x  | x    |    |     | x  | x  | x    |    |    |
 | MinimaLT  | x   | x   |     | x  |    | x    | x  |     | x  | x  | x    |    | x  |
 | CurveCP   | x   |     |     |    |    |      | x  |     |    |    |      |    | x  |
-| IPsec     | x   | x   |     |    | x  | x    | x  | x   | x  | x  | x    |    | x  |
-| ESP       |     |     |     |    |    | x    |    |     |    |    |      | x  |    |
+| IPsec     | x   | x   |     |    | x  | x    | x  | x   | x  | x  | x    | x | x  |
 | WireGuard | x   |     |     |    |    | x    | x  | x   |    |    |      |    | x  |
 | OpenVPN   | x   | x   |     |    |    | x    | x  |     | x  |    | x    |    |    |
 |---
