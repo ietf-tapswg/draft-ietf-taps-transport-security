@@ -336,17 +336,17 @@ tcpcrypt is vulnerable to active attacks.
 
 ### MinimaLT
 
-MinimaLT is a UDP-based transport security protocol designed to offer confidentiality,
-mutual authentication, DoS prevention, and connection mobility {{MinimaLT}}. One major
+MinimaLT {{MinimaLT}} is a UDP-based transport security protocol designed to offer confidentiality,
+mutual authentication, DoS prevention, and connection mobility. One major
 goal of the protocol is to leverage existing protocols to obtain server-side configuration
 information used to more quickly bootstrap a connection. MinimaLT uses a variant of TCP's
 congestion control algorithm.
 
 ### CurveCP
 
-CurveCP {{CurveCP}} is a UDP-based transport security protocol from Daniel J. Bernstein.
-Unlike many other security protocols, it is based entirely upon public key algorithms.
-CurveCP provides its own reliability for application data as part of its protocol.
+CurveCP {{CurveCP}} is a UDP-based transport security that, unlike many other security protocols,
+is based entirely upon public key algorithms. CurveCP provides its own reliability for application
+data as part of its protocol.
 
 ## Packet Security Protocols
 
