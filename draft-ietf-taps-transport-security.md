@@ -236,7 +236,7 @@ between connection instances.
 
 # Transport Security Protocol Descriptions
 
-This section contains brief transport and security descriptions of the various security
+This section contains brief transport and security descriptions of various security
 protocols currently used to protect data being sent over a network. These protocols are
 grouped based on where in the protocol stack they are implemented, which influences
 which parts of a packet they protect: Generic application payload, application payload
