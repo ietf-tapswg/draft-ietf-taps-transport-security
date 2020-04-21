@@ -5,14 +5,14 @@
 Network Working Group                                        T. Enghardt
 Internet-Draft                                                 TU Berlin
 Intended status: Informational                                  T. Pauly
-Expires: 21 October 2020                                      Apple Inc.
+Expires: 23 October 2020                                      Apple Inc.
                                                               C. Perkins
                                                    University of Glasgow
                                                                  K. Rose
                                                Akamai Technologies, Inc.
                                                                C.A. Wood
                                                               Cloudflare
-                                                           19 April 2020
+                                                           21 April 2020
 
 
   A Survey of the Interaction Between Security Protocols and Transport
@@ -45,7 +45,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 21 October 2020.
+   This Internet-Draft will expire on 23 October 2020.
 
 
 
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Enghardt, et al.         Expires 21 October 2020                [Page 1]
+Enghardt, et al.         Expires 23 October 2020                [Page 1]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Enghardt, et al.         Expires 21 October 2020                [Page 2]
+Enghardt, et al.         Expires 23 October 2020                [Page 2]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -165,7 +165,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020                [Page 3]
+Enghardt, et al.         Expires 23 October 2020                [Page 3]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -221,7 +221,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020                [Page 4]
+Enghardt, et al.         Expires 23 October 2020                [Page 4]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -277,7 +277,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020                [Page 5]
+Enghardt, et al.         Expires 23 October 2020                [Page 5]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -308,10 +308,10 @@ Internet-Draft          Transport Security Survey             April 2020
 3.  Transport Security Protocol Descriptions
 
    This section contains brief transport and security descriptions of
-   the various security protocols currently used to protect data being
-   sent over a network.  These protocols are grouped based on where in
-   the protocol stack they are implemented, which influences which parts
-   of a packet they protect: Generic application payload, application
+   various security protocols currently used to protect data being sent
+   over a network.  These protocols are grouped based on where in the
+   protocol stack they are implemented, which influences which parts of
+   a packet they protect: Generic application payload, application
    payload for specific application-layer protocols, both application
    payload and transport headers, or entire IP packets.
 
@@ -333,7 +333,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020                [Page 6]
+Enghardt, et al.         Expires 23 October 2020                [Page 6]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -389,7 +389,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020                [Page 7]
+Enghardt, et al.         Expires 23 October 2020                [Page 7]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -445,7 +445,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020                [Page 8]
+Enghardt, et al.         Expires 23 October 2020                [Page 8]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -459,19 +459,19 @@ Internet-Draft          Transport Security Survey             April 2020
 
 3.3.4.  MinimaLT
 
-   MinimaLT is a UDP-based transport security protocol designed to offer
-   confidentiality, mutual authentication, DoS prevention, and
-   connection mobility [MinimaLT].  One major goal of the protocol is to
-   leverage existing protocols to obtain server-side configuration
+   MinimaLT [MinimaLT] is a UDP-based transport security protocol
+   designed to offer confidentiality, mutual authentication, DoS
+   prevention, and connection mobility.  One major goal of the protocol
+   is to leverage existing protocols to obtain server-side configuration
    information used to more quickly bootstrap a connection.  MinimaLT
    uses a variant of TCP's congestion control algorithm.
 
 3.3.5.  CurveCP
 
-   CurveCP [CurveCP] is a UDP-based transport security protocol from
-   Daniel J.  Bernstein.  Unlike many other security protocols, it is
-   based entirely upon public key algorithms.  CurveCP provides its own
-   reliability for application data as part of its protocol.
+   CurveCP [CurveCP] is a UDP-based transport security that, unlike many
+   other security protocols, is based entirely upon public key
+   algorithms.  CurveCP provides its own reliability for application
+   data as part of its protocol.
 
 3.4.  Packet Security Protocols
 
@@ -501,7 +501,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020                [Page 9]
+Enghardt, et al.         Expires 23 October 2020                [Page 9]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -557,7 +557,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 10]
+Enghardt, et al.         Expires 23 October 2020               [Page 10]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -613,7 +613,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 11]
+Enghardt, et al.         Expires 23 October 2020               [Page 11]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -622,16 +622,16 @@ Internet-Draft          Transport Security Survey             April 2020
 
    One protocol surveyed, tcpcrypt, has an direct dependency on a
    feature in the transport that is needed for its functionality.
-   Specific, tcpcrypt is designed to run on top of TCP, and uses the TCP
-   Encryption Negotiation Option (ENO) [RFC8547] to negotiate its
+   Specifically, tcpcrypt is designed to run on top of TCP, and uses the
+   TCP Encryption Negotiation Option (ENO) [RFC8547] to negotiate its
    protocol support.
 
    QUIC, CurveCP, and MinimaLT provide both transport functionality and
-   security functionality.  They have a dependencies on running over a
-   framed protocol like UDP, but they add their own layers of
-   reliability and other transport services.  Thus, an application that
-   uses one of these protocols cannot decouple the security from
-   transport functionality.
+   security functionality.  They depend on running over a framed
+   protocol like UDP, but they add their own layers of reliability and
+   other transport services.  Thus, an application that uses one of
+   these protocols cannot decouple the security from transport
+   functionality.
 
 5.  Application Interface
 
@@ -649,7 +649,7 @@ Internet-Draft          Transport Security Survey             April 2020
 5.1.  Pre-Connection Interfaces
 
    Configuration interfaces are used to configure the security protocols
-   before a handshake begins or the keys are negotiated.
+   before a handshake begins or keys are negotiated.
 
    *  Identities and Private Keys (IPK): The application can provide its
       identity, credentials (e.g., certificates), and private keys, or
@@ -669,7 +669,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 12]
+Enghardt, et al.         Expires 23 October 2020               [Page 12]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -725,7 +725,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 13]
+Enghardt, et al.         Expires 23 October 2020               [Page 13]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -762,8 +762,6 @@ Internet-Draft          Transport Security Survey             April 2020
 
       -  IPsec
 
-      -  ESP
-
       -  WireGuard
 
       -  OpenVPN
@@ -772,21 +770,21 @@ Internet-Draft          Transport Security Survey             April 2020
 
    *  Identity Validation (IV): During a handshake, the security
       protocol will conduct identity validation of the peer.  This can
-      call into the application to offload validation.
+      offload validation or occur transparently to the application.
 
       -  TLS
 
       -  DTLS
 
+      -  ZRTP
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 14]
+
+Enghardt, et al.         Expires 23 October 2020               [Page 14]
 
 Internet-Draft          Transport Security Survey             April 2020
 
-
-      -  ZRTP
 
       -  QUIC
 
@@ -803,7 +801,9 @@ Internet-Draft          Transport Security Survey             April 2020
    *  Source Address Validation (SAV): The handshake protocol may
       interact with the transport protocol or application to validate
       the address of the remote peer that has sent data.  This involves
-      sending a cookie exchange to avoid DoS attacks.
+      sending a cookie exchange to avoid DoS attacks.  (This list omits
+      protocols which depend on TCP and therefore implicitly perform
+      SAV.)
 
       -  DTLS
 
@@ -837,7 +837,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 15]
+Enghardt, et al.         Expires 23 October 2020               [Page 15]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -884,7 +884,7 @@ Internet-Draft          Transport Security Survey             April 2020
       This interaction is often limited to signaling between the record
       layer and the handshake layer.
 
-      -  ESP
+      -  IPsec
 
    *  Mobility Events (ME): The record protocol can be signaled that it
       is being migrated to another transport or interface due to
@@ -893,7 +893,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 16]
+Enghardt, et al.         Expires 23 October 2020               [Page 16]
 
 Internet-Draft          Transport Security Survey             April 2020
 
@@ -935,9 +935,7 @@ Internet-Draft          Transport Security Survey             April 2020
    +-----------+---+----+-----+--+--+------+--+-----+--+--+------+--+--+
    | CurveCP   | x |    |     |  |  |      |x |     |  |  |      |  |x |
    +-----------+---+----+-----+--+--+------+--+-----+--+--+------+--+--+
-   | IPsec     | x | x  |     |  |x |  x   |x |  x  |x |x |  x   |  |x |
-   +-----------+---+----+-----+--+--+------+--+-----+--+--+------+--+--+
-   | ESP       |   |    |     |  |  |  x   |  |     |  |  |      |x |  |
+   | IPsec     | x | x  |     |  |x |  x   |x |  x  |x |x |  x   |x |x |
    +-----------+---+----+-----+--+--+------+--+-----+--+--+------+--+--+
    | WireGuard | x |    |     |  |  |  x   |x |  x  |  |  |      |  |x |
    +-----------+---+----+-----+--+--+------+--+-----+--+--+------+--+--+
@@ -946,15 +944,15 @@ Internet-Draft          Transport Security Survey             April 2020
 
                                   Table 1
 
+   x=Interface is exposed (blank)=Interface is not exposed
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 17]
+
+Enghardt, et al.         Expires 23 October 2020               [Page 17]
 
 Internet-Draft          Transport Security Survey             April 2020
 
-
-   x=Interface is exposed (blank)=Interface is not exposed
 
 6.  IANA Considerations
 
@@ -1002,16 +1000,15 @@ Internet-Draft          Transport Security Survey             April 2020
    [I-D.ietf-quic-tls]
               Thomson, M. and S. Turner, "Using TLS to Secure QUIC",
               Work in Progress, Internet-Draft, draft-ietf-quic-tls-27,
+              21 February 2020, <http://www.ietf.org/internet-drafts/
+              draft-ietf-quic-tls-27.txt>.
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 18]
+Enghardt, et al.         Expires 23 October 2020               [Page 18]
 
 Internet-Draft          Transport Security Survey             April 2020
 
-
-              21 February 2020, <http://www.ietf.org/internet-drafts/
-              draft-ietf-quic-tls-27.txt>.
 
    [I-D.ietf-quic-transport]
               Iyengar, J. and M. Thomson, "QUIC: A UDP-Based Multiplexed
@@ -1057,17 +1054,17 @@ Internet-Draft          Transport Security Survey             April 2020
               1998, <https://www.rfc-editor.org/info/rfc2385>.
 
    [RFC2890]  Dommety, G., "Key and Sequence Number Extensions to GRE",
+              RFC 2890, DOI 10.17487/RFC2890, September 2000,
+              <https://www.rfc-editor.org/info/rfc2890>.
 
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 19]
+
+Enghardt, et al.         Expires 23 October 2020               [Page 19]
 
 Internet-Draft          Transport Security Survey             April 2020
 
-
-              RFC 2890, DOI 10.17487/RFC2890, September 2000,
-              <https://www.rfc-editor.org/info/rfc2890>.
 
    [RFC3711]  Baugher, M., McGrew, D., Naslund, M., Carrara, E., and K.
               Norrman, "The Secure Real-time Transport Protocol (SRTP)",
@@ -1113,17 +1110,17 @@ Internet-Draft          Transport Security Survey             April 2020
    [RFC5764]  McGrew, D. and E. Rescorla, "Datagram Transport Layer
               Security (DTLS) Extension to Establish Keys for the Secure
               Real-time Transport Protocol (SRTP)", RFC 5764,
+              DOI 10.17487/RFC5764, May 2010,
+              <https://www.rfc-editor.org/info/rfc5764>.
 
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 20]
+
+Enghardt, et al.         Expires 23 October 2020               [Page 20]
 
 Internet-Draft          Transport Security Survey             April 2020
 
-
-              DOI 10.17487/RFC5764, May 2010,
-              <https://www.rfc-editor.org/info/rfc5764>.
 
    [RFC5925]  Touch, J., Mankin, A., and R. Bonica, "The TCP
               Authentication Option", RFC 5925, DOI 10.17487/RFC5925,
@@ -1169,17 +1166,17 @@ Internet-Draft          Transport Security Survey             April 2020
 
    [RFC8547]  Bittau, A., Giffin, D., Handley, M., Mazieres, D., and E.
               Smith, "TCP-ENO: Encryption Negotiation Option", RFC 8547,
+              DOI 10.17487/RFC8547, May 2019,
+              <https://www.rfc-editor.org/info/rfc8547>.
 
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 21]
+
+Enghardt, et al.         Expires 23 October 2020               [Page 21]
 
 Internet-Draft          Transport Security Survey             April 2020
 
-
-              DOI 10.17487/RFC8547, May 2019,
-              <https://www.rfc-editor.org/info/rfc8547>.
 
    [RFC8548]  Bittau, A., Giffin, D., Handley, M., Mazieres, D., Slack,
               Q., and E. Smith, "Cryptographic Protection of TCP Streams
@@ -1226,15 +1223,15 @@ Authors' Addresses
    Cambridge, MA 02144,
    United States of America
 
+   Email: krose@krose.org
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 22]
+
+
+Enghardt, et al.         Expires 23 October 2020               [Page 22]
 
 Internet-Draft          Transport Security Survey             April 2020
-
-
-   Email: krose@krose.org
 
 
    Christopher A. Wood
@@ -1285,4 +1282,7 @@ Internet-Draft          Transport Security Survey             April 2020
 
 
 
-Enghardt, et al.         Expires 21 October 2020               [Page 23]
+
+
+
+Enghardt, et al.         Expires 23 October 2020               [Page 23]
