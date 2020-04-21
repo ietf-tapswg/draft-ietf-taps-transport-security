@@ -469,7 +469,7 @@ In the following sections, we provide abbreviations of the interface names to us
 ## Pre-Connection Interfaces
 
 Configuration interfaces are used to configure the security protocols before a
-handshake begins or the keys are negotiated.
+handshake begins or keys are negotiated.
 
 - Identities and Private Keys (IPK): The application can provide its identity,
 credentials (e.g., certificates), and private keys, or mechanisms to access these, to the
@@ -536,7 +536,7 @@ in encrypting (and authenticating) communication with a peer.
 
 - Identity Validation (IV):
 During a handshake, the security protocol will conduct identity validation of the peer.
-This can call into the application to offload validation.
+This can offload validation or occur transparently to the application.
   - TLS
   - DTLS
   - ZRTP
@@ -550,7 +550,8 @@ This can call into the application to offload validation.
 - Source Address Validation (SAV):
 The handshake protocol may interact with the transport protocol or application to
 validate the address of the remote peer that has sent data. This involves sending a cookie
-exchange to avoid DoS attacks.
+exchange to avoid DoS attacks. (This list omits protocols which depend on TCP and therefore
+implicitly perform SAV.)
   - DTLS
   - QUIC
   - IPsec
