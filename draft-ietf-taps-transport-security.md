@@ -446,12 +446,12 @@ Packet Security Protocols:
 ## Transport-Specific Dependencies
 
 One protocol surveyed, tcpcrypt, has an direct dependency on a feature in the transport
-that is needed for its functionality. Specific, tcpcrypt is designed to run on top of TCP, and
+that is needed for its functionality. Specifically, tcpcrypt is designed to run on top of TCP, and
 uses the TCP Encryption Negotiation Option (ENO) {{?RFC8547}} to negotiate its
 protocol support.
 
-QUIC, CurveCP, and MinimaLT provide both transport functionality and security functionality. They have
-a dependencies on running over a framed protocol like UDP, but they add their own layers of
+QUIC, CurveCP, and MinimaLT provide both transport functionality and security functionality. They
+depend on running over a framed protocol like UDP, but they add their own layers of
 reliability and other transport services. Thus, an application that uses one of these protocols
 cannot decouple the security from transport functionality.
 
