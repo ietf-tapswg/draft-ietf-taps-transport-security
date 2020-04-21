@@ -2,6 +2,10 @@
 
 This is the working area for the Individual internet-draft, "A Survey of Transport Security Protocols".
 
+* [Editor's Copy](https://ietf-tapswg.github.org/draft-ietf-taps-transport-security/draft-ietf-taps-transport-security.html)
+* [IETF Datatracker Copy](https://tools.ietf.org/html/draft-ietf-taps-transport-security)
+* [Compare Editor's Copy to IETF Datatracker Copy](https://ietf-tapswg.github.org/draft-ietf-taps-transport-security/#go.draft-ietf-taps-transport-security.diff)
+
 ## Building the Draft
 
 Formatted text and HTML versions of the draft can be built using `make`.
